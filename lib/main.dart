@@ -1,0 +1,59 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+import 'providers/auth_provider.dart';
+import 'providers/transaction_provider.dart';
+import 'screens/splash_screen.dart';
+import 'screens/home_dashboard.dart';
+import 'screens/register_screen.dart';
+import 'screens/login_screen.dart';
+import 'screens/add_expense.dart';
+import 'screens/add_income.dart';
+import 'screens/transactions_history.dart';
+import 'screens/analytics.dart';
+import 'screens/profile.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  runApp(const ExpenseTrackerApp());
+}
+
+class ExpenseTrackerApp extends StatelessWidget {
+  const ExpenseTrackerApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    // Wrap the app with MultiProvider for global state management
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => TransactionProvider()),
+      ],
+      child: MaterialApp(
+        title: 'COSTLY',
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+          useMaterial3: true,
+        ),
+        initialRoute: '/splash_screen',
+        routes: {
+          '/splash_screen': (context) => const SplashScreen(),
+          '/home_dashboard': (context) => const HomeDashboard(),
+          '/register_screen': (context) => const RegisterScreen(),
+          '/login_screen': (context) => const LoginScreen(),
+          '/add_expense': (context) => const AddExpenseScreen(),
+          '/add_income': (context) => const AddIncomeScreen(),
+          '/transactions_history': (context) =>
+              const TransactionsHistoryScreen(),
+          '/analytics': (context) => const AnalyticsScreen(),
+          '/profile': (context) => const ProfileScreen(),
+        },
+      ),
+    );
+  }
+}
