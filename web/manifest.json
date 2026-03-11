@@ -1,11 +1,11 @@
 {
-    "name": "expense_tracker",
-    "short_name": "expense_tracker",
+    "name": "Costly",
+    "short_name": "Costly",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#5D3891",
+    "theme_color": "#5D3891",
+    "description": "Costly - Expense Tracker App",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

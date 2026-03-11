@@ -37,8 +37,12 @@ class ExpenseTrackerApp extends StatelessWidget {
         title: 'COSTLY',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: const Color(0xFF5D3891),
+            brightness: Brightness.light,
+          ),
           useMaterial3: true,
+          scaffoldBackgroundColor: const Color(0xFFF5F5F5),
         ),
         initialRoute: '/splash_screen',
         routes: {

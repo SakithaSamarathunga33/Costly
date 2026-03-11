@@ -45,8 +45,7 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
     if (_titleController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-            content: Text('Please enter a title'),
-            backgroundColor: Colors.red),
+            content: Text('Please enter a title'), backgroundColor: Colors.red),
       );
       return;
     }
@@ -63,8 +62,7 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
     setState(() => _isSaving = true);
 
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final txProvider =
-        Provider.of<TransactionProvider>(context, listen: false);
+    final txProvider = Provider.of<TransactionProvider>(context, listen: false);
 
     final success = await txProvider.addIncome(
       userId: authProvider.userId,
@@ -97,10 +95,10 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    const Color primary = Color(0xFF00ADB5);
-    const Color bgDark = Color(0xFF222831);
-    const Color cardDark = Color(0xFF393E46);
-    const Color textMain = Color(0xFFEEEEEE);
+    const Color primary = Color(0xFF5D3891);
+    const Color bgDark = Color(0xFFF5F5F5);
+    const Color cardDark = Color(0xFFE8E2E2);
+    const Color textMain = Color(0xFF2D2D2D);
 
     return Scaffold(
       backgroundColor: bgDark,
@@ -109,9 +107,10 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
         elevation: 0,
         title: const Text(
           'Add Income',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          style:
+              TextStyle(color: Color(0xFF2D2D2D), fontWeight: FontWeight.bold),
         ),
-        iconTheme: const IconThemeData(color: Colors.white),
+        iconTheme: const IconThemeData(color: Color(0xFF2D2D2D)),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
@@ -122,7 +121,7 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
               decoration: BoxDecoration(
                 color: cardDark,
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.white.withOpacity(0.05)),
+                border: Border.all(color: Colors.black.withOpacity(0.05)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -137,12 +136,8 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
                   TextField(
                     controller: _titleController,
                     style: const TextStyle(color: textMain),
-                    decoration: _inputDecoration(
-                        'e.g. Salary, Freelance...',
-                        Icons.description_outlined,
-                        bgDark,
-                        textMain,
-                        primary),
+                    decoration: _inputDecoration('e.g. Salary, Freelance...',
+                        Icons.description_outlined, bgDark, textMain, primary),
                   ),
                   const SizedBox(height: 20),
 
@@ -174,8 +169,7 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
                     decoration: BoxDecoration(
                       color: bgDark,
                       borderRadius: BorderRadius.circular(12),
-                      border:
-                          Border.all(color: Colors.white.withOpacity(0.1)),
+                      border: Border.all(color: Colors.black.withOpacity(0.1)),
                     ),
                     child: DropdownButtonHideUnderline(
                       child: DropdownButton<String>(
@@ -188,8 +182,7 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
                             value: cat['name'] as String,
                             child: Row(
                               children: [
-                                Icon(
-                                    getCategoryIcon(cat['icon'] as String),
+                                Icon(getCategoryIcon(cat['icon'] as String),
                                     color: Color(cat['color'] as int),
                                     size: 20),
                                 const SizedBox(width: 12),
@@ -224,7 +217,7 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
                         color: bgDark,
                         borderRadius: BorderRadius.circular(12),
                         border:
-                            Border.all(color: Colors.white.withOpacity(0.1)),
+                            Border.all(color: Colors.black.withOpacity(0.1)),
                       ),
                       child: Row(
                         children: [
@@ -232,10 +225,9 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
                               color: textMain.withOpacity(0.4), size: 20),
                           const SizedBox(width: 12),
                           Text(
-                            DateFormat('MMMM dd, yyyy')
-                                .format(_selectedDate),
-                            style: const TextStyle(
-                                color: textMain, fontSize: 16),
+                            DateFormat('MMMM dd, yyyy').format(_selectedDate),
+                            style:
+                                const TextStyle(color: textMain, fontSize: 16),
                           ),
                         ],
                       ),
@@ -306,10 +298,10 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
       prefixIcon: Icon(icon, color: textMain.withOpacity(0.4)),
       border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.white.withOpacity(0.1))),
+          borderSide: BorderSide(color: Colors.black.withOpacity(0.1))),
       enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.white.withOpacity(0.1))),
+          borderSide: BorderSide(color: Colors.black.withOpacity(0.1))),
       focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: primary, width: 2)),

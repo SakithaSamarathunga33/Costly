@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
-// App color palette (matching existing UI theme)
-const Color kPrimary = Color(0xFF00ADB5);
-const Color kBgDark = Color(0xFF222831);
-const Color kCardDark = Color(0xFF393E46);
-const Color kTextMain = Color(0xFFEEEEEE);
-const Color kAccentOrange = Color(0xFFF25C05);
+// App color palette
+const Color kPrimary = Color(0xFF5D3891);
+const Color kBgDark = Color(0xFFF5F5F5);
+const Color kCardDark = Color(0xFFE8E2E2);
+const Color kTextMain = Color(0xFF2D2D2D);
+const Color kAccentOrange = Color(0xFFF99417);
 
 // Transaction categories with icons and colors
 const List<Map<String, dynamic>> kExpenseCategories = [
@@ -22,7 +22,7 @@ const List<Map<String, dynamic>> kExpenseCategories = [
 
 const List<Map<String, dynamic>> kIncomeCategories = [
   {'name': 'Salary', 'icon': 'payments', 'color': 0xFF4CAF50},
-  {'name': 'Freelance', 'icon': 'work', 'color': 0xFF00ADB5},
+  {'name': 'Freelance', 'icon': 'work', 'color': 0xFF5D3891},
   {'name': 'Investment', 'icon': 'trending_up', 'color': 0xFF2196F3},
   {'name': 'Gift', 'icon': 'card_giftcard', 'color': 0xFFE91E63},
   {'name': 'Other', 'icon': 'more_horiz', 'color': 0xFF607D8B},

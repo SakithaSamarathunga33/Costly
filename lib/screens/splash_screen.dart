@@ -10,15 +10,30 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> {
+class _SplashScreenState extends State<SplashScreen>
+    with SingleTickerProviderStateMixin {
   double _progress = 0.0;
   Timer? _timer;
   bool _hasNavigated = false;
+  late AnimationController _fadeController;
+  late Animation<double> _fadeAnimation;
 
   @override
   void initState() {
     super.initState();
-    // Initialize database and check auth state
+
+    // Fade-in animation
+    _fadeController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    );
+    _fadeAnimation = CurvedAnimation(
+      parent: _fadeController,
+      curve: Curves.easeOut,
+    );
+    _fadeController.forward();
+
+    // Initialize app + check auth
     _initializeApp();
 
     // Simulate loading progress bar
@@ -33,7 +48,6 @@ class _SplashScreenState extends State<SplashScreen> {
     });
   }
 
-  /// Connect to MongoDB and check if user session exists
   Future<void> _initializeApp() async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     await authProvider.initialize();
@@ -47,7 +61,6 @@ class _SplashScreenState extends State<SplashScreen> {
     if (!mounted || _hasNavigated) return;
     _hasNavigated = true;
 
-    // Route based on authentication state
     if (authProvider.isLoggedIn) {
       Navigator.pushReplacementNamed(context, '/home_dashboard');
     } else {
@@ -58,231 +71,193 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void dispose() {
     _timer?.cancel();
+    _fadeController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    // colors
-    const Color primary = Color(0xFF00ADB5);
-    const Color bgDark = Color(0xFF222831);
+    const Color primary = Color(0xFF5D3891);
 
     return Scaffold(
-      backgroundColor: bgDark,
-      body: Stack(
-        children: [
-          // Background Abstract Pattern
-          Positioned(
-            top: -96,
-            left: -96,
-            child: Container(
-              width: 384,
-              height: 384,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: primary.withOpacity(0.1),
-              ),
-            ),
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              Color(0xFFF5F0FA),
+              Color(0xFFEDE7F6),
+              Color(0xFFE8E0F0),
+            ],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
           ),
-          Positioned(
-            bottom: -96,
-            right: -96,
-            child: Container(
-              width: 384,
-              height: 384,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: primary.withOpacity(0.1),
-              ),
-            ),
-          ),
+        ),
+        child: FadeTransition(
+          opacity: _fadeAnimation,
+          child: SafeArea(
+            child: Column(
+              children: [
+                // ─── Top spacer ───
+                const Spacer(flex: 3),
 
-          // Main Content
-          Center(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // Decorative Visual Element Spacer
-                  const SizedBox(height: 20),
-                  // Logo
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(16),
-                    child: Image.asset(
-                      'assets/images/logo.png',
-                      width: 120,
-                      height: 120,
-                      fit: BoxFit.contain,
-                    ),
-                  ),
-                  const SizedBox(height: 32),
-
-                  // Title
-                  RichText(
-                    text: const TextSpan(
-                      style: TextStyle(
-                        fontFamily: 'Public Sans',
-                        fontSize: 36,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                        letterSpacing: -0.5,
+                // ─── Logo with curved container ───
+                Container(
+                  width: 120,
+                  height: 120,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(28),
+                    boxShadow: [
+                      BoxShadow(
+                        color: primary.withOpacity(0.15),
+                        blurRadius: 28,
+                        offset: const Offset(0, 10),
                       ),
-                      children: [
-                        TextSpan(text: 'COST'),
-                        TextSpan(
-                          text: 'LY',
-                          style: TextStyle(color: primary),
-                        ),
-                      ],
-                    ),
+                    ],
                   ),
-                  const SizedBox(height: 12),
-                  const Text(
-                    'Master your finances with ease',
-                    style: TextStyle(
-                      color: Colors.white54,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-
-                  // Progress Bar
-                  const SizedBox(height: 32),
-                  SizedBox(
-                    width: 280,
-                    child: Column(
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'INITIALIZING',
-                              style: TextStyle(
-                                color: primary.withOpacity(0.8),
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 2,
-                              ),
-                            ),
-                            Text(
-                              '${(_progress * 100).toInt()}%',
-                              style: const TextStyle(
-                                color: Colors.white54,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(4),
-                          child: LinearProgressIndicator(
-                            value: _progress,
-                            backgroundColor: Colors.white10,
-                            valueColor:
-                                const AlwaysStoppedAnimation<Color>(primary),
-                            minHeight: 6,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  // Decorative Visual Element
-                  const SizedBox(height: 48),
-                  Container(
-                    height: 160,
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.white10),
-                      image: const DecorationImage(
-                        image: NetworkImage(
-                          'https://lh3.googleusercontent.com/aida-public/AB6AXuBIoUyggPPOqFKUegzoCUQmlPU82BZjB6kiuy96uGVIQpE7Y17jHhwUQDSdd2uzxpD0mTrUmQg0QK0HBlhLsdWwN7Eq3D4JHel-Lgm9aYgodSvyaFoDHXatrSfrQxhZsOujIrxJS_gjO5soAJbdLe5HH-swqpK23x3cVC1ubEueGYMYG_jkahx4Txin3ShnOuJQGQxcYBd49qF_Vdi4R9pPjS-2bWTlV8pFXbqezPPY1kBdvkioF37fKu-2xjsxFUsRMQR0HMebgvzx',
-                        ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(28),
+                    child: Transform.scale(
+                      scale: 1.35,
+                      child: Image.asset(
+                        'assets/images/logo2.png',
+                        width: 120,
+                        height: 120,
                         fit: BoxFit.cover,
                       ),
                     ),
-                    alignment: Alignment.bottomLeft,
-                    padding: const EdgeInsets.all(16),
-                    child: Container(
-                      height: 48,
-                      width: 156,
-                      decoration: BoxDecoration(
-                        color: Colors.black45,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Icon(Icons.trending_up,
-                              color: primary, size: 16),
-                          const SizedBox(width: 12),
-                          Container(
-                            width: 96,
-                            height: 8,
-                            decoration: BoxDecoration(
-                              color: Colors.white24,
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          // Bottom Branding
-          Positioned(
-            bottom: 40,
-            left: 0,
-            right: 0,
-            child: Column(
-              children: [
-                Text(
-                  'POWERED BY',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.white54,
-                    fontSize: 10,
-                    fontWeight: FontWeight.w500,
-                    letterSpacing: 2,
                   ),
                 ),
-                SizedBox(height: 4),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(4),
-                      child: Image.asset(
-                        'assets/images/logo.png',
+
+                const SizedBox(height: 40),
+
+                // ─── Title ───
+                const Text(
+                  'Smart Expense\nTracker',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Color(0xFF2D2D2D),
+                    fontSize: 32,
+                    fontWeight: FontWeight.w700,
+                    height: 1.2,
+                    letterSpacing: -0.5,
+                  ),
+                ),
+
+                const SizedBox(height: 14),
+
+                // ─── Subtitle ───
+                Text(
+                  'Your professional fintech companion',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.black.withOpacity(0.45),
+                    fontSize: 15,
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+
+                const Spacer(flex: 2),
+
+                // ─── Loading section ───
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 48.0),
+                  child: Column(
+                    children: [
+                      Text(
+                        'INITIALIZING SECURE DASHBOARD',
+                        style: TextStyle(
+                          color: primary.withOpacity(0.7),
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 1.8,
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(6),
+                        child: LinearProgressIndicator(
+                          value: _progress,
+                          backgroundColor: primary.withOpacity(0.1),
+                          valueColor:
+                              const AlwaysStoppedAnimation<Color>(primary),
+                          minHeight: 5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                // ─── Version & encryption labels ───
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 48.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Version 2.4.0',
+                        style: TextStyle(
+                          color: Colors.black.withOpacity(0.3),
+                          fontSize: 11,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                      Text(
+                        'Secure Encryption',
+                        style: TextStyle(
+                          color: Colors.black.withOpacity(0.3),
+                          fontSize: 11,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const Spacer(flex: 2),
+
+                // ─── Bottom branding ───
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 32.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
                         width: 20,
                         height: 20,
-                        fit: BoxFit.contain,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(5),
+                          child: Image.asset(
+                            'assets/images/logo2.png',
+                            width: 20,
+                            height: 20,
+                            fit: BoxFit.contain,
+                          ),
+                        ),
                       ),
-                    ),
-                    SizedBox(width: 6),
-                    Text(
-                      'COSTLY',
-                      style: TextStyle(
-                        color: Colors.white70,
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: -0.5,
+                      const SizedBox(width: 8),
+                      Text(
+                        'FinSecure Global',
+                        style: TextStyle(
+                          color: Colors.black.withOpacity(0.4),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ],
             ),
           ),
-        ],
+        ),
       ),
     );
   }
