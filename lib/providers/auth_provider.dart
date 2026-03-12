@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:image_picker/image_picker.dart';
 import '../models/user_model.dart';
 import '../services/auth_service.dart';
+import '../services/cloudinary_service.dart';
 
 /// AuthProvider manages authentication state across the app
 class AuthProvider extends ChangeNotifier {
@@ -20,6 +22,8 @@ class AuthProvider extends ChangeNotifier {
   String get userId => _user?.id ?? '';
   String get userName => _user?.name ?? 'User';
   String get userEmail => _user?.email ?? '';
+  String? get userProfilePicUrl => _user?.profilePicUrl;
+  String get userPhone => _user?.phone ?? '';
 
   /// Initialize: check if user is already signed in via Firebase Auth
   Future<void> initialize() async {
@@ -125,6 +129,73 @@ class AuthProvider extends ChangeNotifier {
       _isLoading = false;
       notifyListeners();
       return false;
+    } catch (e) {
+      _error = e.toString().replaceFirst('Exception: ', '');
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  /// Upload profile picture to Cloudinary and save URL to Firestore
+  Future<bool> updateProfilePicture(XFile imageFile) async {
+    if (_user == null) return false;
+
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      final cloudinary = CloudinaryService();
+      final url = await cloudinary.uploadImage(
+        imageFile,
+        folder: 'profile_pictures',
+      );
+
+      if (url == null) {
+        throw Exception('Failed to upload image');
+      }
+
+      // Save URL to Firestore
+      await _authService.updateProfilePicUrl(_user!.id, url);
+
+      // Update local user model
+      _user = _user!.copyWith(profilePicUrl: url);
+
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _error = e.toString().replaceFirst('Exception: ', '');
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  /// Update user profile (name, phone)
+  Future<bool> updateProfile({String? name, String? phone}) async {
+    if (_user == null) return false;
+
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      await _authService.updateUserProfile(
+        _user!.id,
+        name: name,
+        phone: phone,
+      );
+
+      _user = _user!.copyWith(
+        name: name ?? _user!.name,
+        phone: phone ?? _user!.phone,
+      );
+
+      _isLoading = false;
+      notifyListeners();
+      return true;
     } catch (e) {
       _error = e.toString().replaceFirst('Exception: ', '');
       _isLoading = false;

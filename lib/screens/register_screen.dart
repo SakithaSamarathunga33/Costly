@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/transaction_provider.dart';
+import '../utils/top_toast.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -40,12 +41,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         Navigator.pushReplacementNamed(context, '/home_dashboard');
       }
     } else if (mounted && authProvider.error != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(authProvider.error!),
-          backgroundColor: Colors.red,
-        ),
-      );
+      showTopToast(context, authProvider.error!, isError: true);
     }
   }
 
@@ -68,12 +64,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         Navigator.pushReplacementNamed(context, '/home_dashboard');
       }
     } else if (mounted && authProvider.error != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(authProvider.error!),
-          backgroundColor: Colors.red,
-        ),
-      );
+      showTopToast(context, authProvider.error!, isError: true);
     }
   }
 

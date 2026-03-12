@@ -69,6 +69,20 @@ class TransactionService {
     await _transactions.doc(transactionId).delete();
   }
 
+  /// Delete all transactions for a user in a given category
+  Future<void> deleteTransactionsByCategory(
+      String userId, String category) async {
+    final snapshot = await _transactions
+        .where('userId', isEqualTo: userId)
+        .where('category', isEqualTo: category)
+        .get();
+    final batch = _firestore.batch();
+    for (var doc in snapshot.docs) {
+      batch.delete(doc.reference);
+    }
+    await batch.commit();
+  }
+
   /// Get total income for a user
   Future<double> getTotalIncome(String userId) async {
     final snapshot = await _transactions

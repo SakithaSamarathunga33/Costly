@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../providers/auth_provider.dart';
 import '../providers/transaction_provider.dart';
+import '../services/auth_service.dart';
+import '../utils/top_toast.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -17,6 +20,39 @@ class _LoginScreenState extends State<LoginScreen> {
   // Controllers to capture form input
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+
+  static const _rememberKey = 'remember_me';
+  static const _emailKey = 'saved_email';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSavedCredentials();
+  }
+
+  Future<void> _loadSavedCredentials() async {
+    final prefs = await SharedPreferences.getInstance();
+    final remembered = prefs.getBool(_rememberKey) ?? false;
+    final savedEmail = prefs.getString(_emailKey) ?? '';
+
+    if (remembered && savedEmail.isNotEmpty) {
+      setState(() {
+        _rememberMe = true;
+        _emailController.text = savedEmail;
+      });
+    }
+  }
+
+  Future<void> _saveCredentials() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (_rememberMe) {
+      await prefs.setBool(_rememberKey, true);
+      await prefs.setString(_emailKey, _emailController.text.trim());
+    } else {
+      await prefs.remove(_rememberKey);
+      await prefs.remove(_emailKey);
+    }
+  }
 
   @override
   void dispose() {
@@ -39,12 +75,7 @@ class _LoginScreenState extends State<LoginScreen> {
         Navigator.pushReplacementNamed(context, '/home_dashboard');
       }
     } else if (mounted && authProvider.error != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(authProvider.error!),
-          backgroundColor: Colors.red,
-        ),
-      );
+      showTopToast(context, authProvider.error!, isError: true);
     }
   }
 
@@ -60,6 +91,8 @@ class _LoginScreenState extends State<LoginScreen> {
     );
 
     if (success && mounted) {
+      // Save or clear credentials based on Remember Me
+      await _saveCredentials();
       // Fetch user transactions after successful login
       await transactionProvider.fetchTransactions(authProvider.userId);
       if (mounted) {
@@ -67,13 +100,155 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     } else if (mounted && authProvider.error != null) {
       // Show error snackbar
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(authProvider.error!),
-          backgroundColor: Colors.red,
-        ),
-      );
+      showTopToast(context, authProvider.error!, isError: true);
     }
+  }
+
+  /// Show forgot password dialog
+  void _showForgotPasswordDialog(BuildContext context) {
+    const Color primary = Color(0xFF5D3891);
+    const Color textMain = Color(0xFF2D2D2D);
+    final resetEmailController = TextEditingController(
+      text: _emailController.text.trim(),
+    );
+    bool isSending = false;
+
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (ctx, setDialogState) {
+            return AlertDialog(
+              backgroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20)),
+              title: const Text(
+                'Reset Password',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: textMain,
+                ),
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Enter your email address and we\'ll send you a link to reset your password.',
+                    style: TextStyle(
+                      color: textMain.withOpacity(0.6),
+                      fontSize: 13,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Note: This only works for email/password accounts, not Google sign-in.',
+                    style: TextStyle(
+                      color: textMain.withOpacity(0.4),
+                      fontSize: 12,
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: resetEmailController,
+                    keyboardType: TextInputType.emailAddress,
+                    style: const TextStyle(fontSize: 14, color: textMain),
+                    decoration: InputDecoration(
+                      hintText: 'name@example.com',
+                      hintStyle: TextStyle(
+                          color: textMain.withOpacity(0.3), fontSize: 14),
+                      filled: true,
+                      fillColor: const Color(0xFFF8F6FC),
+                      prefixIcon: Icon(Icons.mail_outline,
+                          color: primary.withOpacity(0.5), size: 20),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: BorderSide.none,
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide:
+                            BorderSide(color: primary.withOpacity(0.1)),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide:
+                            const BorderSide(color: primary, width: 1.5),
+                      ),
+                      contentPadding:
+                          const EdgeInsets.symmetric(vertical: 14),
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  child: Text(
+                    'Cancel',
+                    style: TextStyle(
+                      color: textMain.withOpacity(0.5),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                ElevatedButton(
+                  onPressed: isSending
+                      ? null
+                      : () async {
+                          final email = resetEmailController.text.trim();
+                          if (email.isEmpty) {
+                            showTopToast(context, 'Please enter your email', isError: true);
+                            return;
+                          }
+
+                          setDialogState(() => isSending = true);
+
+                          try {
+                            final authService = AuthService();
+                            await authService.sendPasswordResetEmail(email);
+
+                            if (!ctx.mounted) return;
+                            Navigator.pop(ctx);
+
+                            if (!context.mounted) return;
+                            showTopToast(context, 'Password reset email sent! Check your inbox.');
+                          } catch (e) {
+                            setDialogState(() => isSending = false);
+                            if (!context.mounted) return;
+                            showTopToast(context, e.toString().replaceFirst('Exception: ', ''), isError: true);
+                          }
+                        },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: primary,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: isSending
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : const Text(
+                          'Send Reset Link',
+                          style: TextStyle(fontWeight: FontWeight.w700),
+                        ),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
   }
 
   @override
@@ -311,7 +486,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           const Spacer(),
                           GestureDetector(
-                            onTap: () {},
+                            onTap: () => _showForgotPasswordDialog(context),
                             child: const Text(
                               'Forgot Password?',
                               style: TextStyle(

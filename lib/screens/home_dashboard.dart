@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../providers/auth_provider.dart';
 import '../providers/transaction_provider.dart';
+import '../providers/category_provider.dart';
 import '../utils/constants.dart';
 import '../widgets/floating_nav_bar.dart';
 
@@ -24,6 +25,8 @@ class _HomeDashboardState extends State<HomeDashboard> {
       if (authProvider.isLoggedIn) {
         Provider.of<TransactionProvider>(context, listen: false)
             .fetchTransactions(authProvider.userId);
+        Provider.of<CategoryProvider>(context, listen: false)
+            .fetchCustomCategories(authProvider.userId);
       }
     });
   }
@@ -40,6 +43,8 @@ class _HomeDashboardState extends State<HomeDashboard> {
     // Listen to providers for live data
     final authProvider = Provider.of<AuthProvider>(context);
     final txProvider = Provider.of<TransactionProvider>(context);
+    final catProvider = Provider.of<CategoryProvider>(context);
+    final customCats = catProvider.customCategories;
 
     // Format currency values
     final currencyFormat =
@@ -67,28 +72,59 @@ class _HomeDashboardState extends State<HomeDashboard> {
                           horizontal: 16.0, vertical: 12.0),
                       child: Row(
                         children: [
-                          Container(
-                            width: 40,
-                            height: 40,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: primary.withOpacity(0.12),
-                              border: Border.all(
-                                color: primary.withOpacity(0.25),
-                                width: 1.5,
-                              ),
-                            ),
-                            child: Center(
-                              child: Text(
-                                authProvider.userName.isNotEmpty
-                                    ? authProvider.userName[0].toUpperCase()
-                                    : 'U',
-                                style: const TextStyle(
-                                  color: primary,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 18,
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.pushNamed(context, '/profile');
+                            },
+                            child: Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: primary.withOpacity(0.12),
+                                border: Border.all(
+                                  color: primary.withOpacity(0.25),
+                                  width: 1.5,
                                 ),
                               ),
+                              child: authProvider.userProfilePicUrl != null
+                                  ? ClipOval(
+                                      child: Image.network(
+                                        authProvider.userProfilePicUrl!,
+                                        width: 40,
+                                        height: 40,
+                                        fit: BoxFit.cover,
+                                        errorBuilder:
+                                            (context, error, stackTrace) {
+                                          return Center(
+                                            child: Text(
+                                              authProvider.userName.isNotEmpty
+                                                  ? authProvider.userName[0]
+                                                      .toUpperCase()
+                                                  : 'U',
+                                              style: const TextStyle(
+                                                color: primary,
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 18,
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    )
+                                  : Center(
+                                      child: Text(
+                                        authProvider.userName.isNotEmpty
+                                            ? authProvider.userName[0]
+                                                .toUpperCase()
+                                            : 'U',
+                                        style: const TextStyle(
+                                          color: primary,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 18,
+                                        ),
+                                      ),
+                                    ),
                             ),
                           ),
                           const Spacer(),
@@ -422,82 +458,81 @@ class _HomeDashboardState extends State<HomeDashboard> {
                     ),
                     const SizedBox(height: 28),
 
-                    // Categories Grid
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Categories',
-                            style: TextStyle(
-                              color: textMain,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    // Categories Grid - dynamic from user's transactions
+                    Builder(
+                      builder: (context) {
+                        // Get unique categories from all transactions
+                        final usedCategories = <String>{};
+                        for (final tx in txProvider.transactions) {
+                          usedCategories.add(tx.category);
+                        }
+
+                        if (usedCategories.isEmpty) {
+                          return const SizedBox.shrink();
+                        }
+
+                        final categoryList = usedCategories.toList();
+
+                        return Padding(
+                          padding:
+                              const EdgeInsets.symmetric(horizontal: 16.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              _buildCategoryCircle(
-                                icon: Icons.restaurant,
-                                label: 'Food',
-                                color: const Color(0xFFFF9800),
-                                bgColor: const Color(0xFFFFF3E0),
+                              const Text(
+                                'Categories',
+                                style: TextStyle(
+                                  color: textMain,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
-                              _buildCategoryCircle(
-                                icon: Icons.directions_car,
-                                label: 'Transport',
-                                color: const Color(0xFFE74C3C),
-                                bgColor: const Color(0xFFFFEBEE),
-                              ),
-                              _buildCategoryCircle(
-                                icon: Icons.shopping_bag,
-                                label: 'Shopping',
-                                color: const Color(0xFF9C27B0),
-                                bgColor: const Color(0xFFF3E5F5),
-                              ),
-                              _buildCategoryCircle(
-                                icon: Icons.lightbulb,
-                                label: 'Bills',
-                                color: const Color(0xFFFFC107),
-                                bgColor: const Color(0xFFFFF8E1),
+                              const SizedBox(height: 16),
+                              LayoutBuilder(
+                                builder: (context, constraints) {
+                                  const int columns = 4;
+                                  final itemWidth =
+                                      constraints.maxWidth / columns;
+
+                                  return Wrap(
+                                    spacing: 0,
+                                    runSpacing: 20,
+                                    children:
+                                        categoryList.map((cat) {
+                                      final color =
+                                          getCategoryColor(cat, customCats);
+                                      final icon =
+                                          getCategoryIconByName(cat, customCats);
+                                      final bgColor = color.withOpacity(0.12);
+                                      final count = txProvider.transactions
+                                          .where((tx) => tx.category == cat)
+                                          .length;
+
+                                      return SizedBox(
+                                        width: itemWidth,
+                                        child: _buildCategoryCircle(
+                                          icon: icon,
+                                          label: cat,
+                                          color: color,
+                                          bgColor: bgColor,
+                                          count: count,
+                                          onTap: () {
+                                            Navigator.pushNamed(
+                                              context,
+                                              '/transactions_history',
+                                              arguments: cat,
+                                            );
+                                          },
+                                        ),
+                                      );
+                                    }).toList(),
+                                  );
+                                },
                               ),
                             ],
                           ),
-                          const SizedBox(height: 20),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceAround,
-                            children: [
-                              _buildCategoryCircle(
-                                icon: Icons.movie,
-                                label: 'Cinema',
-                                color: const Color(0xFF2196F3),
-                                bgColor: const Color(0xFFE3F2FD),
-                              ),
-                              _buildCategoryCircle(
-                                icon: Icons.local_hospital,
-                                label: 'Health',
-                                color: const Color(0xFF4CAF50),
-                                bgColor: const Color(0xFFE8F5E9),
-                              ),
-                              _buildCategoryCircle(
-                                icon: Icons.school,
-                                label: 'Education',
-                                color: const Color(0xFF3F51B5),
-                                bgColor: const Color(0xFFE8EAF6),
-                              ),
-                              _buildCategoryCircle(
-                                icon: Icons.more_horiz,
-                                label: 'Other',
-                                color: const Color(0xFF607D8B),
-                                bgColor: const Color(0xFFECEFF1),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
+                        );
+                      },
                     ),
                     const SizedBox(height: 28),
 
@@ -572,9 +607,9 @@ class _HomeDashboardState extends State<HomeDashboard> {
                           else
                             ...txProvider.recentTransactions.map((tx) {
                               final isIncome = tx.type == 'income';
-                              final catColor = getCategoryColor(tx.category);
+                              final catColor = getCategoryColor(tx.category, customCats);
                               final catIcon =
-                                  getCategoryIconByName(tx.category);
+                                  getCategoryIconByName(tx.category, customCats);
                               final now = DateTime.now();
                               final today =
                                   DateTime(now.year, now.month, now.day);
@@ -664,35 +699,73 @@ class _HomeDashboardState extends State<HomeDashboard> {
     required String label,
     required Color color,
     required Color bgColor,
+    int count = 0,
+    VoidCallback? onTap,
   }) {
-    return Column(
-      children: [
-        Container(
-          width: 56,
-          height: 56,
-          decoration: BoxDecoration(
-            color: bgColor,
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: color.withOpacity(0.15),
-                blurRadius: 8,
-                offset: const Offset(0, 3),
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        children: [
+          Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  color: bgColor,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: color.withOpacity(0.15),
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: Icon(icon, color: color, size: 26),
               ),
+              if (count > 0)
+                Positioned(
+                  top: -4,
+                  right: -4,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: color,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                          color: const Color(0xFFF8F6FC), width: 2),
+                    ),
+                    constraints: const BoxConstraints(
+                      minWidth: 22,
+                      minHeight: 22,
+                    ),
+                    child: Center(
+                      child: Text(
+                        '$count',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
             ],
           ),
-          child: Icon(icon, color: color, size: 26),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          label,
-          style: TextStyle(
-            color: Colors.black.withOpacity(0.6),
-            fontSize: 11,
-            fontWeight: FontWeight.w600,
+          const SizedBox(height: 8),
+          Text(
+            label,
+            style: TextStyle(
+              color: Colors.black.withOpacity(0.6),
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 

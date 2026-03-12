@@ -28,45 +28,79 @@ const List<Map<String, dynamic>> kIncomeCategories = [
   {'name': 'Other', 'icon': 'more_horiz', 'color': 0xFF607D8B},
 ];
 
+// Icon pool for custom categories — users pick from these
+const Map<String, IconData> kIconPool = {
+  'restaurant': Icons.restaurant,
+  'directions_car': Icons.directions_car,
+  'shopping_bag': Icons.shopping_bag,
+  'receipt_long': Icons.receipt_long,
+  'movie': Icons.movie,
+  'local_hospital': Icons.local_hospital,
+  'school': Icons.school,
+  'flight': Icons.flight,
+  'payments': Icons.payments,
+  'work': Icons.work,
+  'trending_up': Icons.trending_up,
+  'card_giftcard': Icons.card_giftcard,
+  'bolt': Icons.bolt,
+  'home': Icons.home,
+  'more_horiz': Icons.more_horiz,
+  'pets': Icons.pets,
+  'fitness_center': Icons.fitness_center,
+  'coffee': Icons.coffee,
+  'wifi': Icons.wifi,
+  'phone_android': Icons.phone_android,
+  'laptop': Icons.laptop,
+  'brush': Icons.brush,
+  'music_note': Icons.music_note,
+  'sports_esports': Icons.sports_esports,
+  'child_care': Icons.child_care,
+  'checkroom': Icons.checkroom,
+  'local_grocery_store': Icons.local_grocery_store,
+  'local_gas_station': Icons.local_gas_station,
+  'local_parking': Icons.local_parking,
+  'build': Icons.build,
+  'savings': Icons.savings,
+  'attach_money': Icons.attach_money,
+  'account_balance': Icons.account_balance,
+  'store': Icons.store,
+  'favorite': Icons.favorite,
+  'sports_soccer': Icons.sports_soccer,
+  'cake': Icons.cake,
+  'local_laundry_service': Icons.local_laundry_service,
+  'book': Icons.book,
+  'handyman': Icons.handyman,
+};
+
+// Color pool for custom categories
+const List<int> kColorPool = [
+  0xFFFF9800, // Orange
+  0xFF2196F3, // Blue
+  0xFF9C27B0, // Purple
+  0xFF4CAF50, // Green
+  0xFFE91E63, // Pink
+  0xFFFF5722, // Deep Orange
+  0xFF3F51B5, // Indigo
+  0xFF00BCD4, // Cyan
+  0xFF607D8B, // Blue Grey
+  0xFF795548, // Brown
+  0xFF009688, // Teal
+  0xFFFFC107, // Amber
+];
+
 // Helper to get icon data from string name
 IconData getCategoryIcon(String iconName) {
-  switch (iconName) {
-    case 'restaurant':
-      return Icons.restaurant;
-    case 'directions_car':
-      return Icons.directions_car;
-    case 'shopping_bag':
-      return Icons.shopping_bag;
-    case 'receipt_long':
-      return Icons.receipt_long;
-    case 'movie':
-      return Icons.movie;
-    case 'local_hospital':
-      return Icons.local_hospital;
-    case 'school':
-      return Icons.school;
-    case 'flight':
-      return Icons.flight;
-    case 'payments':
-      return Icons.payments;
-    case 'work':
-      return Icons.work;
-    case 'trending_up':
-      return Icons.trending_up;
-    case 'card_giftcard':
-      return Icons.card_giftcard;
-    case 'bolt':
-      return Icons.bolt;
-    case 'home':
-      return Icons.home;
-    default:
-      return Icons.more_horiz;
-  }
+  return kIconPool[iconName] ?? Icons.more_horiz;
 }
 
-// Helper to get category color
-Color getCategoryColor(String category) {
-  for (var cat in [...kExpenseCategories, ...kIncomeCategories]) {
+// Helper to get category color (checks built-in + optional custom list)
+Color getCategoryColor(String category,
+    [List<Map<String, dynamic>> customCategories = const []]) {
+  for (var cat in [
+    ...kExpenseCategories,
+    ...kIncomeCategories,
+    ...customCategories
+  ]) {
     if (cat['name'] == category) {
       return Color(cat['color'] as int);
     }
@@ -74,9 +108,14 @@ Color getCategoryColor(String category) {
   return const Color(0xFF607D8B);
 }
 
-// Helper to get category icon by category name
-IconData getCategoryIconByName(String category) {
-  for (var cat in [...kExpenseCategories, ...kIncomeCategories]) {
+// Helper to get category icon by category name (checks built-in + optional custom list)
+IconData getCategoryIconByName(String category,
+    [List<Map<String, dynamic>> customCategories = const []]) {
+  for (var cat in [
+    ...kExpenseCategories,
+    ...kIncomeCategories,
+    ...customCategories
+  ]) {
     if (cat['name'] == category) {
       return getCategoryIcon(cat['icon'] as String);
     }

@@ -159,6 +159,21 @@ class TransactionProvider extends ChangeNotifier {
     }
   }
 
+  /// Delete all transactions in a category
+  Future<bool> deleteTransactionsByCategory(
+      String userId, String category) async {
+    try {
+      await _transactionService.deleteTransactionsByCategory(userId, category);
+      _transactions.removeWhere((t) => t.category == category);
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _error = 'Failed to delete transactions';
+      notifyListeners();
+      return false;
+    }
+  }
+
   /// Delete a transaction
   Future<bool> deleteTransaction(String transactionId) async {
     try {

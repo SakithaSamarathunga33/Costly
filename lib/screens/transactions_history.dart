@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../providers/transaction_provider.dart';
+import '../providers/category_provider.dart';
 import '../models/transaction_model.dart';
 import '../utils/constants.dart';
 import '../widgets/floating_nav_bar.dart';
+import '../utils/top_toast.dart';
 
 class TransactionsHistoryScreen extends StatefulWidget {
   const TransactionsHistoryScreen({super.key});
@@ -17,12 +19,27 @@ class TransactionsHistoryScreen extends StatefulWidget {
 class _TransactionsHistoryScreenState extends State<TransactionsHistoryScreen> {
   int _filterIndex = 0;
   String _searchQuery = '';
+  String? _categoryFilter;
   final _searchController = TextEditingController();
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Read category filter from route arguments (passed from category tap)
+    final args = ModalRoute.of(context)?.settings.arguments;
+    if (args is String && _categoryFilter == null) {
+      _categoryFilter = args;
+    }
+  }
 
   @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+
+  void _clearCategoryFilter() {
+    setState(() => _categoryFilter = null);
   }
 
   List<TransactionModel> _getFilteredTransactions(
@@ -38,6 +55,13 @@ class _TransactionsHistoryScreenState extends State<TransactionsHistoryScreen> {
         break;
       default:
         filtered = provider.transactions;
+    }
+
+    // Apply category filter if set
+    if (_categoryFilter != null) {
+      filtered = filtered
+          .where((tx) => tx.category == _categoryFilter)
+          .toList();
     }
 
     if (_searchQuery.isNotEmpty) {
@@ -88,6 +112,7 @@ class _TransactionsHistoryScreenState extends State<TransactionsHistoryScreen> {
     const Color textMain = Color(0xFF2D2D2D);
 
     final txProvider = Provider.of<TransactionProvider>(context);
+    final customCats = Provider.of<CategoryProvider>(context).customCategories;
     final filteredTx = _getFilteredTransactions(txProvider);
     final groupedTx = _groupByDate(filteredTx);
     final currencyFormat =
@@ -283,6 +308,60 @@ class _TransactionsHistoryScreenState extends State<TransactionsHistoryScreen> {
                 ),
               ),
 
+              // ─── Active Category Filter ───
+              if (_categoryFilter != null)
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 14, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: getCategoryColor(_categoryFilter!, customCats)
+                                .withOpacity(0.12),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: getCategoryColor(_categoryFilter!, customCats)
+                                  .withOpacity(0.3),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                getCategoryIconByName(_categoryFilter!, customCats),
+                                size: 16,
+                                color: getCategoryColor(_categoryFilter!, customCats),
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                _categoryFilter!,
+                                style: TextStyle(
+                                  color: getCategoryColor(_categoryFilter!, customCats),
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              GestureDetector(
+                                onTap: _clearCategoryFilter,
+                                child: Icon(
+                                  Icons.close,
+                                  size: 16,
+                                  color: getCategoryColor(_categoryFilter!, customCats),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
               const SliverToBoxAdapter(child: SizedBox(height: 8)),
 
               // ─── Grouped Transaction List ───
@@ -334,8 +413,8 @@ class _TransactionsHistoryScreenState extends State<TransactionsHistoryScreen> {
                           (context, index) {
                             final tx = entry.value[index];
                             final isIncome = tx.type == 'income';
-                            final catColor = getCategoryColor(tx.category);
-                            final catIcon = getCategoryIconByName(tx.category);
+                            final catColor = getCategoryColor(tx.category, customCats);
+                            final catIcon = getCategoryIconByName(tx.category, customCats);
                             final timeStr =
                                 DateFormat('hh:mm a').format(tx.date);
 
@@ -355,11 +434,7 @@ class _TransactionsHistoryScreenState extends State<TransactionsHistoryScreen> {
                               ),
                               onDismissed: (_) {
                                 txProvider.deleteTransaction(tx.id);
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                      content:
-                                          Text('${tx.title} deleted')),
-                                );
+                                showTopToast(context, '${tx.title} deleted');
                               },
                               child: Container(
                                 margin: const EdgeInsets.only(bottom: 10),

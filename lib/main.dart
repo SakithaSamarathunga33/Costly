@@ -6,6 +6,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'firebase_options.dart';
 import 'providers/auth_provider.dart';
 import 'providers/transaction_provider.dart';
+import 'providers/category_provider.dart';
 import 'screens/splash_screen.dart';
 import 'screens/home_dashboard.dart';
 import 'screens/register_screen.dart';
@@ -15,6 +16,7 @@ import 'screens/add_income.dart';
 import 'screens/transactions_history.dart';
 import 'screens/analytics.dart';
 import 'screens/profile.dart';
+import 'screens/edit_profile.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -41,6 +43,7 @@ class ExpenseTrackerApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => TransactionProvider()),
+        ChangeNotifierProvider(create: (_) => CategoryProvider()),
       ],
       child: MaterialApp(
         title: 'COSTLY',
@@ -65,6 +68,7 @@ class ExpenseTrackerApp extends StatelessWidget {
               const TransactionsHistoryScreen(),
           '/analytics': (context) => const AnalyticsScreen(),
           '/profile': (context) => const ProfileScreen(),
+          '/edit_profile': (context) => const EditProfileScreen(),
         },
       ),
     );

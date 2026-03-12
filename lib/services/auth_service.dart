@@ -114,6 +114,34 @@ class AuthService {
     return user;
   }
 
+  /// Update user's profile picture URL in Firestore
+  Future<void> updateProfilePicUrl(String userId, String url) async {
+    await _firestore.collection('users').doc(userId).update({
+      'profilePicUrl': url,
+    });
+  }
+
+  /// Update user profile fields (name, phone) in Firestore
+  Future<void> updateUserProfile(String userId, {String? name, String? phone}) async {
+    final Map<String, dynamic> updates = {};
+    if (name != null) updates['name'] = name;
+    if (phone != null) updates['phone'] = phone;
+    if (updates.isEmpty) return;
+
+    await _firestore.collection('users').doc(userId).update(updates);
+
+    // Also update Firebase Auth display name if name changed
+    if (name != null && _auth.currentUser != null) {
+      await _auth.currentUser!.updateDisplayName(name);
+    }
+  }
+
+  /// Send a password reset email (only works for email/password accounts)
+  Future<void> sendPasswordResetEmail(String email) async {
+    if (email.trim().isEmpty) throw Exception('Email is required');
+    await _auth.sendPasswordResetEmail(email: email.trim().toLowerCase());
+  }
+
   /// Get the currently signed-in Firebase user
   User? get currentUser => _auth.currentUser;
 

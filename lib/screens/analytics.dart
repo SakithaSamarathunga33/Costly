@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../providers/transaction_provider.dart';
+import '../providers/category_provider.dart';
 import '../utils/constants.dart';
 import '../widgets/floating_nav_bar.dart';
 
@@ -16,6 +17,7 @@ class AnalyticsScreen extends StatelessWidget {
     const Color textMain = Color(0xFF2D2D2D);
 
     final txProvider = Provider.of<TransactionProvider>(context);
+    final customCats = Provider.of<CategoryProvider>(context).customCategories;
     final currencyFormat =
         NumberFormat.currency(symbol: '\$', decimalDigits: 2);
     final categoryTotals = txProvider.expensesByCategory;
@@ -41,12 +43,16 @@ class AnalyticsScreen extends StatelessWidget {
 
     // Category colors for pie chart
     final List<Color> catColors = [
-      primary,
-      const Color(0xFF7B52AB),
-      const Color(0xFF9B6FCF),
-      const Color(0xFFB794D6),
-      const Color(0xFFD4B8E8),
-      const Color(0xFFE8D5F5),
+      const Color(0xFF5D3891),
+      const Color(0xFFFF6B6B),
+      const Color(0xFF51CF66),
+      const Color(0xFF339AF0),
+      const Color(0xFFFCC419),
+      const Color(0xFFFF922B),
+      const Color(0xFFCC5DE8),
+      const Color(0xFF20C997),
+      const Color(0xFFE64980),
+      const Color(0xFF22B8CF),
     ];
 
     return Scaffold(
@@ -390,7 +396,7 @@ class AnalyticsScreen extends StatelessWidget {
                                               final entry = e.value;
                                               final color = idx < catColors.length
                                                   ? catColors[idx]
-                                                  : getCategoryColor(entry.key);
+                                                  : getCategoryColor(entry.key, customCats);
                                               return PieChartSectionData(
                                                 value: entry.value,
                                                 color: color,
@@ -445,7 +451,7 @@ class AnalyticsScreen extends StatelessWidget {
                                       final entry = e.value;
                                       final color = idx < catColors.length
                                           ? catColors[idx]
-                                          : getCategoryColor(entry.key);
+                                          : getCategoryColor(entry.key, customCats);
                                       final percent = totalExpenses > 0
                                           ? (entry.value /
                                                   totalExpenses *
@@ -527,8 +533,8 @@ class AnalyticsScreen extends StatelessWidget {
                 const SizedBox(height: 14),
 
                 ...pieEntries.take(5).map((entry) {
-                  final catColor = getCategoryColor(entry.key);
-                  final catIcon = getCategoryIconByName(entry.key);
+                  final catColor = getCategoryColor(entry.key, customCats);
+                  final catIcon = getCategoryIconByName(entry.key, customCats);
                   // Count transactions in this category
                   final txCount = txProvider.transactions
                       .where((tx) =>

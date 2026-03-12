@@ -48,20 +48,8 @@ class FloatingNavBar extends StatelessWidget {
                   filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
                   child: Container(
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          const Color(0xFF5D3891).withOpacity(0.92),
-                          const Color(0xFF7B52AB).withOpacity(0.88),
-                          const Color(0xFF9B6FCF).withOpacity(0.85),
-                        ],
-                        begin: Alignment.centerLeft,
-                        end: Alignment.centerRight,
-                      ),
+                      color: const Color(0xFF5D3891),
                       borderRadius: BorderRadius.circular(28),
-                      border: Border.all(
-                        color: Colors.white.withOpacity(0.15),
-                        width: 1,
-                      ),
                       boxShadow: [
                         BoxShadow(
                           color: const Color(0xFF5D3891).withOpacity(0.35),
@@ -190,7 +178,7 @@ class FloatingNavBar extends StatelessWidget {
             icon,
             color: isActive
                 ? Colors.white
-                : Colors.white.withOpacity(0.35),
+                : Colors.white.withOpacity(0.6),
             size: 22,
           ),
           const SizedBox(height: 3),
@@ -199,7 +187,7 @@ class FloatingNavBar extends StatelessWidget {
             style: TextStyle(
               color: isActive
                   ? Colors.white
-                  : Colors.white.withOpacity(0.35),
+                  : Colors.white.withOpacity(0.6),
               fontSize: 10,
               fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
             ),
