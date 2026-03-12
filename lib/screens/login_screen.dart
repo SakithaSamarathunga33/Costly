@@ -25,6 +25,29 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
+  /// Handle Google sign in
+  Future<void> _handleGoogleSignIn() async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final transactionProvider =
+        Provider.of<TransactionProvider>(context, listen: false);
+
+    final success = await authProvider.signInWithGoogle();
+
+    if (success && mounted) {
+      await transactionProvider.fetchTransactions(authProvider.userId);
+      if (mounted) {
+        Navigator.pushReplacementNamed(context, '/home_dashboard');
+      }
+    } else if (mounted && authProvider.error != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(authProvider.error!),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
   /// Handle sign in button press
   Future<void> _handleLogin() async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
@@ -170,8 +193,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       TextField(
                         controller: _emailController,
                         keyboardType: TextInputType.emailAddress,
-                        style: const TextStyle(
-                            color: textMain, fontSize: 14),
+                        style: const TextStyle(color: textMain, fontSize: 14),
                         decoration: InputDecoration(
                           hintText: 'name@example.com',
                           hintStyle:
@@ -186,8 +208,8 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(14),
-                            borderSide: BorderSide(
-                                color: primary.withOpacity(0.1)),
+                            borderSide:
+                                BorderSide(color: primary.withOpacity(0.1)),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(14),
@@ -213,8 +235,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       TextField(
                         controller: _passwordController,
                         obscureText: _obscureText,
-                        style: const TextStyle(
-                            color: textMain, fontSize: 14),
+                        style: const TextStyle(color: textMain, fontSize: 14),
                         decoration: InputDecoration(
                           hintText: 'Enter your password',
                           hintStyle:
@@ -243,8 +264,8 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(14),
-                            borderSide: BorderSide(
-                                color: primary.withOpacity(0.1)),
+                            borderSide:
+                                BorderSide(color: primary.withOpacity(0.1)),
                           ),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(14),
@@ -272,8 +293,8 @@ class _LoginScreenState extends State<LoginScreen> {
                               },
                               activeColor: primary,
                               checkColor: Colors.white,
-                              side: BorderSide(
-                                  color: textMain.withOpacity(0.25)),
+                              side:
+                                  BorderSide(color: textMain.withOpacity(0.25)),
                               shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(4)),
                               materialTapTargetSize:
@@ -340,8 +361,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                       ),
                                     ),
                                     SizedBox(width: 8),
-                                    Icon(Icons.arrow_forward_rounded,
-                                        size: 20),
+                                    Icon(Icons.arrow_forward_rounded, size: 20),
                                   ],
                                 ),
                         ),
@@ -381,7 +401,9 @@ class _LoginScreenState extends State<LoginScreen> {
                           width: 180,
                           height: 46,
                           child: OutlinedButton(
-                            onPressed: () {},
+                            onPressed: authProvider.isLoading
+                                ? null
+                                : _handleGoogleSignIn,
                             style: OutlinedButton.styleFrom(
                               side: BorderSide(
                                   color: Colors.black.withOpacity(0.1)),

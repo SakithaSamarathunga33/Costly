@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import '../models/user_model.dart';
 
 /// Service handling user authentication with Firebase Auth.
@@ -82,11 +83,43 @@ class AuthService {
     }
   }
 
+  /// Sign in with Google
+  Future<UserModel> signInWithGoogle() async {
+    final googleSignIn = GoogleSignIn.instance;
+
+    final GoogleSignInAccount googleUser = await googleSignIn.authenticate();
+
+    final idToken = googleUser.authentication.idToken;
+
+    final credential = GoogleAuthProvider.credential(
+      idToken: idToken,
+    );
+
+    final userCredential = await _auth.signInWithCredential(credential);
+    final uid = userCredential.user!.uid;
+
+    // Check if user profile already exists in Firestore
+    final doc = await _firestore.collection('users').doc(uid).get();
+    if (doc.exists) {
+      return UserModel.fromMap(doc.data()!, uid);
+    }
+
+    // First time Google sign-in: create Firestore profile
+    final user = UserModel(
+      id: uid,
+      name: userCredential.user!.displayName ?? 'User',
+      email: userCredential.user!.email ?? '',
+    );
+    await _firestore.collection('users').doc(uid).set(user.toMap());
+    return user;
+  }
+
   /// Get the currently signed-in Firebase user
   User? get currentUser => _auth.currentUser;
 
   /// Sign out
   Future<void> signOut() async {
+    await GoogleSignIn.instance.signOut();
     await _auth.signOut();
   }
 }

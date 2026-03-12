@@ -26,6 +26,29 @@ class _RegisterScreenState extends State<RegisterScreen> {
     super.dispose();
   }
 
+  /// Handle Google sign in
+  Future<void> _handleGoogleSignIn() async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final transactionProvider =
+        Provider.of<TransactionProvider>(context, listen: false);
+
+    final success = await authProvider.signInWithGoogle();
+
+    if (success && mounted) {
+      await transactionProvider.fetchTransactions(authProvider.userId);
+      if (mounted) {
+        Navigator.pushReplacementNamed(context, '/home_dashboard');
+      }
+    } else if (mounted && authProvider.error != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(authProvider.error!),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
   /// Handle sign up button press
   Future<void> _handleRegister() async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
@@ -312,7 +335,77 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                 ),
 
-                const SizedBox(height: 32),
+                const SizedBox(height: 24),
+
+                // ─── OR CONTINUE WITH divider ───
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  child: Row(
+                    children: [
+                      Expanded(
+                          child:
+                              Divider(color: Colors.black.withOpacity(0.08))),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 14.0),
+                        child: Text(
+                          'OR CONTINUE WITH',
+                          style: TextStyle(
+                            color: textMain.withOpacity(0.35),
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                          child:
+                              Divider(color: Colors.black.withOpacity(0.08))),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+
+                // ─── Google Button ───
+                Center(
+                  child: SizedBox(
+                    width: 180,
+                    height: 46,
+                    child: OutlinedButton(
+                      onPressed:
+                          authProvider.isLoading ? null : _handleGoogleSignIn,
+                      style: OutlinedButton.styleFrom(
+                        side: BorderSide(color: Colors.black.withOpacity(0.1)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        backgroundColor: Colors.white,
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Image.asset(
+                            'assets/images/glogo.png',
+                            width: 20,
+                            height: 20,
+                            fit: BoxFit.contain,
+                          ),
+                          const SizedBox(width: 8),
+                          const Text(
+                            'Google',
+                            style: TextStyle(
+                              color: textMain,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 24),
 
                 // Footer Link
                 Row(

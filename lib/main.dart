@@ -1,6 +1,8 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'firebase_options.dart';
 import 'providers/auth_provider.dart';
 import 'providers/transaction_provider.dart';
@@ -18,6 +20,12 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
+  );
+  await GoogleSignIn.instance.initialize(
+    clientId: kIsWeb
+        ? '212715503122-j2di6qp94erapbiqieu0dohn0qrgasla.apps.googleusercontent.com'
+        : null,
+    serverClientId: '212715503122-j2di6qp94erapbiqieu0dohn0qrgasla.apps.googleusercontent.com',
   );
   runApp(const ExpenseTrackerApp());
 }
