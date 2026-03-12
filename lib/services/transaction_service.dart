@@ -40,27 +40,28 @@ class TransactionService {
 
   /// Get all transactions for a user, sorted by newest first
   Future<List<TransactionModel>> getTransactions(String userId) async {
-    final snapshot = await _transactions
-        .where('userId', isEqualTo: userId)
-        .orderBy('date', descending: true)
-        .get();
+    final snapshot =
+        await _transactions.where('userId', isEqualTo: userId).get();
 
-    return snapshot.docs
+    final list = snapshot.docs
         .map((doc) => TransactionModel.fromMap(doc.data(), doc.id))
         .toList();
+    // Sort in Dart to avoid requiring a Firestore composite index
+    list.sort((a, b) => b.date.compareTo(a.date));
+    return list;
   }
 
   /// Get recent transactions (last 5)
   Future<List<TransactionModel>> getRecentTransactions(String userId) async {
-    final snapshot = await _transactions
-        .where('userId', isEqualTo: userId)
-        .orderBy('date', descending: true)
-        .limit(5)
-        .get();
+    final snapshot =
+        await _transactions.where('userId', isEqualTo: userId).get();
 
-    return snapshot.docs
+    final list = snapshot.docs
         .map((doc) => TransactionModel.fromMap(doc.data(), doc.id))
         .toList();
+    // Sort in Dart and take latest 5
+    list.sort((a, b) => b.date.compareTo(a.date));
+    return list.take(5).toList();
   }
 
   /// Delete a transaction

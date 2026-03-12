@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
+import '../providers/transaction_provider.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -62,6 +63,11 @@ class _SplashScreenState extends State<SplashScreen>
     _hasNavigated = true;
 
     if (authProvider.isLoggedIn) {
+      // Fetch transactions before navigating so data is ready on all screens
+      final txProvider =
+          Provider.of<TransactionProvider>(context, listen: false);
+      await txProvider.fetchTransactions(authProvider.userId);
+      if (!mounted) return;
       Navigator.pushReplacementNamed(context, '/home_dashboard');
     } else {
       Navigator.pushReplacementNamed(context, '/login_screen');
