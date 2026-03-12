@@ -25,7 +25,8 @@ void main() async {
     clientId: kIsWeb
         ? '212715503122-j2di6qp94erapbiqieu0dohn0qrgasla.apps.googleusercontent.com'
         : null,
-    serverClientId: '212715503122-j2di6qp94erapbiqieu0dohn0qrgasla.apps.googleusercontent.com',
+    serverClientId:
+        '212715503122-j2di6qp94erapbiqieu0dohn0qrgasla.apps.googleusercontent.com',
   );
   runApp(const ExpenseTrackerApp());
 }
