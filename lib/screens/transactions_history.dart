@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../providers/transaction_provider.dart';
 import '../providers/category_provider.dart';
 import '../models/transaction_model.dart';
+import '../screens/edit_transaction.dart';
 import '../utils/constants.dart';
 import '../widgets/floating_nav_bar.dart';
 import '../utils/top_toast.dart';
@@ -59,9 +60,8 @@ class _TransactionsHistoryScreenState extends State<TransactionsHistoryScreen> {
 
     // Apply category filter if set
     if (_categoryFilter != null) {
-      filtered = filtered
-          .where((tx) => tx.category == _categoryFilter)
-          .toList();
+      filtered =
+          filtered.where((tx) => tx.category == _categoryFilter).toList();
     }
 
     if (_searchQuery.isNotEmpty) {
@@ -131,8 +131,7 @@ class _TransactionsHistoryScreenState extends State<TransactionsHistoryScreen> {
     final lastMonth = DateTime(now.year, now.month - 1);
     final lastMonthTotal = txProvider.transactions
         .where((tx) =>
-            tx.date.month == lastMonth.month &&
-            tx.date.year == lastMonth.year)
+            tx.date.month == lastMonth.month && tx.date.year == lastMonth.year)
         .fold<double>(0, (sum, tx) {
       if (tx.type == 'income') return sum + tx.amount;
       return sum - tx.amount;
@@ -320,27 +319,32 @@ class _TransactionsHistoryScreenState extends State<TransactionsHistoryScreen> {
                           padding: const EdgeInsets.symmetric(
                               horizontal: 14, vertical: 8),
                           decoration: BoxDecoration(
-                            color: getCategoryColor(_categoryFilter!, customCats)
-                                .withOpacity(0.12),
+                            color:
+                                getCategoryColor(_categoryFilter!, customCats)
+                                    .withOpacity(0.12),
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(
-                              color: getCategoryColor(_categoryFilter!, customCats)
-                                  .withOpacity(0.3),
+                              color:
+                                  getCategoryColor(_categoryFilter!, customCats)
+                                      .withOpacity(0.3),
                             ),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(
-                                getCategoryIconByName(_categoryFilter!, customCats),
+                                getCategoryIconByName(
+                                    _categoryFilter!, customCats),
                                 size: 16,
-                                color: getCategoryColor(_categoryFilter!, customCats),
+                                color: getCategoryColor(
+                                    _categoryFilter!, customCats),
                               ),
                               const SizedBox(width: 6),
                               Text(
                                 _categoryFilter!,
                                 style: TextStyle(
-                                  color: getCategoryColor(_categoryFilter!, customCats),
+                                  color: getCategoryColor(
+                                      _categoryFilter!, customCats),
                                   fontSize: 13,
                                   fontWeight: FontWeight.w600,
                                 ),
@@ -351,7 +355,8 @@ class _TransactionsHistoryScreenState extends State<TransactionsHistoryScreen> {
                                 child: Icon(
                                   Icons.close,
                                   size: 16,
-                                  color: getCategoryColor(_categoryFilter!, customCats),
+                                  color: getCategoryColor(
+                                      _categoryFilter!, customCats),
                                 ),
                               ),
                             ],
@@ -413,8 +418,10 @@ class _TransactionsHistoryScreenState extends State<TransactionsHistoryScreen> {
                           (context, index) {
                             final tx = entry.value[index];
                             final isIncome = tx.type == 'income';
-                            final catColor = getCategoryColor(tx.category, customCats);
-                            final catIcon = getCategoryIconByName(tx.category, customCats);
+                            final catColor =
+                                getCategoryColor(tx.category, customCats);
+                            final catIcon =
+                                getCategoryIconByName(tx.category, customCats);
                             final timeStr =
                                 DateFormat('hh:mm a').format(tx.date);
 
@@ -460,13 +467,11 @@ class _TransactionsHistoryScreenState extends State<TransactionsHistoryScreen> {
                                       decoration: BoxDecoration(
                                         color: (isIncome ? primary : catColor)
                                             .withOpacity(0.1),
-                                        borderRadius:
-                                            BorderRadius.circular(12),
+                                        borderRadius: BorderRadius.circular(12),
                                       ),
                                       child: Icon(
                                         catIcon,
-                                        color:
-                                            isIncome ? primary : catColor,
+                                        color: isIncome ? primary : catColor,
                                         size: 20,
                                       ),
                                     ),
@@ -491,8 +496,7 @@ class _TransactionsHistoryScreenState extends State<TransactionsHistoryScreen> {
                                           Text(
                                             '${tx.category} • $timeStr',
                                             style: TextStyle(
-                                              color:
-                                                  textMain.withOpacity(0.4),
+                                              color: textMain.withOpacity(0.4),
                                               fontSize: 12,
                                               fontWeight: FontWeight.w400,
                                             ),
@@ -501,15 +505,42 @@ class _TransactionsHistoryScreenState extends State<TransactionsHistoryScreen> {
                                       ),
                                     ),
                                     // Amount
-                                    Text(
-                                      '${isIncome ? '+' : '-'}\$${tx.amount.toStringAsFixed(2)}',
-                                      style: TextStyle(
-                                        color: isIncome
-                                            ? const Color(0xFF22C55E)
-                                            : textMain,
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w700,
-                                      ),
+                                    Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text(
+                                          '${isIncome ? '+' : '-'}\$${tx.amount.toStringAsFixed(2)}',
+                                          style: TextStyle(
+                                            color: isIncome
+                                                ? const Color(0xFF22C55E)
+                                                : textMain,
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 4),
+                                        IconButton(
+                                          tooltip: 'Edit transaction',
+                                          onPressed: () {
+                                            Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                builder: (_) =>
+                                                    EditTransactionScreen(
+                                                  transaction: tx,
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                          icon: const Icon(
+                                            Icons.edit_outlined,
+                                            size: 18,
+                                            color: textMain,
+                                          ),
+                                          visualDensity: VisualDensity.compact,
+                                          constraints: const BoxConstraints(),
+                                        ),
+                                      ],
                                     ),
                                   ],
                                 ),
@@ -545,9 +576,7 @@ class _TransactionsHistoryScreenState extends State<TransactionsHistoryScreen> {
           color: isActive ? primary : Colors.white,
           borderRadius: BorderRadius.circular(24),
           border: Border.all(
-            color: isActive
-                ? primary
-                : Colors.grey.withOpacity(0.2),
+            color: isActive ? primary : Colors.grey.withOpacity(0.2),
             width: 1.5,
           ),
         ),

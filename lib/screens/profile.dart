@@ -50,7 +50,8 @@ class ProfileScreen extends StatelessWidget {
                     style: TextStyle(fontWeight: FontWeight.w600)),
                 onTap: () {
                   Navigator.pop(ctx);
-                  _pickAndUploadImage(context, authProvider, ImageSource.gallery);
+                  _pickAndUploadImage(
+                      context, authProvider, ImageSource.gallery);
                 },
               ),
               ListTile(
@@ -68,7 +69,8 @@ class ProfileScreen extends StatelessWidget {
                     style: TextStyle(fontWeight: FontWeight.w600)),
                 onTap: () {
                   Navigator.pop(ctx);
-                  _pickAndUploadImage(context, authProvider, ImageSource.camera);
+                  _pickAndUploadImage(
+                      context, authProvider, ImageSource.camera);
                 },
               ),
             ],
@@ -123,7 +125,8 @@ class ProfileScreen extends StatelessWidget {
       if (success) {
         showTopToast(context, 'Profile picture updated!');
       } else {
-        showTopToast(context, authProvider.error ?? 'Failed to upload image', isError: true);
+        showTopToast(context, authProvider.error ?? 'Failed to upload image',
+            isError: true);
       }
     } catch (e) {
       if (!context.mounted) return;
@@ -396,34 +399,61 @@ class ProfileScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(16),
                       splashColor: Colors.red.withOpacity(0.15),
                       highlightColor: Colors.red.withOpacity(0.08),
-                      onTap: () async {
-                        final catProvider = Provider.of<CategoryProvider>(context, listen: false);
-                        await authProvider.logout();
-                        txProvider.clear();
-                        catProvider.clear();
-                        if (context.mounted) {
-                          Navigator.pushReplacementNamed(
-                              context, '/login_screen');
-                        }
-                      },
+                      onTap: authProvider.isLoading
+                          ? null
+                          : () async {
+                              final catProvider = Provider.of<CategoryProvider>(
+                                  context,
+                                  listen: false);
+                              await authProvider.logout();
+                              txProvider.clear();
+                              catProvider.clear();
+                              if (context.mounted) {
+                                Navigator.pushReplacementNamed(
+                                    context, '/login_screen');
+                              }
+                            },
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.logout,
-                                color: Colors.red.shade600, size: 20),
-                            const SizedBox(width: 10),
-                            Text(
-                              'Logout',
-                              style: TextStyle(
-                                color: Colors.red.shade600,
-                                fontSize: 15,
-                                fontWeight: FontWeight.w700,
+                        child: authProvider.isLoading
+                            ? Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2.5,
+                                      color: Colors.red.shade600,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Text(
+                                    'Logging out...',
+                                    style: TextStyle(
+                                      color: Colors.red.shade600,
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              )
+                            : Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.logout,
+                                      color: Colors.red.shade600, size: 20),
+                                  const SizedBox(width: 10),
+                                  Text(
+                                    'Logout',
+                                    style: TextStyle(
+                                      color: Colors.red.shade600,
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ),
-                          ],
-                        ),
                       ),
                     ),
                   ),

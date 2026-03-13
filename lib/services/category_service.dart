@@ -51,4 +51,22 @@ class CategoryService {
   Future<void> deleteCustomCategory(String userId, String categoryId) async {
     await _userCategories(userId).doc(categoryId).delete();
   }
+
+  /// Update a custom category
+  Future<void> updateCustomCategory({
+    required String userId,
+    required String categoryId,
+    required String name,
+    required String icon,
+    required int color,
+    required String type,
+  }) async {
+    await _userCategories(userId).doc(categoryId).update({
+      'name': name,
+      'icon': icon,
+      'color': color,
+      'type': type,
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+  }
 }

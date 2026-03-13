@@ -122,7 +122,8 @@ class AuthService {
   }
 
   /// Update user profile fields (name, phone) in Firestore
-  Future<void> updateUserProfile(String userId, {String? name, String? phone}) async {
+  Future<void> updateUserProfile(String userId,
+      {String? name, String? phone}) async {
     final Map<String, dynamic> updates = {};
     if (name != null) updates['name'] = name;
     if (phone != null) updates['phone'] = phone;
@@ -147,7 +148,13 @@ class AuthService {
 
   /// Sign out
   Future<void> signOut() async {
-    await GoogleSignIn.instance.signOut();
+    try {
+      // Add timeout to prevent hanging if Google Sign In is unresponsive
+      await GoogleSignIn.instance.signOut().timeout(const Duration(seconds: 3));
+    } catch (e) {
+      // Continue with Firebase sign out even if Google sign out fails
+      print('Google sign out failed: $e');
+    }
     await _auth.signOut();
   }
 }

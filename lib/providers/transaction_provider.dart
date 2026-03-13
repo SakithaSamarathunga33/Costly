@@ -188,6 +188,57 @@ class TransactionProvider extends ChangeNotifier {
     }
   }
 
+  /// Update a transaction
+  Future<bool> updateTransaction(TransactionModel transaction) async {
+    _error = null;
+    try {
+      await _transactionService.updateTransaction(transaction);
+      final index = _transactions.indexWhere((t) => t.id == transaction.id);
+      if (index != -1) {
+        _transactions[index] = transaction;
+      }
+      _transactions.sort((a, b) => b.date.compareTo(a.date));
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _error = e.toString().replaceFirst('Exception: ', '');
+      notifyListeners();
+      return false;
+    }
+  }
+
+  /// Rename a category in all local and remote transactions for a user
+  Future<bool> renameCategoryInTransactions({
+    required String userId,
+    required String oldCategory,
+    required String newCategory,
+    required String type,
+  }) async {
+    _error = null;
+    try {
+      await _transactionService.renameCategoryInTransactions(
+        userId: userId,
+        oldCategory: oldCategory,
+        newCategory: newCategory,
+        type: type,
+      );
+
+      _transactions = _transactions.map((t) {
+        if (t.type == type && t.category == oldCategory) {
+          return t.copyWith(category: newCategory);
+        }
+        return t;
+      }).toList();
+
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _error = 'Failed to update category in transactions';
+      notifyListeners();
+      return false;
+    }
+  }
+
   /// Clear all data (used on logout)
   void clear() {
     _transactions = [];

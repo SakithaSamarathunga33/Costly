@@ -206,10 +206,17 @@ class AuthProvider extends ChangeNotifier {
 
   /// Logout the current user
   Future<void> logout() async {
-    await _authService.signOut();
-    _user = null;
-    _error = null;
+    _isLoading = true;
     notifyListeners();
+    try {
+      await _authService.signOut();
+    } finally {
+      // Even if signOut fails (e.g. network), we clear local state
+      _isLoading = false;
+      _user = null;
+      _error = null;
+      notifyListeners();
+    }
   }
 
   /// Clear any error messages

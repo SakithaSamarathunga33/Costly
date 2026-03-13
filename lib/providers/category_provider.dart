@@ -38,8 +38,7 @@ class CategoryProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      _customCategories =
-          await _categoryService.getCustomCategories(userId);
+      _customCategories = await _categoryService.getCustomCategories(userId);
     } catch (e) {
       debugPrint('Error fetching custom categories: $e');
     }
@@ -85,6 +84,44 @@ class CategoryProvider extends ChangeNotifier {
       return true;
     } catch (e) {
       debugPrint('Error deleting custom category: $e');
+      return false;
+    }
+  }
+
+  /// Update a custom category
+  Future<bool> updateCustomCategory({
+    required String userId,
+    required String categoryId,
+    required String name,
+    required String icon,
+    required int color,
+    required String type,
+  }) async {
+    try {
+      await _categoryService.updateCustomCategory(
+        userId: userId,
+        categoryId: categoryId,
+        name: name,
+        icon: icon,
+        color: color,
+        type: type,
+      );
+
+      final index = _customCategories.indexWhere((c) => c['id'] == categoryId);
+      if (index != -1) {
+        _customCategories[index] = {
+          ..._customCategories[index],
+          'name': name,
+          'icon': icon,
+          'color': color,
+          'type': type,
+        };
+      }
+
+      notifyListeners();
+      return true;
+    } catch (e) {
+      debugPrint('Error updating custom category: $e');
       return false;
     }
   }

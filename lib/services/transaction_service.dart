@@ -69,6 +69,18 @@ class TransactionService {
     await _transactions.doc(transactionId).delete();
   }
 
+  /// Update an existing transaction
+  Future<void> updateTransaction(TransactionModel transaction) async {
+    await _transactions.doc(transaction.id).update({
+      'title': transaction.title,
+      'amount': transaction.amount,
+      'type': transaction.type,
+      'category': transaction.category,
+      'date': Timestamp.fromDate(transaction.date),
+      'notes': transaction.notes,
+    });
+  }
+
   /// Delete all transactions for a user in a given category
   Future<void> deleteTransactionsByCategory(
       String userId, String category) async {
@@ -81,6 +93,29 @@ class TransactionService {
       batch.delete(doc.reference);
     }
     await batch.commit();
+  }
+
+  /// Rename category value in all matching transactions for a user
+  Future<void> renameCategoryInTransactions({
+    required String userId,
+    required String oldCategory,
+    required String newCategory,
+    required String type,
+  }) async {
+    final snapshot = await _transactions
+        .where('userId', isEqualTo: userId)
+        .where('type', isEqualTo: type)
+        .where('category', isEqualTo: oldCategory)
+        .get();
+
+    for (int i = 0; i < snapshot.docs.length; i += 450) {
+      final batch = _firestore.batch();
+      final chunk = snapshot.docs.skip(i).take(450);
+      for (final doc in chunk) {
+        batch.update(doc.reference, {'category': newCategory});
+      }
+      await batch.commit();
+    }
   }
 
   /// Get total income for a user

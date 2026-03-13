@@ -159,6 +159,7 @@ class _HomeDashboardState extends State<HomeDashboard> {
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
                       child: Container(
+                        width: double.infinity,
                         decoration: BoxDecoration(
                           gradient: const LinearGradient(
                             colors: [
@@ -199,32 +200,6 @@ class _HomeDashboardState extends State<HomeDashboard> {
                                 fontWeight: FontWeight.bold,
                                 letterSpacing: -1,
                               ),
-                            ),
-                            const SizedBox(height: 24),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: _buildCardButton(
-                                    label: 'View Details',
-                                    filled: true,
-                                    onTap: () {
-                                      Navigator.pushNamed(
-                                          context, '/transactions_history');
-                                    },
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: _buildCardButton(
-                                    label: 'Add Funds',
-                                    filled: false,
-                                    onTap: () {
-                                      Navigator.pushNamed(
-                                          context, '/add_income');
-                                    },
-                                  ),
-                                ),
-                              ],
                             ),
                           ],
                         ),
@@ -657,38 +632,6 @@ class _HomeDashboardState extends State<HomeDashboard> {
           // ─── Floating Nav Bar ───
           const FloatingNavBar(currentIndex: 0),
         ],
-      ),
-    );
-  }
-
-  // ──── Balance card button helper ────
-  Widget _buildCardButton({
-    required String label,
-    required bool filled,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        decoration: BoxDecoration(
-          color: filled ? Colors.white : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: Colors.white.withOpacity(filled ? 1.0 : 0.5),
-            width: 1.5,
-          ),
-        ),
-        child: Center(
-          child: Text(
-            label,
-            style: TextStyle(
-              color: filled ? const Color(0xFF5D3891) : Colors.white,
-              fontWeight: FontWeight.w600,
-              fontSize: 13,
-            ),
-          ),
-        ),
       ),
     );
   }

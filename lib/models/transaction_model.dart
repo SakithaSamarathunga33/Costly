@@ -50,4 +50,26 @@ class TransactionModel {
       'notes': notes,
     };
   }
+
+  TransactionModel copyWith({
+    String? id,
+    String? userId,
+    String? title,
+    double? amount,
+    String? type,
+    String? category,
+    DateTime? date,
+    String? notes,
+  }) {
+    return TransactionModel(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      title: title ?? this.title,
+      amount: amount ?? this.amount,
+      type: type ?? this.type,
+      category: category ?? this.category,
+      date: date ?? this.date,
+      notes: notes ?? this.notes,
+    );
+  }
 }
