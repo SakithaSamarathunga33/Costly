@@ -15,7 +15,6 @@ class HomeDashboard extends StatefulWidget {
 }
 
 class _HomeDashboardState extends State<HomeDashboard> {
-
   @override
   void initState() {
     super.initState();
@@ -52,7 +51,6 @@ class _HomeDashboardState extends State<HomeDashboard> {
     final balanceStr = currencyFormat.format(txProvider.currentBalance);
     final incomeStr = currencyFormat.format(txProvider.totalIncome);
     final expenseStr = currencyFormat.format(txProvider.totalExpenses);
-
 
     return Scaffold(
       backgroundColor: bgLight,
@@ -381,8 +379,7 @@ class _HomeDashboardState extends State<HomeDashboard> {
                               Expanded(
                                 child: GestureDetector(
                                   onTap: () {
-                                    Navigator.pushNamed(
-                                        context, '/add_income');
+                                    Navigator.pushNamed(context, '/add_income');
                                   },
                                   child: Container(
                                     padding: const EdgeInsets.symmetric(
@@ -449,8 +446,7 @@ class _HomeDashboardState extends State<HomeDashboard> {
                         final categoryList = usedCategories.toList();
 
                         return Padding(
-                          padding:
-                              const EdgeInsets.symmetric(horizontal: 16.0),
+                          padding: const EdgeInsets.symmetric(horizontal: 16.0),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -472,12 +468,11 @@ class _HomeDashboardState extends State<HomeDashboard> {
                                   return Wrap(
                                     spacing: 0,
                                     runSpacing: 20,
-                                    children:
-                                        categoryList.map((cat) {
+                                    children: categoryList.map((cat) {
                                       final color =
                                           getCategoryColor(cat, customCats);
-                                      final icon =
-                                          getCategoryIconByName(cat, customCats);
+                                      final icon = getCategoryIconByName(
+                                          cat, customCats);
                                       final bgColor = color.withOpacity(0.12);
                                       final count = txProvider.transactions
                                           .where((tx) => tx.category == cat)
@@ -582,9 +577,10 @@ class _HomeDashboardState extends State<HomeDashboard> {
                           else
                             ...txProvider.recentTransactions.map((tx) {
                               final isIncome = tx.type == 'income';
-                              final catColor = getCategoryColor(tx.category, customCats);
-                              final catIcon =
-                                  getCategoryIconByName(tx.category, customCats);
+                              final catColor =
+                                  getCategoryColor(tx.category, customCats);
+                              final catIcon = getCategoryIconByName(
+                                  tx.category, customCats);
                               final now = DateTime.now();
                               final today =
                                   DateTime(now.year, now.month, now.day);
@@ -677,8 +673,8 @@ class _HomeDashboardState extends State<HomeDashboard> {
                     decoration: BoxDecoration(
                       color: color,
                       shape: BoxShape.circle,
-                      border: Border.all(
-                          color: const Color(0xFFF8F6FC), width: 2),
+                      border:
+                          Border.all(color: const Color(0xFFF8F6FC), width: 2),
                     ),
                     constraints: const BoxConstraints(
                       minWidth: 22,
@@ -782,5 +778,4 @@ class _HomeDashboardState extends State<HomeDashboard> {
       ),
     );
   }
-
 }
