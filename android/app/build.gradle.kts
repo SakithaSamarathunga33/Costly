@@ -1,3 +1,5 @@
+import java.io.File
+
 plugins {
     id("com.android.application")
     // START: FlutterFire Configuration
@@ -38,12 +40,17 @@ android {
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig = signingConfigs.getByName("debug")
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro",
+            )
         }
     }
 
     applicationVariants.all {
         outputs.all {
             val output = this as com.android.build.gradle.internal.api.BaseVariantOutputImpl
+            // Names the APK in Gradle’s package output (see apk/release below).
             output.outputFileName = "Costly.apk"
         }
     }
@@ -51,4 +58,20 @@ android {
 
 flutter {
     source = "../.."
+}
+
+// Flutter’s Gradle plugin always copies the release APK into
+// `build/app/outputs/flutter-apk/` and renames it to `app-release.apk` (see FlutterPlugin.kt).
+// Duplicate it as `Costly.apk` there so the Flutter output path matches your app name.
+afterEvaluate {
+    tasks.named("assembleRelease").configure {
+        doLast {
+            val flutterApkDir = layout.buildDirectory.dir("outputs/flutter-apk").get().asFile
+            val appRelease = File(flutterApkDir, "app-release.apk")
+            val costly = File(flutterApkDir, "Costly.apk")
+            if (appRelease.exists()) {
+                appRelease.copyTo(costly, overwrite = true)
+            }
+        }
+    }
 }

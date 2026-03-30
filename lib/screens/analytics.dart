@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:fl_chart/fl_chart.dart';
+import '../providers/auth_provider.dart';
 import '../providers/transaction_provider.dart';
 import '../providers/category_provider.dart';
 import '../utils/constants.dart';
 import '../widgets/floating_nav_bar.dart';
+import '../widgets/app_animations.dart';
 
 class AnalyticsScreen extends StatelessWidget {
   const AnalyticsScreen({super.key});
@@ -17,11 +19,14 @@ class AnalyticsScreen extends StatelessWidget {
     const Color textMain = Color(0xFF2D2D2D);
 
     final txProvider = Provider.of<TransactionProvider>(context);
+    final authProvider = Provider.of<AuthProvider>(context);
     final customCats = Provider.of<CategoryProvider>(context).customCategories;
+    final currencySymbol = authProvider.currencySymbol;
     final currencyFormat =
-        NumberFormat.currency(symbol: '\$', decimalDigits: 2);
+        NumberFormat.currency(symbol: '$currencySymbol ', decimalDigits: 2);
     final categoryTotals = txProvider.expensesByCategory;
-    final monthlyExp = txProvider.monthlyExpenses;
+    final rollingTotals = txProvider.rollingSixMonthExpenseTotals;
+    final rollingLabels = txProvider.rollingSixMonthLabels;
     final totalExpenses = txProvider.totalExpenses;
 
     // Category entries sorted by value
@@ -36,9 +41,9 @@ class AnalyticsScreen extends StatelessWidget {
     // Format total for donut center
     String _formatCompact(double value) {
       if (value >= 1000) {
-        return '\$${(value / 1000).toStringAsFixed(1)}k';
+        return '$currencySymbol ${(value / 1000).toStringAsFixed(1)}k';
       }
-      return '\$${value.toStringAsFixed(0)}';
+      return '$currencySymbol ${value.toStringAsFixed(0)}';
     }
 
     // Category colors for pie chart
@@ -66,13 +71,26 @@ class AnalyticsScreen extends StatelessWidget {
           onPressed: () => Navigator.pop(context),
         ),
         centerTitle: true,
-        title: const Text(
-          'Analytics',
-          style: TextStyle(
-            color: textMain,
-            fontSize: 18,
-            fontWeight: FontWeight.w700,
-          ),
+        title: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'Analytics',
+              style: TextStyle(
+                color: textMain,
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            Text(
+              DateFormat('MMMM yyyy').format(txProvider.selectedMonth),
+              style: TextStyle(
+                color: textMain.withOpacity(0.5),
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
         ),
         actions: [
           IconButton(
@@ -85,10 +103,11 @@ class AnalyticsScreen extends StatelessWidget {
       body: Stack(
         fit: StackFit.expand,
         children: [
-          SingleChildScrollView(
-            padding:
-                const EdgeInsets.only(left: 20, right: 20, top: 8, bottom: 120),
-            child: Column(
+          ScreenEntrance(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.only(
+                  left: 20, right: 20, top: 8, bottom: 120),
+              child: StaggeredColumn(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // ─── Total Spending Card ───
@@ -160,8 +179,8 @@ class AnalyticsScreen extends StatelessWidget {
                           value: (budgetPercent / 100).toDouble(),
                           minHeight: 8,
                           backgroundColor: Colors.white.withOpacity(0.15),
-                          valueColor: const AlwaysStoppedAnimation<Color>(
-                              Colors.white),
+                          valueColor:
+                              const AlwaysStoppedAnimation<Color>(Colors.white),
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -220,7 +239,7 @@ class AnalyticsScreen extends StatelessWidget {
                             child: Row(
                               children: [
                                 Text(
-                                  'Last 6 months',
+                                  '6 mo to selected',
                                   style: TextStyle(
                                     color: textMain.withOpacity(0.5),
                                     fontSize: 12,
@@ -241,7 +260,7 @@ class AnalyticsScreen extends StatelessWidget {
                         child: BarChart(
                           BarChartData(
                             alignment: BarChartAlignment.spaceAround,
-                            maxY: _getMaxY(monthlyExp),
+                            maxY: _getMaxY(rollingTotals),
                             barTouchData: BarTouchData(
                               enabled: true,
                               touchTooltipData: BarTouchTooltipData(
@@ -265,26 +284,20 @@ class AnalyticsScreen extends StatelessWidget {
                                 sideTitles: SideTitles(
                                   showTitles: true,
                                   getTitlesWidget: (value, meta) {
-                                    const months = [
-                                      'Jan', 'Feb', 'Mar', 'Apr',
-                                      'May', 'Jun', 'Jul', 'Aug',
-                                      'Sep', 'Oct', 'Nov', 'Dec',
-                                    ];
                                     final idx = value.toInt();
-                                    if (idx >= 0 && idx < 12) {
-                                      final now = DateTime.now();
-                                      final isCurrentMonth =
-                                          idx == now.month - 1;
+                                    if (idx >= 0 &&
+                                        idx < rollingLabels.length) {
+                                      final isSelectedMonth = idx == 5;
                                       return Padding(
                                         padding: const EdgeInsets.only(top: 8),
                                         child: Text(
-                                          months[idx],
+                                          rollingLabels[idx],
                                           style: TextStyle(
-                                            color: isCurrentMonth
+                                            color: isSelectedMonth
                                                 ? primary
                                                 : textMain.withOpacity(0.35),
                                             fontSize: 11,
-                                            fontWeight: isCurrentMonth
+                                            fontWeight: isSelectedMonth
                                                 ? FontWeight.w700
                                                 : FontWeight.w500,
                                           ),
@@ -304,16 +317,14 @@ class AnalyticsScreen extends StatelessWidget {
                             ),
                             gridData: const FlGridData(show: false),
                             borderData: FlBorderData(show: false),
-                            barGroups: List.generate(12, (index) {
-                              final month = index + 1;
-                              final now = DateTime.now();
-                              final isCurrentMonth = index == now.month - 1;
+                            barGroups: List.generate(6, (index) {
+                              final isSelectedMonth = index == 5;
                               return BarChartGroupData(
                                 x: index,
                                 barRods: [
                                   BarChartRodData(
-                                    toY: monthlyExp[month] ?? 0,
-                                    gradient: isCurrentMonth
+                                    toY: rollingTotals[index],
+                                    gradient: isSelectedMonth
                                         ? const LinearGradient(
                                             colors: [
                                               Color(0xFF5D3891),
@@ -323,7 +334,7 @@ class AnalyticsScreen extends StatelessWidget {
                                             end: Alignment.topCenter,
                                           )
                                         : null,
-                                    color: isCurrentMonth
+                                    color: isSelectedMonth
                                         ? null
                                         : primary.withOpacity(0.15),
                                     width: 14,
@@ -394,9 +405,11 @@ class AnalyticsScreen extends StatelessWidget {
                                                 .map((e) {
                                               final idx = e.key;
                                               final entry = e.value;
-                                              final color = idx < catColors.length
+                                              final color = idx <
+                                                      catColors.length
                                                   ? catColors[idx]
-                                                  : getCategoryColor(entry.key, customCats);
+                                                  : getCategoryColor(
+                                                      entry.key, customCats);
                                               return PieChartSectionData(
                                                 value: entry.value,
                                                 color: color,
@@ -451,17 +464,15 @@ class AnalyticsScreen extends StatelessWidget {
                                       final entry = e.value;
                                       final color = idx < catColors.length
                                           ? catColors[idx]
-                                          : getCategoryColor(entry.key, customCats);
+                                          : getCategoryColor(
+                                              entry.key, customCats);
                                       final percent = totalExpenses > 0
-                                          ? (entry.value /
-                                                  totalExpenses *
-                                                  100)
+                                          ? (entry.value / totalExpenses * 100)
                                               .toStringAsFixed(0)
                                           : '0';
                                       return Padding(
-                                        padding:
-                                            const EdgeInsets.symmetric(
-                                                vertical: 5),
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 5),
                                         child: Row(
                                           children: [
                                             Container(
@@ -477,14 +488,12 @@ class AnalyticsScreen extends StatelessWidget {
                                               child: Text(
                                                 entry.key,
                                                 style: TextStyle(
-                                                  color: textMain
-                                                      .withOpacity(0.6),
+                                                  color:
+                                                      textMain.withOpacity(0.6),
                                                   fontSize: 13,
-                                                  fontWeight:
-                                                      FontWeight.w500,
+                                                  fontWeight: FontWeight.w500,
                                                 ),
-                                                overflow:
-                                                    TextOverflow.ellipsis,
+                                                overflow: TextOverflow.ellipsis,
                                               ),
                                             ),
                                             Text(
@@ -509,106 +518,109 @@ class AnalyticsScreen extends StatelessWidget {
                 const SizedBox(height: 28),
 
                 // ─── Top Categories List ───
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Text(
-                      'Top Categories',
-                      style: TextStyle(
-                        color: textMain,
-                        fontSize: 17,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    Text(
-                      'View All',
-                      style: TextStyle(
-                        color: primary,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 14),
-
-                ...pieEntries.take(5).map((entry) {
-                  final catColor = getCategoryColor(entry.key, customCats);
-                  final catIcon = getCategoryIconByName(entry.key, customCats);
-                  // Count transactions in this category
-                  final txCount = txProvider.transactions
-                      .where((tx) =>
-                          tx.category == entry.key && tx.type == 'expense')
-                      .length;
-
-                  return Container(
-                    margin: const EdgeInsets.only(bottom: 10),
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 14),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.03),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: Row(
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Container(
-                          width: 44,
-                          height: 44,
-                          decoration: BoxDecoration(
-                            color: catColor.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child:
-                              Icon(catIcon, color: catColor, size: 22),
-                        ),
-                        const SizedBox(width: 14),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment:
-                                CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                entry.key,
-                                style: const TextStyle(
-                                  color: textMain,
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              const SizedBox(height: 3),
-                              Text(
-                                '$txCount Transaction${txCount != 1 ? 's' : ''}',
-                                style: TextStyle(
-                                  color: textMain.withOpacity(0.4),
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w400,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Text(
-                          currencyFormat.format(entry.value),
-                          style: const TextStyle(
+                        const Text(
+                          'Top Categories',
+                          style: TextStyle(
                             color: textMain,
-                            fontSize: 15,
+                            fontSize: 17,
                             fontWeight: FontWeight.w700,
                           ),
                         ),
+                        Text(
+                          'View All',
+                          style: TextStyle(
+                            color: primary,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                       ],
                     ),
-                  );
-                }),
+                    const SizedBox(height: 14),
+                    ...pieEntries.take(5).map((entry) {
+                      final catColor = getCategoryColor(entry.key, customCats);
+                      final catIcon =
+                          getCategoryIconByName(entry.key, customCats);
+                      final txCount = txProvider.transactions
+                          .where((tx) =>
+                              tx.category == entry.key && tx.type == 'expense')
+                          .length;
 
-                const SizedBox(height: 20),
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 10),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 14),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.03),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 44,
+                              height: 44,
+                              decoration: BoxDecoration(
+                                color: catColor.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Icon(catIcon, color: catColor, size: 22),
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    entry.key,
+                                    style: const TextStyle(
+                                      color: textMain,
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 3),
+                                  Text(
+                                    '$txCount Transaction${txCount != 1 ? 's' : ''}',
+                                    style: TextStyle(
+                                      color: textMain.withOpacity(0.4),
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w400,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Text(
+                              currencyFormat.format(entry.value),
+                              style: const TextStyle(
+                                color: textMain,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }),
+                    const SizedBox(height: 20),
+                  ],
+                ),
               ],
+            ),
             ),
           ),
           const FloatingNavBar(currentIndex: 2),
@@ -617,9 +629,9 @@ class AnalyticsScreen extends StatelessWidget {
     );
   }
 
-  double _getMaxY(Map<int, double> expenses) {
+  double _getMaxY(List<double> values) {
     double max = 100;
-    for (var v in expenses.values) {
+    for (final v in values) {
       if (v > max) max = v;
     }
     return max * 1.3;

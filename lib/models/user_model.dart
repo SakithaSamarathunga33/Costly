@@ -5,6 +5,7 @@ class UserModel {
   final String email;
   final String? profilePicUrl;
   final String? phone;
+  final String currency;
 
   UserModel({
     required this.id,
@@ -12,6 +13,7 @@ class UserModel {
     required this.email,
     this.profilePicUrl,
     this.phone,
+    this.currency = 'USD',
   });
 
   // Convert from Firestore document
@@ -22,6 +24,7 @@ class UserModel {
       email: map['email'] ?? '',
       profilePicUrl: map['profilePicUrl'],
       phone: map['phone'],
+      currency: map['currency'] ?? 'USD',
     );
   }
 
@@ -32,6 +35,7 @@ class UserModel {
       'email': email,
       if (profilePicUrl != null) 'profilePicUrl': profilePicUrl,
       if (phone != null) 'phone': phone,
+      'currency': currency,
     };
   }
 
@@ -42,6 +46,7 @@ class UserModel {
     String? email,
     String? profilePicUrl,
     String? phone,
+    String? currency,
   }) {
     return UserModel(
       id: id ?? this.id,
@@ -49,6 +54,7 @@ class UserModel {
       email: email ?? this.email,
       profilePicUrl: profilePicUrl ?? this.profilePicUrl,
       phone: phone ?? this.phone,
+      currency: currency ?? this.currency,
     );
   }
 }

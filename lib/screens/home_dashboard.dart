@@ -6,6 +6,7 @@ import '../providers/transaction_provider.dart';
 import '../providers/category_provider.dart';
 import '../utils/constants.dart';
 import '../widgets/floating_nav_bar.dart';
+import '../widgets/app_animations.dart';
 
 class HomeDashboard extends StatefulWidget {
   const HomeDashboard({super.key});
@@ -41,13 +42,14 @@ class _HomeDashboardState extends State<HomeDashboard> {
 
     // Listen to providers for live data
     final authProvider = Provider.of<AuthProvider>(context);
+    final currencySymbol = authProvider.currencySymbol;
     final txProvider = Provider.of<TransactionProvider>(context);
     final catProvider = Provider.of<CategoryProvider>(context);
     final customCats = catProvider.customCategories;
 
     // Format currency values
     final currencyFormat =
-        NumberFormat.currency(symbol: '\$', decimalDigits: 2);
+        NumberFormat.currency(symbol: '$currencySymbol ', decimalDigits: 2);
     final balanceStr = currencyFormat.format(txProvider.currentBalance);
     final incomeStr = currencyFormat.format(txProvider.totalIncome);
     final expenseStr = currencyFormat.format(txProvider.totalExpenses);
@@ -58,10 +60,11 @@ class _HomeDashboardState extends State<HomeDashboard> {
         children: [
           // ─── Main scrollable content ───
           SafeArea(
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.only(bottom: 120.0),
-                child: Column(
+            child: ScreenEntrance(
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 120.0),
+                  child: StaggeredColumn(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Header
@@ -153,6 +156,67 @@ class _HomeDashboardState extends State<HomeDashboard> {
                       ),
                     ),
 
+                    // Month selector (syncs History + Analytics)
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          IconButton(
+                            onPressed: () {
+                              txProvider.goToPreviousMonth();
+                            },
+                            icon: const Icon(Icons.chevron_left_rounded,
+                                color: primary, size: 28),
+                            style: IconButton.styleFrom(
+                              backgroundColor: primary.withOpacity(0.08),
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            child: Column(
+                              children: [
+                                Text(
+                                  DateFormat('MMMM yyyy')
+                                      .format(txProvider.selectedMonth),
+                                  style: const TextStyle(
+                                    color: textMain,
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.w800,
+                                    letterSpacing: -0.2,
+                                  ),
+                                ),
+                                if (!txProvider.isViewingCurrentMonth)
+                                  Text(
+                                    'Viewing past activity',
+                                    style: TextStyle(
+                                      color: textMain.withOpacity(0.45),
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                          IconButton(
+                            onPressed: txProvider.canGoToNextMonth
+                                ? () => txProvider.goToNextMonth()
+                                : null,
+                            icon: Icon(
+                              Icons.chevron_right_rounded,
+                              color: txProvider.canGoToNextMonth
+                                  ? primary
+                                  : Colors.grey.shade400,
+                              size: 28,
+                            ),
+                            style: IconButton.styleFrom(
+                              backgroundColor: primary.withOpacity(0.08),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
                     // Balance Card
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -182,7 +246,9 @@ class _HomeDashboardState extends State<HomeDashboard> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Current Balance',
+                              txProvider.isViewingCurrentMonth
+                                  ? 'Monthly net'
+                                  : 'Net for ${DateFormat('MMM yyyy').format(txProvider.selectedMonth)}',
                               style: TextStyle(
                                 color: Colors.white.withOpacity(0.75),
                                 fontSize: 14,
@@ -624,6 +690,7 @@ class _HomeDashboardState extends State<HomeDashboard> {
               ),
             ),
           ),
+        ),
 
           // ─── Floating Nav Bar ───
           const FloatingNavBar(currentIndex: 0),

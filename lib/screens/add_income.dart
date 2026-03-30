@@ -6,6 +6,7 @@ import '../providers/transaction_provider.dart';
 import '../providers/category_provider.dart';
 import '../utils/constants.dart';
 import '../utils/top_toast.dart';
+import '../widgets/app_animations.dart';
 
 class AddIncomeScreen extends StatefulWidget {
   const AddIncomeScreen({super.key});
@@ -111,6 +112,9 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
     const Color textMain = Color(0xFF2D2D2D);
     const Color fieldBg = Colors.white;
 
+    final authProvider = Provider.of<AuthProvider>(context);
+    final currencySymbol = authProvider.currencySymbol;
+
     return Scaffold(
       backgroundColor: bg,
       appBar: AppBar(
@@ -134,11 +138,12 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
       body: Column(
         children: [
           Expanded(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+            child: ScreenEntrance(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: StaggeredColumn(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                   const SizedBox(height: 12),
 
                   // ─── Title Field ───
@@ -187,10 +192,16 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
                       prefixIcon: Container(
                         width: 20,
                         alignment: Alignment.center,
-                        child: Icon(Icons.account_balance_wallet,
-                            color: primary.withOpacity(0.5), size: 20),
+                        child: Text(
+                          '$currencySymbol ',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: primary.withOpacity(0.5),
+                          ),
+                        ),
                       ),
-                      suffixText: 'USD',
+                      suffixText: authProvider.userCurrency,
                       suffixStyle: TextStyle(
                         color: textMain.withOpacity(0.5),
                         fontSize: 14,
@@ -341,80 +352,91 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
                             final color = Color(cat['color'] as int);
                             final isCustom = cat.containsKey('id');
 
-                            return GestureDetector(
-                              onTap: () {
-                                setState(() => _selectedCategory = name);
-                              },
-                              child: AnimatedContainer(
-                                duration: const Duration(milliseconds: 200),
-                                padding: EdgeInsets.only(
-                                  left: 14,
-                                  right: isCustom ? 6 : 14,
-                                  top: 10,
-                                  bottom: 10,
+                            return AnimatedContainer(
+                              duration: const Duration(milliseconds: 200),
+                              padding: const EdgeInsets.symmetric(vertical: 10),
+                              decoration: BoxDecoration(
+                                color: isSelected ? primary : Colors.white,
+                                borderRadius: BorderRadius.circular(30),
+                                border: Border.all(
+                                  color: isSelected
+                                      ? primary
+                                      : Colors.grey.withOpacity(0.2),
+                                  width: 1.5,
                                 ),
-                                decoration: BoxDecoration(
-                                  color:
-                                      isSelected ? primary : Colors.white,
-                                  borderRadius: BorderRadius.circular(30),
-                                  border: Border.all(
-                                    color: isSelected
-                                        ? primary
-                                        : Colors.grey.withOpacity(0.2),
-                                    width: 1.5,
-                                  ),
-                                  boxShadow: isSelected
-                                      ? [
-                                          BoxShadow(
-                                            color:
-                                                primary.withOpacity(0.25),
-                                            blurRadius: 8,
-                                            offset: const Offset(0, 2),
+                                boxShadow: isSelected
+                                    ? [
+                                        BoxShadow(
+                                          color: primary.withOpacity(0.25),
+                                          blurRadius: 8,
+                                          offset: const Offset(0, 2),
+                                        ),
+                                      ]
+                                    : [],
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  GestureDetector(
+                                    onTap: () {
+                                      setState(() => _selectedCategory = name);
+                                    },
+                                    behavior: HitTestBehavior.opaque,
+                                    child: Padding(
+                                      padding: EdgeInsets.only(
+                                        left: 14,
+                                        right: isCustom ? 2 : 14,
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(
+                                            icon,
+                                            size: 16,
+                                            color: isSelected
+                                                ? Colors.white
+                                                : color,
                                           ),
-                                        ]
-                                      : [],
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(
-                                      icon,
-                                      size: 16,
-                                      color: isSelected
-                                          ? Colors.white
-                                          : color,
-                                    ),
-                                    const SizedBox(width: 6),
-                                    Text(
-                                      name,
-                                      style: TextStyle(
-                                        color: isSelected
-                                            ? Colors.white
-                                            : textMain,
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w600,
+                                          const SizedBox(width: 6),
+                                          Text(
+                                            name,
+                                            style: TextStyle(
+                                              color: isSelected
+                                                  ? Colors.white
+                                                  : textMain,
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
-                                    if (isCustom) ...[
-                                      const SizedBox(width: 4),
-                                      GestureDetector(
+                                  ),
+                                  if (isCustom)
+                                    Material(
+                                      color: Colors.transparent,
+                                      child: InkWell(
                                         onTap: () =>
                                             _showDeleteCategoryDialog(
                                           context,
                                           cat,
                                           primary,
                                         ),
-                                        child: Icon(
-                                          Icons.close,
-                                          size: 14,
-                                          color: isSelected
-                                              ? Colors.white.withOpacity(0.7)
-                                              : Colors.red.withOpacity(0.6),
+                                        customBorder: const CircleBorder(),
+                                        child: Padding(
+                                          padding: const EdgeInsets.fromLTRB(
+                                              4, 4, 10, 4),
+                                          child: Icon(
+                                            Icons.close_rounded,
+                                            size: 18,
+                                            color: isSelected
+                                                ? Colors.white
+                                                : Colors.red.shade400,
+                                          ),
                                         ),
                                       ),
-                                    ],
-                                  ],
-                                ),
+                                    ),
+                                ],
                               ),
                             );
                           }),
@@ -481,6 +503,7 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
                   const SizedBox(height: 30),
                 ],
               ),
+            ),
             ),
           ),
 

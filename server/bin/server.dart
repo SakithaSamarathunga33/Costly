@@ -45,7 +45,7 @@ Response errorResponse(String message, {int statusCode = 400}) {
 Map<String, dynamic> cleanDoc(Map<String, dynamic> doc) {
   final map = Map<String, dynamic>.from(doc);
   if (map['_id'] is ObjectId) {
-    map['_id'] = (map['_id'] as ObjectId).toHexString();
+    map['_id'] = (map['_id'] as ObjectId).oid;
   }
   return map;
 }

@@ -4,6 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import '../models/user_model.dart';
 import '../services/auth_service.dart';
 import '../services/cloudinary_service.dart';
+import '../utils/constants.dart';
 
 /// AuthProvider manages authentication state across the app
 class AuthProvider extends ChangeNotifier {
@@ -24,6 +25,9 @@ class AuthProvider extends ChangeNotifier {
   String get userEmail => _user?.email ?? '';
   String? get userProfilePicUrl => _user?.profilePicUrl;
   String get userPhone => _user?.phone ?? '';
+  String get userCurrency => _user?.currency ?? 'USD';
+  
+  String get currencySymbol => getCurrencySymbol(userCurrency);
 
   /// Initialize: check if user is already signed in via Firebase Auth
   Future<void> initialize() async {
@@ -192,6 +196,33 @@ class AuthProvider extends ChangeNotifier {
         name: name ?? _user!.name,
         phone: phone ?? _user!.phone,
       );
+
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _error = e.toString().replaceFirst('Exception: ', '');
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  /// Update user currency
+  Future<bool> updateCurrency(String currency) async {
+    if (_user == null) return false;
+
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      await _authService.updateUserProfile(
+        _user!.id,
+        currency: currency,
+      );
+
+      _user = _user!.copyWith(currency: currency);
 
       _isLoading = false;
       notifyListeners();

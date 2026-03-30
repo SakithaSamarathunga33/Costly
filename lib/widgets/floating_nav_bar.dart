@@ -15,8 +15,7 @@ import 'package:flutter/material.dart';
 ///   ],
 /// )
 /// ```
-class FloatingNavBar extends StatelessWidget {
-  /// Which tab is currently active: 0=Home, 1=History, 2=Budget, 3=Profile
+class FloatingNavBar extends StatefulWidget {
   final int currentIndex;
 
   const FloatingNavBar({
@@ -24,135 +23,194 @@ class FloatingNavBar extends StatelessWidget {
     required this.currentIndex,
   });
 
+  @override
+  State<FloatingNavBar> createState() => _FloatingNavBarState();
+}
+
+class _FloatingNavBarState extends State<FloatingNavBar>
+    with TickerProviderStateMixin {
+  late AnimationController _fabController;
+  late Animation<double> _fabScaleAnimation;
+  late AnimationController _entranceController;
+  late Animation<Offset> _barSlideAnimation;
+  late Animation<double> _barFadeAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _entranceController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 520),
+    );
+    _barSlideAnimation = Tween<Offset>(
+      begin: const Offset(0, 0.55),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _entranceController,
+      curve: Curves.easeOutCubic,
+    ));
+    _barFadeAnimation = CurvedAnimation(
+      parent: _entranceController,
+      curve: Curves.easeOut,
+    );
+    _entranceController.forward();
+
+    _fabController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 150),
+    );
+    _fabScaleAnimation = Tween<double>(begin: 1.0, end: 0.9).animate(
+      CurvedAnimation(parent: _fabController, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _entranceController.dispose();
+    _fabController.dispose();
+    super.dispose();
+  }
+
   static const Color _primary = Color(0xFF5D3891);
 
   @override
   Widget build(BuildContext context) {
+    final bar = SizedBox(
+      height: 80,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          // ─ Dark blurred nav bar with notch ─
+          Positioned.fill(
+            child: ClipPath(
+              clipper: _NotchedNavClipper(
+                notchRadius: 34,
+                notchMargin: 8,
+              ),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF5D3891),
+                    borderRadius: BorderRadius.circular(28),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF5D3891).withOpacity(0.35),
+                        blurRadius: 25,
+                        offset: const Offset(0, 10),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+          // ─ Nav items row ─
+          Positioned(
+            left: 0,
+            right: 0,
+            top: 12,
+            bottom: 0,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _buildNavItem(
+                  context: context,
+                  icon: Icons.home,
+                  label: 'Home',
+                  isActive: widget.currentIndex == 0,
+                  route: '/home_dashboard',
+                  index: 0,
+                ),
+                _buildNavItem(
+                  context: context,
+                  icon: Icons.receipt_long,
+                  label: 'History',
+                  isActive: widget.currentIndex == 1,
+                  route: '/transactions_history',
+                  index: 1,
+                ),
+                // Spacer for FAB notch
+                const SizedBox(width: 64),
+                _buildNavItem(
+                  context: context,
+                  icon: Icons.analytics_outlined,
+                  label: 'Analytics',
+                  isActive: widget.currentIndex == 2,
+                  route: '/analytics',
+                  index: 2,
+                ),
+                _buildNavItem(
+                  context: context,
+                  icon: Icons.person,
+                  label: 'Profile',
+                  isActive: widget.currentIndex == 3,
+                  route: '/profile',
+                  index: 3,
+                ),
+              ],
+            ),
+          ),
+
+          // ─ FAB (+) button sitting in the notch gap ─
+          Positioned(
+            top: -24,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: ScaleTransition(
+                scale: _fabScaleAnimation,
+                child: GestureDetector(
+                  onTapDown: (_) => _fabController.forward(),
+                  onTapUp: (_) {
+                    _fabController.reverse();
+                    Navigator.pushNamed(context, '/add_expense');
+                  },
+                  onTapCancel: () => _fabController.reverse(),
+                  child: Container(
+                    height: 56,
+                    width: 56,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF5D3891), Color(0xFF7B52AB)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: _primary.withOpacity(0.45),
+                          blurRadius: 16,
+                          spreadRadius: 2,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child:
+                        const Icon(Icons.add, color: Colors.white, size: 28),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
     return Positioned(
       left: 16,
       right: 16,
       bottom: 16,
-      child: SizedBox(
-        height: 80,
-        child: Stack(
-          clipBehavior: Clip.none,
-          children: [
-            // ─ Dark blurred nav bar with notch ─
-            Positioned.fill(
-              child: ClipPath(
-                clipper: _NotchedNavClipper(
-                  notchRadius: 34,
-                  notchMargin: 8,
-                ),
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF5D3891),
-                      borderRadius: BorderRadius.circular(28),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFF5D3891).withOpacity(0.35),
-                          blurRadius: 25,
-                          offset: const Offset(0, 10),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
+      child: TickerMode.valuesOf(context).enabled
+          ? SlideTransition(
+              position: _barSlideAnimation,
+              child: FadeTransition(
+                opacity: _barFadeAnimation,
+                child: bar,
               ),
-            ),
-
-            // ─ Nav items row ─
-            Positioned(
-              left: 0,
-              right: 0,
-              top: 12,
-              bottom: 0,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _buildNavItem(
-                    context: context,
-                    icon: Icons.home,
-                    label: 'Home',
-                    isActive: currentIndex == 0,
-                    route: '/home_dashboard',
-                    index: 0,
-                  ),
-                  _buildNavItem(
-                    context: context,
-                    icon: Icons.receipt_long,
-                    label: 'History',
-                    isActive: currentIndex == 1,
-                    route: '/transactions_history',
-                    index: 1,
-                  ),
-                  // Spacer for FAB notch
-                  const SizedBox(width: 64),
-                  _buildNavItem(
-                    context: context,
-                    icon: Icons.analytics_outlined,
-                    label: 'Analytics',
-                    isActive: currentIndex == 2,
-                    route: '/analytics',
-                    index: 2,
-                  ),
-                  _buildNavItem(
-                    context: context,
-                    icon: Icons.person,
-                    label: 'Profile',
-                    isActive: currentIndex == 3,
-                    route: '/profile',
-                    index: 3,
-                  ),
-                ],
-              ),
-            ),
-
-            // ─ FAB (+) button sitting in the notch gap ─
-            Positioned(
-              top: -24,
-              left: 0,
-              right: 0,
-              child: Center(
-                child: Container(
-                  height: 56,
-                  width: 56,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF5D3891), Color(0xFF7B52AB)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: _primary.withOpacity(0.45),
-                        blurRadius: 16,
-                        spreadRadius: 2,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Material(
-                    color: Colors.transparent,
-                    child: InkWell(
-                      onTap: () {
-                        Navigator.pushNamed(context, '/add_expense');
-                      },
-                      customBorder: const CircleBorder(),
-                      child: const Center(
-                        child: Icon(Icons.add, color: Colors.white, size: 28),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
+            )
+          : bar,
     );
   }
 
@@ -176,18 +234,14 @@ class FloatingNavBar extends StatelessWidget {
         children: [
           Icon(
             icon,
-            color: isActive
-                ? Colors.white
-                : Colors.white.withOpacity(0.6),
+            color: isActive ? Colors.white : Colors.white.withOpacity(0.6),
             size: 22,
           ),
           const SizedBox(height: 3),
           Text(
             label,
             style: TextStyle(
-              color: isActive
-                  ? Colors.white
-                  : Colors.white.withOpacity(0.6),
+              color: isActive ? Colors.white : Colors.white.withOpacity(0.6),
               fontSize: 10,
               fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
             ),

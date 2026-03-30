@@ -6,7 +6,9 @@ import '../providers/transaction_provider.dart';
 import '../providers/category_provider.dart';
 import '../services/cloudinary_service.dart';
 import '../widgets/floating_nav_bar.dart';
+import '../widgets/app_animations.dart';
 import '../utils/top_toast.dart';
+import '../utils/constants.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -136,6 +138,115 @@ class ProfileScreen extends StatelessWidget {
     }
   }
 
+  void _showCurrencyPicker(BuildContext context, AuthProvider authProvider) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => DraggableScrollableSheet(
+        initialChildSize: 0.6,
+        minChildSize: 0.4,
+        maxChildSize: 0.9,
+        expand: false,
+        builder: (ctx, scrollController) => StatefulBuilder(
+          builder: (ctx, setState) {
+            return SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 20),
+                child: Column(
+                  children: [
+                    Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade300,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Select Currency',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFF2D2D2D),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Expanded(
+                      child: ListView.builder(
+                        controller: scrollController,
+                        itemCount: kCurrencyOptions.length,
+                        itemBuilder: (ctx, index) {
+                          final currency = kCurrencyOptions[index];
+                          final isSelected = currency['code'] == authProvider.userCurrency;
+                          return ListTile(
+                            leading: Container(
+                              width: 44,
+                              height: 44,
+                              decoration: BoxDecoration(
+                                color: isSelected
+                                    ? const Color(0xFF5D3891)
+                                    : const Color(0xFF5D3891).withOpacity(0.08),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  currency['symbol'] ?? '\$',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: isSelected
+                                        ? Colors.white
+                                        : const Color(0xFF5D3891),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            title: Text(
+                              currency['name'] ?? '',
+                              style: const TextStyle(fontWeight: FontWeight.w600),
+                            ),
+                            subtitle: Text(currency['code'] ?? ''),
+                            trailing: isSelected
+                                ? const Icon(Icons.check_circle,
+                                    color: Color(0xFF5D3891))
+                                : null,
+                            onTap: () async {
+                              if (!isSelected) {
+                                final success = await authProvider
+                                    .updateCurrency(currency['code'] ?? 'USD');
+                                if (ctx.mounted) {
+                                  Navigator.pop(ctx);
+                                  if (success) {
+                                    showTopToast(context, 'Currency updated!');
+                                  } else {
+                                    showTopToast(context,
+                                        'Failed to update currency',
+                                        isError: true);
+                                  }
+                                }
+                              } else {
+                                Navigator.pop(ctx);
+                              }
+                            },
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     const Color primary = Color(0xFF5D3891);
@@ -164,21 +275,17 @@ class ProfileScreen extends StatelessWidget {
             fontWeight: FontWeight.w700,
           ),
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.more_horiz, color: textMain, size: 22),
-            onPressed: () {},
-          ),
-        ],
       ),
       body: Stack(
         fit: StackFit.expand,
         children: [
-          SingleChildScrollView(
-            padding:
-                const EdgeInsets.only(left: 24, right: 24, top: 8, bottom: 120),
-            child: Column(
-              children: [
+          ScreenEntrance(
+            child: SingleChildScrollView(
+              padding:
+                  const EdgeInsets.only(left: 24, right: 24, top: 8, bottom: 120),
+              child: StaggeredColumn(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
                 // ─── Avatar + Name Section ───
                 const SizedBox(height: 10),
                 GestureDetector(
@@ -300,54 +407,29 @@ class ProfileScreen extends StatelessWidget {
                 const SizedBox(height: 22),
 
                 // ─── Action Buttons ───
-                Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () {
-                          Navigator.pushNamed(context, '/edit_profile');
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: primary,
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(28),
-                          ),
-                        ),
-                        child: const Text(
-                          'Edit Profile',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.pushNamed(context, '/edit_profile');
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: primary,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(28),
                       ),
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () {},
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: primary,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          side: BorderSide(
-                              color: primary.withOpacity(0.3), width: 1.5),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(28),
-                          ),
-                        ),
-                        child: const Text(
-                          'Share',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
+                    child: const Text(
+                      'Edit Profile',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
-                  ],
+                  ),
                 ),
                 const SizedBox(height: 30),
 
@@ -366,25 +448,14 @@ class ProfileScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 14),
 
-                // Settings item
+                // Currency item
                 _buildPreferenceItem(
-                  icon: Icons.settings_outlined,
+                  icon: Icons.attach_money,
                   iconBg: primary.withOpacity(0.08),
                   iconColor: primary,
-                  title: 'Settings',
-                  subtitle: 'Privacy, Notifications, Theme',
-                  onTap: () {},
-                ),
-                const SizedBox(height: 10),
-
-                // Export Data item
-                _buildPreferenceItem(
-                  icon: Icons.download_outlined,
-                  iconBg: primary.withOpacity(0.08),
-                  iconColor: primary,
-                  title: 'Export Data',
-                  subtitle: 'Download your activity history',
-                  onTap: () {},
+                  title: 'Currency',
+                  subtitle: '${getCurrencySymbol(authProvider.userCurrency)} (${authProvider.userCurrency})',
+                  onTap: () => _showCurrencyPicker(context, authProvider),
                 ),
                 const SizedBox(height: 24),
 
@@ -461,6 +532,7 @@ class ProfileScreen extends StatelessWidget {
                 const SizedBox(height: 20),
               ],
             ),
+          ),
           ),
           const FloatingNavBar(currentIndex: 3),
         ],

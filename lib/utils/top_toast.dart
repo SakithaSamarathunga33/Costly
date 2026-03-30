@@ -37,7 +37,7 @@ class _TopToastWidget extends StatefulWidget {
 }
 
 class _TopToastWidgetState extends State<_TopToastWidget>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   late final AnimationController _controller;
   late final Animation<double> _fadeAnim;
   late final Animation<Offset> _slideAnim;

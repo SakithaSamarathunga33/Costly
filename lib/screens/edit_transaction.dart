@@ -8,6 +8,7 @@ import '../providers/category_provider.dart';
 import '../providers/transaction_provider.dart';
 import '../utils/constants.dart';
 import '../utils/top_toast.dart';
+import '../widgets/app_animations.dart';
 
 class EditTransactionScreen extends StatefulWidget {
   final TransactionModel transaction;
@@ -171,11 +172,12 @@ class _EditTransactionScreenState extends State<EditTransactionScreen> {
         ),
         centerTitle: true,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(20, 10, 20, 24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+      body: ScreenEntrance(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(20, 10, 20, 24),
+          child: StaggeredColumn(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
             _sectionLabel('Type'),
             const SizedBox(height: 10),
             SegmentedButton<String>(
@@ -246,72 +248,87 @@ class _EditTransactionScreenState extends State<EditTransactionScreen> {
                   final isSelected = _selectedCategory == name;
                   final isCustom = cat.containsKey('id');
 
-                  return GestureDetector(
-                    onTap: () => setState(() => _selectedCategory = name),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
-                      padding: EdgeInsets.only(
-                        left: 14,
-                        right: isCustom ? 8 : 14,
-                        top: 10,
-                        bottom: 10,
+                  return AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    decoration: BoxDecoration(
+                      color: isSelected ? primary : Colors.white,
+                      borderRadius: BorderRadius.circular(30),
+                      border: Border.all(
+                        color: isSelected
+                            ? primary
+                            : Colors.grey.withOpacity(0.2),
+                        width: 1.4,
                       ),
-                      decoration: BoxDecoration(
-                        color: isSelected ? primary : Colors.white,
-                        borderRadius: BorderRadius.circular(30),
-                        border: Border.all(
-                          color: isSelected
-                              ? primary
-                              : Colors.grey.withOpacity(0.2),
-                          width: 1.4,
-                        ),
-                        boxShadow: isSelected
-                            ? [
-                                BoxShadow(
-                                  color: primary.withOpacity(0.22),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 2),
+                      boxShadow: isSelected
+                          ? [
+                              BoxShadow(
+                                color: primary.withOpacity(0.22),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ]
+                          : [],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        GestureDetector(
+                          onTap: () =>
+                              setState(() => _selectedCategory = name),
+                          behavior: HitTestBehavior.opaque,
+                          child: Padding(
+                            padding: EdgeInsets.only(
+                              left: 14,
+                              right: isCustom ? 2 : 14,
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  icon,
+                                  size: 16,
+                                  color: isSelected ? Colors.white : color,
                                 ),
-                              ]
-                            : [],
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            icon,
-                            size: 16,
-                            color: isSelected ? Colors.white : color,
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            name,
-                            style: TextStyle(
-                              color: isSelected ? Colors.white : textMain,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
+                                const SizedBox(width: 6),
+                                Text(
+                                  name,
+                                  style: TextStyle(
+                                    color:
+                                        isSelected ? Colors.white : textMain,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                          if (isCustom) ...[
-                            const SizedBox(width: 4),
-                            GestureDetector(
+                        ),
+                        if (isCustom)
+                          Material(
+                            color: Colors.transparent,
+                            child: InkWell(
                               onTap: () => _showEditCategoryDialog(
                                 context: context,
                                 primary: primary,
                                 textMain: textMain,
                                 category: cat,
                               ),
-                              child: Icon(
-                                Icons.edit,
-                                size: 14,
-                                color: isSelected
-                                    ? Colors.white.withOpacity(0.85)
-                                    : textMain.withOpacity(0.55),
+                              customBorder: const CircleBorder(),
+                              child: Padding(
+                                padding:
+                                    const EdgeInsets.fromLTRB(4, 4, 10, 4),
+                                child: Icon(
+                                  Icons.edit_outlined,
+                                  size: 18,
+                                  color: isSelected
+                                      ? Colors.white
+                                      : primary,
+                                ),
                               ),
                             ),
-                          ],
-                        ],
-                      ),
+                          ),
+                      ],
                     ),
                   );
                 }),
@@ -423,6 +440,7 @@ class _EditTransactionScreenState extends State<EditTransactionScreen> {
               ),
             ),
           ],
+        ),
         ),
       ),
     );

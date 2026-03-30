@@ -1,12 +1,47 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/services.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../models/user_model.dart';
+
+/// Web client ID from Firebase (Project settings → Your apps → Web app).
+/// Required on Android so Google returns an ID token Firebase Auth accepts.
+const String _kFirebaseGoogleWebClientId =
+    '212715503122-j2di6qp94erapbiqieu0dohn0qrgasla.apps.googleusercontent.com';
+
+/// Maps [PlatformException] from `google_sign_in` to a clear, actionable message.
+String _googleSignInPlatformMessage(PlatformException e) {
+  final code = e.code;
+  final details = e.message ?? '';
+  // ApiException:10 = DEVELOPER_ERROR (wrong/missing SHA-1 in Firebase / OAuth client)
+  if (code == 'sign_in_failed' &&
+      (details.contains('10:') || details.contains('DEVELOPER_ERROR'))) {
+    return 'Google Sign-In failed (Android setup). Add the SHA-1 fingerprint of '
+        'the keystore that signed this APK to Firebase Console → Project settings '
+        '→ Your Android app. If the app is from Google Play, use the App signing '
+        'certificate fingerprint from Play Console, not only the upload key. '
+        'Then download google-services.json again and rebuild.';
+  }
+  if (code == 'network_error' || details.contains('NETWORK_ERROR')) {
+    return 'Google Sign-In failed due to a network error. Check your connection '
+        'and try again.';
+  }
+  return 'Google Sign-In failed ($code). ${details.isNotEmpty ? details : ''} '
+      'If this only happens on the installed app (not in the browser), register '
+      'your release keystore SHA-1 in Firebase and rebuild.';
+}
 
 /// Service handling user authentication with Firebase Auth.
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  /// Same options for sign-in and sign-out so sessions clear correctly.
+  GoogleSignIn _googleSignIn() => GoogleSignIn(
+        scopes: const ['email', 'profile'],
+        serverClientId: _kFirebaseGoogleWebClientId,
+      );
 
   /// Register a new user
   Future<UserModel> register({
@@ -85,33 +120,71 @@ class AuthService {
 
   /// Sign in with Google
   Future<UserModel> signInWithGoogle() async {
-    final googleSignIn = GoogleSignIn.instance;
+    try {
+      UserCredential userCredential;
 
-    final GoogleSignInAccount googleUser = await googleSignIn.authenticate();
+      if (kIsWeb) {
+        // Web: Use Firebase popup
+        userCredential = await _auth.signInWithPopup(
+          GoogleAuthProvider(),
+        );
+      } else {
+        // Android / iOS: google_sign_in + Firebase ID token
+        final GoogleSignIn googleSignIn = _googleSignIn();
 
-    final idToken = googleUser.authentication.idToken;
+        GoogleSignInAccount? googleUser;
+        try {
+          googleUser = await googleSignIn.signIn();
+        } on PlatformException catch (e) {
+          throw Exception(_googleSignInPlatformMessage(e));
+        }
 
-    final credential = GoogleAuthProvider.credential(
-      idToken: idToken,
-    );
+        if (googleUser == null) {
+          throw Exception('Google sign in was cancelled');
+        }
 
-    final userCredential = await _auth.signInWithCredential(credential);
-    final uid = userCredential.user!.uid;
+        GoogleSignInAuthentication googleAuth;
+        try {
+          googleAuth = await googleUser.authentication;
+        } on PlatformException catch (e) {
+          throw Exception(_googleSignInPlatformMessage(e));
+        }
 
-    // Check if user profile already exists in Firestore
-    final doc = await _firestore.collection('users').doc(uid).get();
-    if (doc.exists) {
-      return UserModel.fromMap(doc.data()!, uid);
+        if (googleAuth.idToken == null) {
+          throw Exception(
+            'Google did not return an ID token. On Android, add your app\'s '
+            'SHA-1 fingerprint in Firebase Console → Project settings → Your apps, '
+            'then download the updated google-services.json and rebuild.',
+          );
+        }
+
+        final AuthCredential credential = GoogleAuthProvider.credential(
+          idToken: googleAuth.idToken,
+          accessToken: googleAuth.accessToken,
+        );
+
+        userCredential = await _auth.signInWithCredential(credential);
+      }
+
+      final uid = userCredential.user!.uid;
+
+      // Check if user profile already exists in Firestore
+      final doc = await _firestore.collection('users').doc(uid).get();
+      if (doc.exists) {
+        return UserModel.fromMap(doc.data()!, uid);
+      }
+
+      // First time Google sign-in: create Firestore profile
+      final user = UserModel(
+        id: uid,
+        name: userCredential.user!.displayName ?? 'User',
+        email: userCredential.user!.email ?? '',
+      );
+      await _firestore.collection('users').doc(uid).set(user.toMap());
+      return user;
+    } catch (e) {
+      rethrow;
     }
-
-    // First time Google sign-in: create Firestore profile
-    final user = UserModel(
-      id: uid,
-      name: userCredential.user!.displayName ?? 'User',
-      email: userCredential.user!.email ?? '',
-    );
-    await _firestore.collection('users').doc(uid).set(user.toMap());
-    return user;
   }
 
   /// Update user's profile picture URL in Firestore
@@ -121,12 +194,13 @@ class AuthService {
     });
   }
 
-  /// Update user profile fields (name, phone) in Firestore
+  /// Update user profile fields (name, phone, currency) in Firestore
   Future<void> updateUserProfile(String userId,
-      {String? name, String? phone}) async {
+      {String? name, String? phone, String? currency}) async {
     final Map<String, dynamic> updates = {};
     if (name != null) updates['name'] = name;
     if (phone != null) updates['phone'] = phone;
+    if (currency != null) updates['currency'] = currency;
     if (updates.isEmpty) return;
 
     await _firestore.collection('users').doc(userId).update(updates);
@@ -148,12 +222,10 @@ class AuthService {
 
   /// Sign out
   Future<void> signOut() async {
-    try {
-      // Add timeout to prevent hanging if Google Sign In is unresponsive
-      await GoogleSignIn.instance.signOut().timeout(const Duration(seconds: 3));
-    } catch (e) {
-      // Continue with Firebase sign out even if Google sign out fails
-      print('Google sign out failed: $e');
+    if (!kIsWeb) {
+      try {
+        await _googleSignIn().signOut();
+      } catch (_) {}
     }
     await _auth.signOut();
   }
