@@ -1,260 +1,150 @@
 <div align="center">
-  <img src="assets/images/logo2.png" alt="Costly Logo" width="200"/>
-  
-  # 💰 Costly — Expense Tracker
-  
-  **Take control of your finances with a beautiful, modern expense tracker.**
 
-  [![Flutter](https://img.shields.io/badge/Flutter-3.x-02569B?logo=flutter&logoColor=white)](https://flutter.dev)
-  [![Dart](https://img.shields.io/badge/Dart-3.x-0175C2?logo=dart&logoColor=white)](https://dart.dev)
-  [![Firebase](https://img.shields.io/badge/Firebase-Backend-FFCA28?logo=firebase&logoColor=black)](https://firebase.google.com)
-  [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-  [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+<img src="assets/images/logo2.png" alt="Costly" width="120"/>
 
-  <br/>
-  
-  *A sleek, cross-platform personal finance app built with Flutter & Firebase — designed to make tracking expenses effortless and insightful.*
+# Costly
+
+**Smart expense tracking — know where your money goes.**
+
+[![Flutter](https://img.shields.io/badge/Flutter-3.x-02569B?logo=flutter&logoColor=white)](https://flutter.dev)
+[![Dart](https://img.shields.io/badge/Dart-3.x-0175C2?logo=dart&logoColor=white)](https://dart.dev)
+[![Firebase](https://img.shields.io/badge/Firebase-Auth%20%2B%20Firestore-FFCA28?logo=firebase&logoColor=black)](https://firebase.google.com)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+
+*Cross‑platform personal finance app built with **Flutter** and **Firebase** — dashboard, history, analytics, and secure sign‑in in one polished UI.*
 
 </div>
 
 ---
 
-## ✨ Features
+## App preview
 
-<table>
-  <tr>
-    <td width="50%">
-      <h3>📊 Smart Dashboard</h3>
-      <ul>
-        <li>Real-time balance overview with income & expense breakdown</li>
-        <li>Beautiful gradient balance card</li>
-        <li>Recent transactions at a glance</li>
-        <li>Quick action buttons for adding income & expenses</li>
-      </ul>
-    </td>
-    <td width="50%">
-      <h3>📈 Analytics & Insights</h3>
-      <ul>
-        <li>Monthly spending trends with interactive bar charts</li>
-        <li>Category breakdown with donut chart visualization</li>
-        <li>Budget progress tracking</li>
-        <li>Top spending categories ranked</li>
-      </ul>
-    </td>
-  </tr>
-  <tr>
-    <td width="50%">
-      <h3>📝 Transaction Management</h3>
-      <ul>
-        <li>Add expenses & income with categories</li>
-        <li>Date-grouped transaction history</li>
-        <li>Search & filter (All / Expenses / Income)</li>
-        <li>Swipe-to-delete transactions</li>
-      </ul>
-    </td>
-    <td width="50%">
-      <h3>🔐 Secure Authentication</h3>
-      <ul>
-        <li>Firebase email/password authentication</li>
-        <li>Google Sign-In integration</li>
-        <li>Persistent sessions with auto-login</li>
-        <li>Secure cloud data storage</li>
-      </ul>
-    </td>
-  </tr>
-</table>
+<p align="center">
+  <img src="docs/readme_images/Loading%20Screen.jpg" alt="Splash & loading" width="24%" />
+  &nbsp;
+  <img src="docs/readme_images/Home%20page.jpg" alt="Home dashboard" width="24%" />
+  &nbsp;
+  <img src="docs/readme_images/History%20page.jpg" alt="Transaction history" width="24%" />
+  &nbsp;
+  <img src="docs/readme_images/Analytics%20page.jpg" alt="Analytics" width="24%" />
+</p>
+
+<p align="center">
+  <sub><b>Splash</b> · <b>Home</b> · <b>History</b> · <b>Analytics</b></sub>
+</p>
 
 ---
 
-## 🎨 Design Highlights
+## Highlights
 
-| Feature | Description |
-|---------|-------------|
-| 🌈 **Purple Theme** | Elegant purple gradient palette (`#5D3891` → `#7B52AB` → `#9B6FCF`) |
-| 🧊 **Glassmorphic Nav Bar** | Floating navigation bar with backdrop blur and notch design |
-| ✨ **Premium Cards** | White cards with subtle shadows and smooth rounded corners |
-| 📱 **Modern UI** | Clean typography, micro-animations, and responsive layouts |
-| 🌊 **Splash Screen** | Animated logo reveal with gradient background |
-
----
-
-## 🛠️ Tech Stack
-
-<div align="center">
-
-| Layer | Technology |
-|-------|-----------|
-| **Framework** | Flutter 3.x (Dart) |
-| **State Management** | Provider |
-| **Backend** | Firebase (Auth + Cloud Firestore) |
-| **Charts** | FL Chart |
-| **Local Storage** | Shared Preferences |
-| **Date Formatting** | intl |
-
-</div>
+| | |
+|:---|:---|
+| **Dashboard** | Month‑aware balance, income vs expenses, quick add, category grid, recent activity |
+| **History** | Search, filters, category drill‑down, edit transactions, month selector |
+| **Analytics** | Spending overview, rolling trends, category breakdown (charts) |
+| **Account** | Email & Google sign‑in, profile & currency, Cloudinary profile photos |
+| **Experience** | Purple brand theme, floating glass nav, entrance animations, modern splash |
 
 ---
 
-## 📁 Project Structure
+## Tech stack
+
+| Area | Choice |
+|------|--------|
+| UI | Flutter (Material 3) |
+| State | Provider |
+| Auth & data | Firebase Auth, Cloud Firestore |
+| Charts | fl_chart |
+| Media | image_picker, Cloudinary (uploads) |
+| Local prefs | shared_preferences |
+
+---
+
+## Project layout
 
 ```
-costly/
-├── lib/
-│   ├── main.dart                    # App entry point & route config
-│   ├── firebase_options.dart        # Firebase configuration
-│   ├── models/
-│   │   ├── transaction_model.dart   # Transaction data model
-│   │   └── user_model.dart          # User data model
-│   ├── providers/
-│   │   ├── auth_provider.dart       # Authentication state management
-│   │   └── transaction_provider.dart # Transaction state & business logic
-│   ├── services/
-│   │   ├── auth_service.dart        # Firebase Auth service
-│   │   ├── database_service.dart    # Firestore database service
-│   │   └── transaction_service.dart # Transaction CRUD operations
-│   ├── screens/
-│   │   ├── splash_screen.dart       # Animated splash screen
-│   │   ├── login_screen.dart        # Login with email & Google
-│   │   ├── register_screen.dart     # User registration
-│   │   ├── home_dashboard.dart      # Main dashboard
-│   │   ├── transactions_history.dart # Transaction history & search
-│   │   ├── analytics.dart           # Charts & spending insights
-│   │   ├── profile.dart             # User profile & settings
-│   │   ├── add_expense.dart         # Add expense form
-│   │   └── add_income.dart          # Add income form
-│   ├── widgets/
-│   │   └── floating_nav_bar.dart    # Reusable glassmorphic nav bar
-│   └── utils/
-│       └── constants.dart           # Colors, helpers & category data
-├── assets/
-│   └── images/                      # App logos and images
-├── android/                         # Android platform config
-├── ios/                             # iOS platform config
-├── web/                             # Web platform config
-└── pubspec.yaml                     # Dependencies & assets
+lib/
+├── main.dart                 # Routes & theme
+├── screens/                  # Splash, auth, home, history, analytics, profile, add flows
+├── providers/                # Auth, transactions, categories
+├── services/                 # Auth, Cloudinary, etc.
+├── widgets/                  # Floating nav, animations, etc.
+└── utils/                    # Constants, toasts
+assets/images/                # Brand artwork
+docs/readme_images/           # README screenshots
 ```
 
 ---
 
-## 🚀 Getting Started
+## Getting started
 
-### Prerequisites
+**Requirements:** Flutter SDK 3.x, a Firebase project (Auth + Firestore).
 
-- [Flutter SDK](https://docs.flutter.dev/get-started/install) (3.x or later)
-- [Firebase CLI](https://firebase.google.com/docs/cli) (for Firebase setup)
-- A Firebase project with **Authentication** and **Cloud Firestore** enabled
+```bash
+git clone https://github.com/YOUR_USERNAME/Costly.git
+cd Costly
+flutter pub get
+```
 
-### Installation
+Configure Firebase (e.g. [FlutterFire CLI](https://firebase.flutter.dev/docs/cli/)) so `lib/firebase_options.dart` and `android/app/google-services.json` match your project. Enable **Email/Password** and **Google** sign-in.
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/yourusername/costly.git
-   cd costly
-   ```
+```bash
+flutter run -d chrome    # web
+flutter run -d android     # device / emulator
+```
 
-2. **Install dependencies**
-   ```bash
-   flutter pub get
-   ```
+**Release APK**
 
-3. **Configure Firebase**
-   
-   Create a Firebase project and add your config:
-   - Enable **Email/Password** and **Google Sign-In** in Firebase Auth
-   - Create a **Cloud Firestore** database
-   - Replace `lib/firebase_options.dart` with your own Firebase config
-   
-   > 💡 You can use the [FlutterFire CLI](https://firebase.flutter.dev/docs/cli/) to auto-generate this:
-   > ```bash
-   > dart pub global activate flutterfire_cli
-   > flutterfire configure
-   > ```
+```bash
+flutter build apk --release
+```
 
-4. **Run the app**
-   ```bash
-   # For Chrome (Web)
-   flutter run -d chrome
-   
-   # For Android
-   flutter run -d android
-   
-   # For iOS
-   flutter run -d ios
-   ```
-
-5. **Build for production**
-   ```bash
-   # Android APK
-   flutter build apk
-   
-   # Web
-   flutter build web
-   
-   # iOS
-   flutter build ios
-   ```
+> Android Google Sign-In needs your keystore **SHA‑1/256** registered in Firebase for release builds.
 
 ---
 
-## 📱 Screens Overview
+## Screens (overview)
 
-| Screen | Description |
-|--------|-------------|
-| 🌊 **Splash** | Animated logo reveal with purple gradient |
-| 🔑 **Login** | Email & Google sign-in with modern UI |
-| 📝 **Register** | New user registration form |
-| 🏠 **Dashboard** | Balance card, quick actions, recent transactions |
-| 📋 **History** | Date-grouped transactions with search & filters |
-| 📊 **Analytics** | Spending card, monthly trends chart, category donut chart |
-| 👤 **Profile** | User info, preferences, export data, logout |
-| ➕ **Add Expense** | Category picker, amount, date, notes |
-| 💵 **Add Income** | Income source, amount, date, notes |
+| Area | What you get |
+|------|----------------|
+| Splash | Branded load & sync before auth or home |
+| Login / Register | Email/password + Google |
+| Home | Balance, month picker, categories, recent tx |
+| History | Filters, search, grouped list |
+| Analytics | Totals, charts, month context |
+| Profile | Avatar, currency, edit profile, sign out |
+| Add expense / income | Categories, amount, date, notes |
 
 ---
 
-## 🎯 Upcoming Features
+## Roadmap ideas
 
-- [ ] 💳 Budget limits per category with alerts
-- [ ] 📤 Export transactions to CSV/PDF
-- [ ] 🌙 Dark mode toggle
-- [ ] 📷 Receipt scanning with OCR
-- [ ] 🔔 Bill reminders & notifications
-- [ ] 💱 Multi-currency support
-- [ ] 📊 Weekly/Yearly analytics views
-- [ ] 👥 Shared expenses & group splitting
+- Budget alerts per category  
+- Export (CSV/PDF)  
+- Dark mode  
+- Richer notifications  
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
-Contributions are welcome! Here's how you can help:
-
-1. **Fork** the repository
-2. **Create** a feature branch (`git checkout -b feature/amazing-feature`)
-3. **Commit** your changes (`git commit -m 'Add amazing feature'`)
-4. **Push** to the branch (`git push origin feature/amazing-feature`)
-5. **Open** a Pull Request
+1. Fork the repo  
+2. Branch: `feature/your-idea`  
+3. Commit with clear messages  
+4. Open a Pull Request  
 
 ---
 
-## 📄 License
+## License
 
-This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
+MIT — see [LICENSE](LICENSE).
 
 ---
 
 <div align="center">
-  
-  **Built with ❤️ using Flutter**
-  
-  <br/>
-  
-  ⭐ **Star this repo if you found it helpful!** ⭐
 
-  <br/>
-  
-  <a href="https://flutter.dev">
-    <img src="https://img.shields.io/badge/Powered%20by-Flutter-02569B?logo=flutter&logoColor=white" alt="Powered by Flutter"/>
-  </a>
-  
+**Built with Flutter**
+
+If this repo helps you, consider starring it on GitHub.
+
 </div>
