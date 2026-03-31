@@ -1,7 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/foundation.dart'
-    show kIsWeb, defaultTargetPlatform, TargetPlatform;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/services.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../models/user_model.dart';
@@ -47,9 +46,6 @@ class AuthService {
     _googleSignInInstance ??= GoogleSignIn(
       scopes: const ['email', 'profile'],
       serverClientId: _kFirebaseGoogleWebClientId,
-      // Android: helps obtain tokens Firebase Auth accepts (see google_sign_in docs).
-      forceCodeForRefreshToken:
-          !kIsWeb && defaultTargetPlatform == TargetPlatform.android,
     );
     return _googleSignInInstance!;
   }
@@ -133,67 +129,41 @@ class AuthService {
   Future<UserCredential> _signInWithGoogleMobile() async {
     final GoogleSignIn googleSignIn = _googleSignIn();
 
-    for (var attempt = 0; attempt < 2; attempt++) {
-      // Only reset Google session on retry (stale credential / invalid-id-token).
-      if (attempt > 0) {
-        try {
-          await googleSignIn.disconnect();
-        } catch (_) {}
-        try {
-          await googleSignIn.signOut();
-        } catch (_) {}
-      }
+    // Always start from a clean Google session so stale tokens don't accumulate.
+    try { await googleSignIn.signOut(); } catch (_) {}
 
-      GoogleSignInAccount? googleUser;
-      try {
-        if (attempt == 0) {
-          // Prefer silent restore; then interactive. Avoids clearing a valid session first.
-          googleUser = await googleSignIn.signInSilently();
-          googleUser ??= await googleSignIn.signIn();
-        } else {
-          googleUser = await googleSignIn.signIn();
-        }
-      } on PlatformException catch (e) {
-        throw Exception(_googleSignInPlatformMessage(e));
-      }
-
-      if (googleUser == null) {
-        throw Exception('Google sign in was cancelled');
-      }
-
-      GoogleSignInAuthentication googleAuth;
-      try {
-        googleAuth = await googleUser.authentication;
-      } on PlatformException catch (e) {
-        throw Exception(_googleSignInPlatformMessage(e));
-      }
-
-      if (googleAuth.idToken == null) {
-        throw Exception(
-          'Google did not return an ID token. On Android, add your app\'s '
-          'SHA-1 fingerprint in Firebase Console → Project settings → Your apps, '
-          'then download the updated google-services.json and rebuild.',
-        );
-      }
-
-      final AuthCredential credential = GoogleAuthProvider.credential(
-        idToken: googleAuth.idToken,
-        accessToken: googleAuth.accessToken,
-      );
-
-      try {
-        return await _auth.signInWithCredential(credential);
-      } on FirebaseAuthException catch (e) {
-        final retryable =
-            e.code == 'invalid-credential' || e.code == 'invalid-id-token';
-        if (attempt == 0 && retryable) {
-          continue;
-        }
-        rethrow;
-      }
+    GoogleSignInAccount? googleUser;
+    try {
+      googleUser = await googleSignIn.signIn();
+    } on PlatformException catch (e) {
+      throw Exception(_googleSignInPlatformMessage(e));
     }
 
-    throw Exception('Google sign-in failed. Please try again.');
+    if (googleUser == null) {
+      throw Exception('Google sign in was cancelled');
+    }
+
+    GoogleSignInAuthentication googleAuth;
+    try {
+      googleAuth = await googleUser.authentication;
+    } on PlatformException catch (e) {
+      throw Exception(_googleSignInPlatformMessage(e));
+    }
+
+    if (googleAuth.idToken == null) {
+      throw Exception(
+        'Google did not return an ID token. On Android, add your app\'s '
+        'SHA-1 fingerprint in Firebase Console → Project settings → Your apps, '
+        'then download the updated google-services.json and rebuild.',
+      );
+    }
+
+    final AuthCredential credential = GoogleAuthProvider.credential(
+      idToken: googleAuth.idToken,
+      accessToken: googleAuth.accessToken,
+    );
+
+    return await _auth.signInWithCredential(credential);
   }
 
   /// Sign in with Google

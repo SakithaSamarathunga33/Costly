@@ -6,6 +6,12 @@
 #   git push origin v1.3.0
 #
 # Tag format: vMAJOR.MINOR.PATCH (e.g. v1.0.0, v1.2.3)
+#
+# IMPORTANT — Google Sign-In requires the APK to be signed with a keystore whose
+# SHA-1 is registered in Firebase. Set the GitHub secret DEBUG_KEYSTORE_BASE64
+# (base64-encoded debug.keystore) so CI uses the SAME signing key as your PC.
+# Without it, CI falls back to its own random debug keystore and Google login
+# will fail on the downloaded APK.
 
 name: GitHub Release (tag)
 
@@ -37,6 +43,18 @@ jobs:
           echo "semver=$SEMVER" >> "$GITHUB_OUTPUT"
           echo "Release tag=$TAG semver=$SEMVER"
 
+      - name: Restore debug keystore from secret
+        if: ${{ env.DEBUG_KEYSTORE_BASE64 != '' }}
+        env:
+          DEBUG_KEYSTORE_BASE64: ${{ secrets.DEBUG_KEYSTORE_BASE64 }}
+        run: |
+          mkdir -p "$HOME/.android"
+          echo "$DEBUG_KEYSTORE_BASE64" | base64 -d > "$HOME/.android/debug.keystore"
+          echo "✅ Restored debug.keystore from GitHub secret"
+          keytool -list -v -keystore "$HOME/.android/debug.keystore" \
+            -alias androiddebugkey -storepass android -keypass android \
+            | grep -E "SHA1:|SHA256:" || true
+
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
@@ -60,14 +78,12 @@ jobs:
       - name: Build release APK
         run: flutter build apk --release
 
-      - name: Print debug keystore SHA-1 (Firebase Google Sign-In)
+      - name: Verify signing key
         run: |
-          echo "If Google login fails only on CI-built APKs, add this SHA-1 in Firebase Console → Project settings → Your Android app."
-          if [ -f "$HOME/.android/debug.keystore" ]; then
-            keytool -list -v -keystore "$HOME/.android/debug.keystore" -alias androiddebugkey -storepass android -keypass android | grep -E "SHA1:|SHA256:" || true
-          else
-            echo "No ~/.android/debug.keystore (unexpected after build)."
-          fi
+          echo "APK was signed with this debug keystore:"
+          keytool -list -v -keystore "$HOME/.android/debug.keystore" \
+            -alias androiddebugkey -storepass android -keypass android \
+            | grep -E "SHA1:|SHA256:" || echo "⚠️ Could not read keystore"
 
       - name: Prepare APK for release
         run: |
