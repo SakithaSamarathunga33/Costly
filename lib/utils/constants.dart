@@ -4,6 +4,12 @@ import 'package:flutter/material.dart';
 const String kAppDisplayName = 'Costly';
 const String kAppVersionLabel = '1.0.0';
 
+/// Public GitHub repo used by **Check for updates** (GitHub REST API, no token).
+/// Set `kGitHubRepoOwner` to your username or org (same repo you push this app to).
+/// Leave empty to hide/disable update checks.
+const String kGitHubRepoOwner = 'SakithaSamarathunga33';
+const String kGitHubRepoName = 'Costly';
+
 // App color palette
 const Color kPrimary = Color(0xFF5D3891);
 const Color kBgDark = Color(0xFFF5F5F5);

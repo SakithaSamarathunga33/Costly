@@ -26,8 +26,13 @@ dependencies:
   google_sign_in: ^6.2.1
   # Image picker for profile pictures
   image_picker: ^1.0.7
-  # HTTP for Cloudinary upload
+  # HTTP for Cloudinary upload & GitHub release download
   http: ^1.2.1
+  package_info_plus: ^8.1.1
+  path_provider: ^2.1.5
+  open_file: ^3.5.10
+  url_launcher: ^6.3.1
+  pub_semver: ^2.1.5
   # For generating signatures
   crypto: ^3.0.3
   # For multipart content type

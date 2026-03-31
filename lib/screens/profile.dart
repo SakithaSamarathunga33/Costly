@@ -8,8 +8,11 @@ import '../services/cloudinary_service.dart';
 import '../widgets/floating_nav_bar.dart';
 import '../widgets/app_animations.dart';
 import '../widgets/root_back_handler.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+
 import '../utils/top_toast.dart';
 import '../utils/constants.dart';
+import '../services/app_update_service.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -455,6 +458,24 @@ class ProfileScreen extends StatelessWidget {
                   title: 'Currency',
                   subtitle: '${getCurrencySymbol(authProvider.userCurrency)} (${authProvider.userCurrency})',
                   onTap: () => _showCurrencyPicker(context, authProvider),
+                ),
+                const SizedBox(height: 10),
+                FutureBuilder<PackageInfo>(
+                  future: PackageInfo.fromPlatform(),
+                  builder: (context, snap) {
+                    final sub = snap.hasData
+                        ? 'v${snap.data!.version} (${snap.data!.buildNumber})'
+                        : '…';
+                    return _buildPreferenceItem(
+                      icon: Icons.system_update_alt,
+                      iconBg: primary.withOpacity(0.08),
+                      iconColor: primary,
+                      title: 'Check for updates',
+                      subtitle: 'Installed $sub · GitHub releases',
+                      onTap: () =>
+                          AppUpdateService.checkForUpdate(context),
+                    );
+                  },
                 ),
                 const SizedBox(height: 24),
 

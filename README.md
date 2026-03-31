@@ -19,19 +19,20 @@
 
 ## App preview
 
-<p align="center">
-  <img src="docs/readme_images/Loading%20Screen.jpg" alt="Splash & loading" width="24%" />
-  &nbsp;
-  <img src="docs/readme_images/Home%20page.jpg" alt="Home dashboard" width="24%" />
-  &nbsp;
-  <img src="docs/readme_images/History%20page.jpg" alt="Transaction history" width="24%" />
-  &nbsp;
-  <img src="docs/readme_images/Analytics%20page.jpg" alt="Analytics" width="24%" />
-</p>
-
-<p align="center">
-  <sub><b>Splash</b> · <b>Home</b> · <b>History</b> · <b>Analytics</b></sub>
-</p>
+<table width="100%">
+  <tr>
+    <td align="center" width="25%"><img src="docs/readme_images/Loading%20Screen.jpg" alt="Splash" width="160"/></td>
+    <td align="center" width="25%"><img src="docs/readme_images/Home%20page.jpg" alt="Home" width="160"/></td>
+    <td align="center" width="25%"><img src="docs/readme_images/History%20page.jpg" alt="History" width="160"/></td>
+    <td align="center" width="25%"><img src="docs/readme_images/Analytics%20page.jpg" alt="Analytics" width="160"/></td>
+  </tr>
+  <tr>
+    <td align="center"><sub><b>Splash</b></sub></td>
+    <td align="center"><sub><b>Home</b></sub></td>
+    <td align="center"><sub><b>History</b></sub></td>
+    <td align="center"><sub><b>Analytics</b></sub></td>
+  </tr>
+</table>
 
 ---
 
@@ -101,6 +102,22 @@ flutter build apk --release
 
 > Android Google Sign-In needs your keystore **SHA‑1/256** registered in Firebase for release builds.
 
+### GitHub Actions: artifacts vs Releases
+
+- **Push to `main`** (`.github/workflows/android_release.yml`): builds a release APK and uploads it as a **workflow artifact** (no GitHub Release). Useful for testing builds without cluttering the Releases tab.
+- **Version tag** (`.github/workflows/github_release_on_tag.yml`): on push of a tag like `v1.2.0`, CI builds the APK and creates a **GitHub Release** with that APK attached and auto-generated release notes.
+
+Publish a release build:
+
+```bash
+git tag v1.2.0
+git push origin v1.2.0
+```
+
+### In-app “Check for updates” (Profile)
+
+The app can compare your installed version to the [latest GitHub release](https://docs.github.com/en/rest/releases/releases#get-the-latest-release) for this repository. Set **`kGitHubRepoOwner`** in `lib/utils/constants.dart` to your GitHub username or organization (and adjust **`kGitHubRepoName`** if the repo is not named `Costly`). On **Android**, if a newer semver tag exists and the release includes an `.apk` asset, the app downloads it and opens the system installer. On **iOS** and **web**, the releases page opens in the browser.
+
 ---
 
 ## Screens (overview)
@@ -112,7 +129,7 @@ flutter build apk --release
 | Home | Balance, month picker, categories, recent tx |
 | History | Filters, search, grouped list |
 | Analytics | Totals, charts, month context |
-| Profile | Avatar, currency, edit profile, sign out |
+| Profile | Avatar, currency, check for updates (GitHub), edit profile, sign out |
 | Add expense / income | Categories, amount, date, notes |
 
 ---
