@@ -102,17 +102,16 @@ flutter build apk --release
 
 > Android Google Sign-In needs your keystore **SHA‑1/256** registered in Firebase for release builds.
 
-### GitHub Actions: artifacts vs Releases
+### GitHub Actions (APK + Release)
 
-- **Push to `main`** (`.github/workflows/android_release.yml`): builds a release APK and uploads it as a **workflow artifact** (no GitHub Release). Useful for testing builds without cluttering the Releases tab.
-- **Version tag** (`.github/workflows/github_release_on_tag.yml`): on push of a tag like `v1.2.0`, CI builds the APK and creates a **GitHub Release** with that APK attached and auto-generated release notes.
-
-Publish a release build:
+CI **does not** build on every push to `main`. It runs **only** when you push a **version tag** (`.github/workflows/github_release_on_tag.yml`): it builds the release APK and creates a **GitHub Release** with that APK and auto-generated release notes.
 
 ```bash
-git tag v1.2.0
-git push origin v1.2.0
+git tag v1.3.0
+git push origin v1.3.0
 ```
+
+Commit your changes on `main` first, then tag the commit you want to ship.
 
 ### In-app “Check for updates” (Profile)
 

@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart'
+    show kIsWeb, defaultTargetPlatform, TargetPlatform;
 import 'package:flutter/services.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../models/user_model.dart';
@@ -46,6 +47,9 @@ class AuthService {
     _googleSignInInstance ??= GoogleSignIn(
       scopes: const ['email', 'profile'],
       serverClientId: _kFirebaseGoogleWebClientId,
+      // Android: helps obtain tokens Firebase Auth accepts (see google_sign_in docs).
+      forceCodeForRefreshToken:
+          !kIsWeb && defaultTargetPlatform == TargetPlatform.android,
     );
     return _googleSignInInstance!;
   }
@@ -130,18 +134,25 @@ class AuthService {
     final GoogleSignIn googleSignIn = _googleSignIn();
 
     for (var attempt = 0; attempt < 2; attempt++) {
-      try {
-        await googleSignIn.signOut();
-      } catch (_) {}
+      // Only reset Google session on retry (stale credential / invalid-id-token).
       if (attempt > 0) {
         try {
           await googleSignIn.disconnect();
+        } catch (_) {}
+        try {
+          await googleSignIn.signOut();
         } catch (_) {}
       }
 
       GoogleSignInAccount? googleUser;
       try {
-        googleUser = await googleSignIn.signIn();
+        if (attempt == 0) {
+          // Prefer silent restore; then interactive. Avoids clearing a valid session first.
+          googleUser = await googleSignIn.signInSilently();
+          googleUser ??= await googleSignIn.signIn();
+        } else {
+          googleUser = await googleSignIn.signIn();
+        }
       } on PlatformException catch (e) {
         throw Exception(_googleSignInPlatformMessage(e));
       }

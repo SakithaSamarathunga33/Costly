@@ -9,8 +9,8 @@ class ScreenEntrance extends StatefulWidget {
   const ScreenEntrance({
     super.key,
     required this.child,
-    this.duration = const Duration(milliseconds: 620),
-    this.beginOffset = const Offset(0, 0.14),
+    this.duration = const Duration(milliseconds: 480),
+    this.beginOffset = const Offset(0, 0.09),
   });
 
   @override
@@ -46,11 +46,13 @@ class _ScreenEntranceState extends State<ScreenEntrance>
     if (!TickerMode.valuesOf(context).enabled) {
       return widget.child;
     }
-    return FadeTransition(
-      opacity: _fade,
-      child: SlideTransition(
-        position: _slide,
-        child: widget.child,
+    return RepaintBoundary(
+      child: FadeTransition(
+        opacity: _fade,
+        child: SlideTransition(
+          position: _slide,
+          child: widget.child,
+        ),
       ),
     );
   }
@@ -69,9 +71,9 @@ class StaggeredColumn extends StatelessWidget {
     super.key,
     this.crossAxisAlignment = CrossAxisAlignment.start,
     this.mainAxisAlignment = MainAxisAlignment.start,
-    this.beginSlideY = 0.22,
-    this.staggerMs = 64,
-    this.baseDurationMs = 520,
+    this.beginSlideY = 0.14,
+    this.staggerMs = 52,
+    this.baseDurationMs = 440,
     required this.children,
   });
 
@@ -125,7 +127,7 @@ class _StaggeredColumnBodyState extends State<_StaggeredColumnBody>
         (n > 0 ? (n - 1) * widget.staggerMs : 0);
     _c = AnimationController(
       vsync: this,
-      duration: Duration(milliseconds: totalMs.clamp(420, 1800)),
+      duration: Duration(milliseconds: totalMs.clamp(380, 1400)),
     );
 
     _itemAnims = List.generate(n, (i) {
@@ -176,11 +178,13 @@ class _StaggeredColumnBodyState extends State<_StaggeredColumnBody>
       mainAxisAlignment: widget.mainAxisAlignment,
       children: [
         for (int i = 0; i < n; i++)
-          FadeTransition(
-            opacity: _itemAnims[i],
-            child: SlideTransition(
-              position: _slideAnims[i],
-              child: widget.children[i],
+          RepaintBoundary(
+            child: FadeTransition(
+              opacity: _itemAnims[i],
+              child: SlideTransition(
+                position: _slideAnims[i],
+                child: widget.children[i],
+              ),
             ),
           ),
       ],
@@ -215,11 +219,15 @@ class _AnimatedTapState extends State<AnimatedTap>
     super.initState();
     _c = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 100),
-      reverseDuration: const Duration(milliseconds: 120),
+      duration: const Duration(milliseconds: 90),
+      reverseDuration: const Duration(milliseconds: 140),
     );
     _scale = Tween<double>(begin: 1.0, end: widget.pressedScale).animate(
-      CurvedAnimation(parent: _c, curve: Curves.easeInOut),
+      CurvedAnimation(
+        parent: _c,
+        curve: Curves.easeOutCubic,
+        reverseCurve: Curves.easeOutCubic,
+      ),
     );
   }
 

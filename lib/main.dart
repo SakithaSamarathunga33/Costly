@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -45,42 +44,62 @@ Route<dynamic>? generateRoute(RouteSettings settings) {
 }
 
 PageRouteBuilder<T> _slideUpRoute<T>(Widget page) {
+  const duration = Duration(milliseconds: 400);
+  const reverseDuration = Duration(milliseconds: 340);
   return PageRouteBuilder<T>(
     pageBuilder: (context, animation, secondaryAnimation) => page,
+    transitionDuration: duration,
+    reverseTransitionDuration: reverseDuration,
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
-      final curvedAnimation = CurvedAnimation(
+      final curved = CurvedAnimation(
         parent: animation,
         curve: Curves.easeOutCubic,
         reverseCurve: Curves.easeInCubic,
       );
+      final secondary = CurvedAnimation(
+        parent: secondaryAnimation,
+        curve: Curves.easeInCubic,
+      );
       return SlideTransition(
         position: Tween<Offset>(
-          begin: const Offset(0, 0.15),
+          begin: const Offset(0, 0.09),
           end: Offset.zero,
-        ).animate(curvedAnimation),
+        ).animate(curved),
         child: FadeTransition(
-          opacity: curvedAnimation,
-          child: child,
+          opacity: curved,
+          child: SlideTransition(
+            position: Tween<Offset>(
+              begin: Offset.zero,
+              end: const Offset(0, -0.035),
+            ).animate(secondary),
+            child: FadeTransition(
+              opacity: Tween<double>(begin: 1, end: 0.94).animate(secondary),
+              child: RepaintBoundary(child: child),
+            ),
+          ),
         ),
       );
     },
-    transitionDuration: const Duration(milliseconds: 350),
   );
 }
 
 PageRouteBuilder<T> _fadeRoute<T>(Widget page) {
+  const duration = Duration(milliseconds: 320);
   return PageRouteBuilder<T>(
     pageBuilder: (context, animation, secondaryAnimation) => page,
+    transitionDuration: duration,
+    reverseTransitionDuration: duration,
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      final curved = CurvedAnimation(
+        parent: animation,
+        curve: Curves.easeOutCubic,
+        reverseCurve: Curves.easeInCubic,
+      );
       return FadeTransition(
-        opacity: CurvedAnimation(
-          parent: animation,
-          curve: Curves.easeOut,
-        ),
-        child: child,
+        opacity: curved,
+        child: RepaintBoundary(child: child),
       );
     },
-    transitionDuration: const Duration(milliseconds: 300),
   );
 }
 

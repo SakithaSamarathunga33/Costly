@@ -1,6 +1,6 @@
-import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/transaction_provider.dart';
@@ -15,9 +15,10 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen>
     with TickerProviderStateMixin {
-  double _progress = 0.0;
-  Timer? _timer;
   bool _hasNavigated = false;
+
+  /// Minimum splash duration + smooth curve (replaces per-tick setState).
+  late AnimationController _gateController;
 
   late AnimationController _fadeController;
   late Animation<double> _fadeAnimation;
@@ -86,27 +87,20 @@ class _SplashScreenState extends State<SplashScreen>
       duration: const Duration(milliseconds: 1600),
     )..repeat();
 
-    _initializeApp();
+    _gateController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2400),
+    );
 
-    _timer = Timer.periodic(const Duration(milliseconds: 50), (timer) {
-      if (_progress >= 1.0) {
-        timer.cancel();
-      } else {
-        setState(() {
-          _progress += 0.017;
-        });
-      }
-    });
+    _initializeApp();
   }
 
   Future<void> _initializeApp() async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    await authProvider.initialize();
-
-    await Future.doWhile(() async {
-      await Future.delayed(const Duration(milliseconds: 50));
-      return _progress < 1.0;
-    });
+    await Future.wait([
+      authProvider.initialize(),
+      _gateController.forward(),
+    ]);
 
     if (!mounted || _hasNavigated) return;
     _hasNavigated = true;
@@ -132,7 +126,7 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   void dispose() {
-    _timer?.cancel();
+    _gateController.dispose();
     _fadeController.dispose();
     _logoController.dispose();
     _ambientController.dispose();
@@ -152,11 +146,12 @@ class _SplashScreenState extends State<SplashScreen>
     return Scaffold(
       body: FadeTransition(
         opacity: _fadeAnimation,
-        child: AnimatedBuilder(
-          animation: _ambientController,
-          builder: (context, _) {
-            final t = _ambientController.value;
-            return Container(
+        child: RepaintBoundary(
+          child: AnimatedBuilder(
+            animation: _ambientController,
+            builder: (context, _) {
+              final t = _ambientController.value;
+              return Container(
               width: double.infinity,
               height: double.infinity,
               decoration: BoxDecoration(
@@ -337,13 +332,21 @@ class _SplashScreenState extends State<SplashScreen>
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
-                            'v$kAppVersionLabel',
-                            style: TextStyle(
-                              color: Colors.black.withValues(alpha: 0.28),
-                              fontSize: 11,
-                              fontWeight: FontWeight.w500,
-                            ),
+                          FutureBuilder<PackageInfo>(
+                            future: PackageInfo.fromPlatform(),
+                            builder: (context, snap) {
+                              final label = snap.hasData
+                                  ? 'v${snap.data!.version} (${snap.data!.buildNumber})'
+                                  : '…';
+                              return Text(
+                                label,
+                                style: TextStyle(
+                                  color: Colors.black.withValues(alpha: 0.28),
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              );
+                            },
                           ),
                           Row(
                             children: [
@@ -400,7 +403,8 @@ class _SplashScreenState extends State<SplashScreen>
             ],
               ),
             );
-          },
+            },
+          ),
         ),
       ),
     );

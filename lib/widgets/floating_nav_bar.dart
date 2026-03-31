@@ -40,10 +40,10 @@ class _FloatingNavBarState extends State<FloatingNavBar>
     super.initState();
     _entranceController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 520),
+      duration: const Duration(milliseconds: 460),
     );
     _barSlideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.55),
+      begin: const Offset(0, 0.42),
       end: Offset.zero,
     ).animate(CurvedAnimation(
       parent: _entranceController,
@@ -51,16 +51,21 @@ class _FloatingNavBarState extends State<FloatingNavBar>
     ));
     _barFadeAnimation = CurvedAnimation(
       parent: _entranceController,
-      curve: Curves.easeOut,
+      curve: Curves.easeOutCubic,
     );
     _entranceController.forward();
 
     _fabController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 150),
+      duration: const Duration(milliseconds: 110),
+      reverseDuration: const Duration(milliseconds: 180),
     );
-    _fabScaleAnimation = Tween<double>(begin: 1.0, end: 0.9).animate(
-      CurvedAnimation(parent: _fabController, curve: Curves.easeInOut),
+    _fabScaleAnimation = Tween<double>(begin: 1.0, end: 0.92).animate(
+      CurvedAnimation(
+        parent: _fabController,
+        curve: Curves.easeOutCubic,
+        reverseCurve: Curves.easeOutCubic,
+      ),
     );
   }
 

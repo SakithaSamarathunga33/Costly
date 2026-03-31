@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:open_file/open_file.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:pub_semver/pub_semver.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -33,14 +34,15 @@ class AppUpdateService {
   static bool get _repoConfigured =>
       kGitHubRepoOwner.trim().isNotEmpty && kGitHubRepoName.trim().isNotEmpty;
 
-  static bool _isNewerVersion(String current, String tag) {
-    final t = tag.trim();
+  /// True if the GitHub release tag is newer than the installed app (from [PackageInfo]).
+  static bool _isNewerVersion(PackageInfo installed, String tagName) {
+    final t = tagName.trim();
     if (t.isEmpty) return false;
     final tagVer = t.startsWith('v') ? t.substring(1) : t;
     try {
-      final a = Version.parse(_versionNameOnly(current));
-      final b = Version.parse(_versionNameOnly(tagVer));
-      return b > a;
+      final installedVer = Version.parse(_versionNameOnly(installed.version));
+      final releaseVer = Version.parse(_versionNameOnly(tagVer));
+      return releaseVer > installedVer;
     } catch (_) {
       return false;
     }
@@ -49,6 +51,75 @@ class AppUpdateService {
   static String _versionNameOnly(String v) {
     final i = v.indexOf('+');
     return i >= 0 ? v.substring(0, i) : v;
+  }
+
+  /// Android: user must allow installing APKs for this app (Install unknown apps).
+  static Future<bool> _ensureInstallPackagesPermission(
+    BuildContext context,
+  ) async {
+    if (defaultTargetPlatform != TargetPlatform.android) return true;
+
+    Future<PermissionStatus> check() async {
+      final s = await Permission.requestInstallPackages.status;
+      if (s.isGranted) return s;
+      return Permission.requestInstallPackages.request();
+    }
+
+    var status = await check();
+    if (status.isGranted) return true;
+
+    if (!context.mounted) return false;
+    final openSettings = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Allow app updates'),
+        content: const Text(
+          'To install the downloaded update, Android needs permission to install '
+          'apps from this source.\n\n'
+          'Tap Open settings, then enable “Install unknown apps” or “Allow from this source” '
+          'for Costly, and return here.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Open settings'),
+          ),
+        ],
+      ),
+    );
+
+    if (openSettings == true) {
+      await openAppSettings();
+      if (!context.mounted) return false;
+      final retry = await showDialog<bool>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('Continue update'),
+          content: const Text(
+            'After you enabled installs for Costly, tap Continue to open the installer.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Later'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text('Continue'),
+            ),
+          ],
+        ),
+      );
+      if (retry != true) return false;
+      status = await check();
+      return status.isGranted;
+    }
+    return false;
   }
 
   static Future<void> checkForUpdate(BuildContext context) async {
@@ -116,7 +187,8 @@ class AppUpdateService {
 
     try {
       final info = await PackageInfo.fromPlatform();
-      final current = info.version;
+      final currentLabel =
+          '${info.version}${info.buildNumber.isNotEmpty ? '+${info.buildNumber}' : ''}';
 
       final res = await http.get(
         Uri.parse(_apiLatestUrl),
@@ -148,8 +220,11 @@ class AppUpdateService {
       final body = map['body'] as String? ?? '';
       final assets = map['assets'] as List<dynamic>? ?? [];
 
-      if (!_isNewerVersion(current, tagName)) {
-        showTopToast(context, 'You’re on the latest version ($current).');
+      if (!_isNewerVersion(info, tagName)) {
+        showTopToast(
+          context,
+          'You’re on the latest version (v$currentLabel).',
+        );
         return;
       }
 
@@ -186,7 +261,7 @@ class AppUpdateService {
           title: const Text('Update available'),
           content: SingleChildScrollView(
             child: Text(
-              'Latest: $tagName\nInstalled: $current\n\n'
+              'Latest: $tagName\nInstalled: v$currentLabel\n\n'
               '${apkName != null ? 'File: $apkName\n\n' : ''}'
               '${body.length > 400 ? '${body.substring(0, 400)}…' : body}',
             ),
@@ -246,12 +321,24 @@ class AppUpdateService {
       final fileName = apkName ?? 'Costly-update.apk';
       final path = await saveApkToTemp(dir.path, fileName, apkRes.bodyBytes);
 
+      if (!context.mounted) return;
+      final allowed = await _ensureInstallPackagesPermission(context);
+      if (!context.mounted) return;
+      if (!allowed) {
+        showTopToast(
+          context,
+          'Install permission is required to update. Enable it in Settings, then tap Check for updates again.',
+          isError: true,
+        );
+        return;
+      }
+
       final result = await OpenFile.open(path);
       if (!context.mounted) return;
       if (result.type != ResultType.done) {
         showTopToast(
           context,
-          'Could not open the installer. Allow installs from this source in Settings, or open the APK from Files.',
+          'Could not open the installer. Try Files → Downloads, or enable installs for Costly in Settings.',
           isError: true,
         );
       }

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 /// Shown in launcher (Android/iOS) via native config; keep in sync with UI copy.
 const String kAppDisplayName = 'Costly';
-const String kAppVersionLabel = '1.0.0';
+/// Use [PackageInfo.version] / [PackageInfo.buildNumber] in UI — do not hardcode a version string.
 
 /// Public GitHub repo used by **Check for updates** (GitHub REST API, no token).
 /// Set `kGitHubRepoOwner` to your username or org (same repo you push this app to).

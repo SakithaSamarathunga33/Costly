@@ -1,11 +1,11 @@
-# Creates a GitHub Release with a release APK when you push a version tag.
+# Sole Android CI build: runs only when you push a version tag (not on every main commit).
+# Builds a release APK and publishes a GitHub Release with that APK attached.
 #
 # Usage:
-#   git tag v1.1.0
-#   git push origin v1.1.0
+#   git tag v1.3.0
+#   git push origin v1.3.0
 #
 # Tag format: vMAJOR.MINOR.PATCH (e.g. v1.0.0, v1.2.3)
-# The push workflow on main still uploads CI artifacts only; this workflow publishes Releases.
 
 name: GitHub Release (tag)
 
@@ -59,6 +59,15 @@ jobs:
 
       - name: Build release APK
         run: flutter build apk --release
+
+      - name: Print debug keystore SHA-1 (Firebase Google Sign-In)
+        run: |
+          echo "If Google login fails only on CI-built APKs, add this SHA-1 in Firebase Console → Project settings → Your Android app."
+          if [ -f "$HOME/.android/debug.keystore" ]; then
+            keytool -list -v -keystore "$HOME/.android/debug.keystore" -alias androiddebugkey -storepass android -keypass android | grep -E "SHA1:|SHA256:" || true
+          else
+            echo "No ~/.android/debug.keystore (unexpected after build)."
+          fi
 
       - name: Prepare APK for release
         run: |
