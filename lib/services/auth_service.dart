@@ -37,11 +37,18 @@ class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
+  /// One [GoogleSignIn] per [AuthService]. Creating a new instance for each call
+  /// can leave sign-out and sign-in out of sync with the native session.
+  GoogleSignIn? _googleSignInInstance;
+
   /// Same options for sign-in and sign-out so sessions clear correctly.
-  GoogleSignIn _googleSignIn() => GoogleSignIn(
-        scopes: const ['email', 'profile'],
-        serverClientId: _kFirebaseGoogleWebClientId,
-      );
+  GoogleSignIn _googleSignIn() {
+    _googleSignInInstance ??= GoogleSignIn(
+      scopes: const ['email', 'profile'],
+      serverClientId: _kFirebaseGoogleWebClientId,
+    );
+    return _googleSignInInstance!;
+  }
 
   /// Register a new user
   Future<UserModel> register({
@@ -118,10 +125,70 @@ class AuthService {
     }
   }
 
+  /// Android / iOS: obtain a Firebase session via Google ID token.
+  Future<UserCredential> _signInWithGoogleMobile() async {
+    final GoogleSignIn googleSignIn = _googleSignIn();
+
+    for (var attempt = 0; attempt < 2; attempt++) {
+      try {
+        await googleSignIn.signOut();
+      } catch (_) {}
+      if (attempt > 0) {
+        try {
+          await googleSignIn.disconnect();
+        } catch (_) {}
+      }
+
+      GoogleSignInAccount? googleUser;
+      try {
+        googleUser = await googleSignIn.signIn();
+      } on PlatformException catch (e) {
+        throw Exception(_googleSignInPlatformMessage(e));
+      }
+
+      if (googleUser == null) {
+        throw Exception('Google sign in was cancelled');
+      }
+
+      GoogleSignInAuthentication googleAuth;
+      try {
+        googleAuth = await googleUser.authentication;
+      } on PlatformException catch (e) {
+        throw Exception(_googleSignInPlatformMessage(e));
+      }
+
+      if (googleAuth.idToken == null) {
+        throw Exception(
+          'Google did not return an ID token. On Android, add your app\'s '
+          'SHA-1 fingerprint in Firebase Console → Project settings → Your apps, '
+          'then download the updated google-services.json and rebuild.',
+        );
+      }
+
+      final AuthCredential credential = GoogleAuthProvider.credential(
+        idToken: googleAuth.idToken,
+        accessToken: googleAuth.accessToken,
+      );
+
+      try {
+        return await _auth.signInWithCredential(credential);
+      } on FirebaseAuthException catch (e) {
+        final retryable =
+            e.code == 'invalid-credential' || e.code == 'invalid-id-token';
+        if (attempt == 0 && retryable) {
+          continue;
+        }
+        rethrow;
+      }
+    }
+
+    throw Exception('Google sign-in failed. Please try again.');
+  }
+
   /// Sign in with Google
   Future<UserModel> signInWithGoogle() async {
     try {
-      UserCredential userCredential;
+      final UserCredential userCredential;
 
       if (kIsWeb) {
         // Web: Use Firebase popup
@@ -129,41 +196,7 @@ class AuthService {
           GoogleAuthProvider(),
         );
       } else {
-        // Android / iOS: google_sign_in + Firebase ID token
-        final GoogleSignIn googleSignIn = _googleSignIn();
-
-        GoogleSignInAccount? googleUser;
-        try {
-          googleUser = await googleSignIn.signIn();
-        } on PlatformException catch (e) {
-          throw Exception(_googleSignInPlatformMessage(e));
-        }
-
-        if (googleUser == null) {
-          throw Exception('Google sign in was cancelled');
-        }
-
-        GoogleSignInAuthentication googleAuth;
-        try {
-          googleAuth = await googleUser.authentication;
-        } on PlatformException catch (e) {
-          throw Exception(_googleSignInPlatformMessage(e));
-        }
-
-        if (googleAuth.idToken == null) {
-          throw Exception(
-            'Google did not return an ID token. On Android, add your app\'s '
-            'SHA-1 fingerprint in Firebase Console → Project settings → Your apps, '
-            'then download the updated google-services.json and rebuild.',
-          );
-        }
-
-        final AuthCredential credential = GoogleAuthProvider.credential(
-          idToken: googleAuth.idToken,
-          accessToken: googleAuth.accessToken,
-        );
-
-        userCredential = await _auth.signInWithCredential(credential);
+        userCredential = await _signInWithGoogleMobile();
       }
 
       final uid = userCredential.user!.uid;
