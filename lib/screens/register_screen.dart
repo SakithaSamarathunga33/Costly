@@ -39,7 +39,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (success && mounted) {
       await transactionProvider.fetchTransactions(authProvider.userId);
       if (mounted) {
-        Navigator.pushReplacementNamed(context, '/home_dashboard');
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          '/home_dashboard',
+          (route) => false,
+        );
       }
     } else if (mounted && authProvider.error != null) {
       showTopToast(context, authProvider.error!, isError: true);
@@ -62,7 +66,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
       // Fetch transactions (empty for new user)
       await transactionProvider.fetchTransactions(authProvider.userId);
       if (mounted) {
-        Navigator.pushReplacementNamed(context, '/home_dashboard');
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          '/home_dashboard',
+          (route) => false,
+        );
       }
     } else if (mounted && authProvider.error != null) {
       showTopToast(context, authProvider.error!, isError: true);

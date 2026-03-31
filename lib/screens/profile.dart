@@ -7,6 +7,7 @@ import '../providers/category_provider.dart';
 import '../services/cloudinary_service.dart';
 import '../widgets/floating_nav_bar.dart';
 import '../widgets/app_animations.dart';
+import '../widgets/root_back_handler.dart';
 import '../utils/top_toast.dart';
 import '../utils/constants.dart';
 
@@ -256,16 +257,14 @@ class ProfileScreen extends StatelessWidget {
     final authProvider = Provider.of<AuthProvider>(context);
     final txProvider = Provider.of<TransactionProvider>(context);
 
-    return Scaffold(
+    return RootBackHandler(
+      child: Scaffold(
       backgroundColor: bg,
       appBar: AppBar(
         backgroundColor: bg,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: textMain),
-          onPressed: () => Navigator.pop(context),
-        ),
+        automaticallyImplyLeading: false,
         centerTitle: true,
         title: const Text(
           'Profile',
@@ -480,8 +479,11 @@ class ProfileScreen extends StatelessWidget {
                               txProvider.clear();
                               catProvider.clear();
                               if (context.mounted) {
-                                Navigator.pushReplacementNamed(
-                                    context, '/login_screen');
+                                Navigator.pushNamedAndRemoveUntil(
+                                  context,
+                                  '/login_screen',
+                                  (route) => false,
+                                );
                               }
                             },
                       child: Padding(
@@ -536,6 +538,7 @@ class ProfileScreen extends StatelessWidget {
           ),
           const FloatingNavBar(currentIndex: 3),
         ],
+      ),
       ),
     );
   }

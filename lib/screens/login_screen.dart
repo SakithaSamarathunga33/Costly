@@ -73,7 +73,11 @@ class _LoginScreenState extends State<LoginScreen> {
     if (success && mounted) {
       await transactionProvider.fetchTransactions(authProvider.userId);
       if (mounted) {
-        Navigator.pushReplacementNamed(context, '/home_dashboard');
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          '/home_dashboard',
+          (route) => false,
+        );
       }
     } else if (mounted && authProvider.error != null) {
       showTopToast(context, authProvider.error!, isError: true);
@@ -97,7 +101,11 @@ class _LoginScreenState extends State<LoginScreen> {
       // Fetch user transactions after successful login
       await transactionProvider.fetchTransactions(authProvider.userId);
       if (mounted) {
-        Navigator.pushReplacementNamed(context, '/home_dashboard');
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          '/home_dashboard',
+          (route) => false,
+        );
       }
     } else if (mounted && authProvider.error != null) {
       // Show error snackbar

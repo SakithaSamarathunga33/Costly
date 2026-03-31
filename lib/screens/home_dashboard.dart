@@ -7,6 +7,7 @@ import '../providers/category_provider.dart';
 import '../utils/constants.dart';
 import '../widgets/floating_nav_bar.dart';
 import '../widgets/app_animations.dart';
+import '../widgets/root_back_handler.dart';
 
 class HomeDashboard extends StatefulWidget {
   const HomeDashboard({super.key});
@@ -54,7 +55,8 @@ class _HomeDashboardState extends State<HomeDashboard> {
     final incomeStr = currencyFormat.format(txProvider.totalIncome);
     final expenseStr = currencyFormat.format(txProvider.totalExpenses);
 
-    return Scaffold(
+    return RootBackHandler(
+      child: Scaffold(
       backgroundColor: bgLight,
       body: Stack(
         children: [
@@ -695,6 +697,7 @@ class _HomeDashboardState extends State<HomeDashboard> {
           // ─── Floating Nav Bar ───
           const FloatingNavBar(currentIndex: 0),
         ],
+      ),
       ),
     );
   }

@@ -116,9 +116,17 @@ class _SplashScreenState extends State<SplashScreen>
           Provider.of<TransactionProvider>(context, listen: false);
       await txProvider.fetchTransactions(authProvider.userId);
       if (!mounted) return;
-      Navigator.pushReplacementNamed(context, '/home_dashboard');
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        '/home_dashboard',
+        (route) => false,
+      );
     } else {
-      Navigator.pushReplacementNamed(context, '/login_screen');
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        '/login_screen',
+        (route) => false,
+      );
     }
   }
 

@@ -9,6 +9,7 @@ import '../screens/edit_transaction.dart';
 import '../utils/constants.dart';
 import '../widgets/floating_nav_bar.dart';
 import '../widgets/app_animations.dart';
+import '../widgets/root_back_handler.dart';
 import '../utils/top_toast.dart';
 
 class TransactionsHistoryScreen extends StatefulWidget {
@@ -138,16 +139,14 @@ class _TransactionsHistoryScreenState extends State<TransactionsHistoryScreen> {
         ? ((monthTotal - lastMonthTotal) / lastMonthTotal.abs() * 100)
         : 0.0;
 
-    return Scaffold(
+    return RootBackHandler(
+      child: Scaffold(
       backgroundColor: bg,
       appBar: AppBar(
         backgroundColor: bg,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: textMain),
-          onPressed: () => Navigator.pop(context),
-        ),
+        automaticallyImplyLeading: false,
         centerTitle: true,
         title: Column(
           mainAxisSize: MainAxisSize.min,
@@ -576,6 +575,7 @@ class _TransactionsHistoryScreenState extends State<TransactionsHistoryScreen> {
           ),
           const FloatingNavBar(currentIndex: 1),
         ],
+      ),
       ),
     );
   }
