@@ -122,6 +122,13 @@ git push origin v1.3.0
 
 Commit your changes on `main` first, then tag the commit you want to ship.
 
+**Tag push did not start a workflow?**
+
+1. **Settings → Actions → General** — Actions must be allowed for the repository. **Forks** often have Actions disabled until you turn them on.
+2. Ensure `.github/workflows/github_release_on_tag.yml` is on your **default branch** on GitHub (push `main` if you only tagged locally).
+3. **Re-trigger the tag** (optional): `git push origin :refs/tags/v1.7.0` then `git push origin v1.7.0`.
+4. **Manual run:** Actions → **GitHub Release (tag)** → **Run workflow** → enter the tag (e.g. `v1.7.0`).
+
 ### In-app “Check for updates” (Profile)
 
 The app can compare your installed version to the [latest GitHub release](https://docs.github.com/en/rest/releases/releases#get-the-latest-release) for this repository. Set **`kGitHubRepoOwner`** in `lib/utils/constants.dart` to your GitHub username or organization (and adjust **`kGitHubRepoName`** if the repo is not named `Costly`). On **Android**, if a newer semver tag exists and the release includes an `.apk` asset, the app downloads it and opens the system installer. On **iOS** and **web**, the releases page opens in the browser.

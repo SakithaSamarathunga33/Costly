@@ -22,6 +22,10 @@
 # Cloudinary (profile photo uploads): set repository secrets
 # CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET
 # (same names as flutter --dart-define). Without them the APK builds but uploads fail.
+#
+# If pushing a tag does not start a run: Repo → Settings → Actions → General →
+# allow Actions. Forks default to Actions off until enabled. You can also use
+# "Run workflow" (workflow_dispatch) and enter the tag (e.g. v1.7.0).
 
 name: GitHub Release (tag)
 
@@ -29,6 +33,14 @@ on:
   push:
     tags:
       - 'v*'
+      - 'v*.*'
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Existing tag to build (e.g. v1.7.0)'
+        required: true
+        type: string
 
 permissions:
   contents: write
@@ -43,21 +55,32 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event_name == 'workflow_dispatch' && format('refs/tags/{0}', inputs.tag) || github.ref }}
 
       - name: Parse tag
         id: tag
         run: |
-          TAG="${GITHUB_REF#refs/tags/}"
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            TAG="${{ inputs.tag }}"
+          else
+            TAG="${GITHUB_REF#refs/tags/}"
+          fi
           SEMVER="${TAG#v}"
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
           echo "semver=$SEMVER" >> "$GITHUB_OUTPUT"
           echo "Release tag=$TAG semver=$SEMVER"
 
+      # Cannot use `secrets` in step `if:` (invalid workflow). Branch inside the script instead.
       - name: Restore debug keystore from secret
-        if: ${{ secrets.DEBUG_KEYSTORE_BASE64 != '' }}
         env:
           DEBUG_KEYSTORE_BASE64: ${{ secrets.DEBUG_KEYSTORE_BASE64 }}
         run: |
+          if [ -z "${DEBUG_KEYSTORE_BASE64:-}" ]; then
+            echo "⚠️ DEBUG_KEYSTORE_BASE64 not set; CI will use the runner default debug.keystore"
+            exit 0
+          fi
           mkdir -p "$HOME/.android"
           echo "$DEBUG_KEYSTORE_BASE64" | base64 -d > "$HOME/.android/debug.keystore"
           echo "✅ Restored debug.keystore from GitHub secret"
