@@ -94,40 +94,6 @@ flutter run -d chrome    # web
 flutter run -d android     # device / emulator
 ```
 
-To test **profile photo upload** locally, add the same three `--dart-define=CLOUDINARY_*` flags as in the release build command below.
-
-**Release APK**
-
-Cloudinary keys must not live in source. Pass them at **build time** (they are baked into the binary; keep the repo public without committing secrets):
-
-```bash
-flutter build apk --release \
-  --dart-define=CLOUDINARY_CLOUD_NAME=your_cloud_name \
-  --dart-define=CLOUDINARY_API_KEY=your_api_key \
-  --dart-define=CLOUDINARY_API_SECRET=your_api_secret
-```
-
-See `cloudinary.defines.example`. For **GitHub Releases**, add the same three names as [repository secrets](https://docs.github.com/en/actions/security-guides/using-secrets-in-github-actions); the tag workflow passes them into `flutter build`.
-
-> Android Google Sign-In needs your keystore **SHA‑1/256** registered in Firebase for release builds.
-
-### GitHub Actions (APK + Release)
-
-CI **does not** build on every push to `main`. It runs **only** when you push a **version tag** (`.github/workflows/github_release_on_tag.yml`): it builds the release APK and creates a **GitHub Release** with that APK and auto-generated release notes.
-
-```bash
-git tag v1.3.0
-git push origin v1.3.0
-```
-
-Commit your changes on `main` first, then tag the commit you want to ship.
-
-**Tag push did not start a workflow?**
-
-1. **Settings → Actions → General** — Actions must be allowed for the repository. **Forks** often have Actions disabled until you turn them on.
-2. Ensure `.github/workflows/github_release_on_tag.yml` is on your **default branch** on GitHub (push `main` if you only tagged locally).
-3. **Re-trigger the tag** (optional): `git push origin :refs/tags/v1.7.0` then `git push origin v1.7.0`.
-4. **Manual run:** Actions → **GitHub Release (tag)** → **Run workflow** → enter the tag (e.g. `v1.7.0`).
 
 ### In-app “Check for updates” (Profile)
 
