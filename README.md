@@ -77,24 +77,6 @@ docs/readme_images/           # README screenshots
 
 ---
 
-## Getting started
-
-**Requirements:** Flutter SDK 3.x, a Firebase project (Auth + Firestore).
-
-```bash
-git clone https://github.com/YOUR_USERNAME/Costly.git
-cd Costly
-flutter pub get
-```
-
-Configure Firebase (e.g. [FlutterFire CLI](https://firebase.flutter.dev/docs/cli/)) so `lib/firebase_options.dart` and `android/app/google-services.json` match your project. Enable **Email/Password** and **Google** sign-in.
-
-```bash
-flutter run -d chrome    # web
-flutter run -d android     # device / emulator
-```
-
-
 ### In-app “Check for updates” (Profile)
 
 The app can compare your installed version to the [latest GitHub release](https://docs.github.com/en/rest/releases/releases#get-the-latest-release) for this repository. Set **`kGitHubRepoOwner`** in `lib/utils/constants.dart` to your GitHub username or organization (and adjust **`kGitHubRepoName`** if the repo is not named `Costly`). On **Android**, if a newer semver tag exists and the release includes an `.apk` asset, the app downloads it and opens the system installer. On **iOS** and **web**, the releases page opens in the browser.
