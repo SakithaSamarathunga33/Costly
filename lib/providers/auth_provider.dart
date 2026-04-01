@@ -151,6 +151,9 @@ class AuthProvider extends ChangeNotifier {
 
     try {
       final cloudinary = CloudinaryService();
+      final previousUrl = _user!.profilePicUrl;
+      await cloudinary.deleteImageBySecureUrl(previousUrl);
+
       final url = await cloudinary.uploadImage(
         imageFile,
         folder: 'profile_pictures',

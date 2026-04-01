@@ -1,0 +1,17 @@
+# Do not put real values in a committed file. Copy to cloudinary.local.env (gitignored)
+# or pass on the command line / GitHub Actions secrets.
+#
+# Local release APK:
+#   flutter build apk --release ^
+#     --dart-define=CLOUDINARY_CLOUD_NAME=your_cloud_name ^
+#     --dart-define=CLOUDINARY_API_KEY=your_api_key ^
+#     --dart-define=CLOUDINARY_API_SECRET=your_api_secret
+#
+# GitHub: Settings → Secrets and variables → Actions → New repository secret
+#   CLOUDINARY_CLOUD_NAME
+#   CLOUDINARY_API_KEY
+#   CLOUDINARY_API_SECRET
+#
+CLOUDINARY_CLOUD_NAME=
+CLOUDINARY_API_KEY=
+CLOUDINARY_API_SECRET=

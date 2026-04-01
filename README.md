@@ -94,11 +94,20 @@ flutter run -d chrome    # web
 flutter run -d android     # device / emulator
 ```
 
+To test **profile photo upload** locally, add the same three `--dart-define=CLOUDINARY_*` flags as in the release build command below.
+
 **Release APK**
 
+Cloudinary keys must not live in source. Pass them at **build time** (they are baked into the binary; keep the repo public without committing secrets):
+
 ```bash
-flutter build apk --release
+flutter build apk --release \
+  --dart-define=CLOUDINARY_CLOUD_NAME=your_cloud_name \
+  --dart-define=CLOUDINARY_API_KEY=your_api_key \
+  --dart-define=CLOUDINARY_API_SECRET=your_api_secret
 ```
+
+See `cloudinary.defines.example`. For **GitHub Releases**, add the same three names as [repository secrets](https://docs.github.com/en/actions/security-guides/using-secrets-in-github-actions); the tag workflow passes them into `flutter build`.
 
 > Android Google Sign-In needs your keystore **SHA‑1/256** registered in Firebase for release builds.
 

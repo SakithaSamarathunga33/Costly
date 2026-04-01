@@ -263,7 +263,10 @@ class AppUpdateService {
             child: Text(
               'Latest: $tagName\nInstalled: v$currentLabel\n\n'
               '${apkName != null ? 'File: $apkName\n\n' : ''}'
-              '${body.length > 400 ? '${body.substring(0, 400)}…' : body}',
+              '${body.length > 400 ? '${body.substring(0, 400)}…' : body}\n\n'
+              'If Android says the package conflicts, the installed app was signed '
+              'with a different key—uninstall once, then install this APK. '
+              'Future updates install normally when the key matches.',
             ),
           ),
           actions: [

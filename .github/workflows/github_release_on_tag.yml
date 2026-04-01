@@ -12,6 +12,16 @@
 # (base64-encoded debug.keystore) so CI uses the SAME signing key as your PC.
 # Without it, CI falls back to its own random debug keystore and Google login
 # will fail on the downloaded APK.
+#
+# Android updates require (1) a strictly higher versionCode than the installed app
+# and (2) the same signing key. Older workflows used +github.run_number only, so a
+# new tag could ship a *lower* versionCode than an install from an old run (Android
+# then reports a conflict). CI now sets versionCode from Unix time so each release
+# is strictly newer than prior sideloads.
+#
+# Cloudinary (profile photo uploads): set repository secrets
+# CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET
+# (same names as flutter --dart-define). Without them the APK builds but uploads fail.
 
 name: GitHub Release (tag)
 
@@ -44,7 +54,7 @@ jobs:
           echo "Release tag=$TAG semver=$SEMVER"
 
       - name: Restore debug keystore from secret
-        if: ${{ env.DEBUG_KEYSTORE_BASE64 != '' }}
+        if: ${{ secrets.DEBUG_KEYSTORE_BASE64 != '' }}
         env:
           DEBUG_KEYSTORE_BASE64: ${{ secrets.DEBUG_KEYSTORE_BASE64 }}
         run: |
@@ -69,14 +79,25 @@ jobs:
 
       - name: Set version in pubspec
         run: |
-          sed -i "s/^version: .*/version: ${{ steps.tag.outputs.semver }}+${{ github.run_number }}/" pubspec.yaml
+          SEMVER="${{ steps.tag.outputs.semver }}"
+          VCODE=$(($(date +%s)))
+          sed -i "s/^version: .*/version: ${SEMVER}+${VCODE}/" pubspec.yaml
           grep '^version:' pubspec.yaml
+          echo "Android versionCode=${VCODE} (semver=${SEMVER}, unix time)"
 
       - name: Install dependencies
         run: flutter pub get
 
       - name: Build release APK
-        run: flutter build apk --release
+        env:
+          CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
+          CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
+          CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
+        run: |
+          flutter build apk --release \
+            --dart-define=CLOUDINARY_CLOUD_NAME="${CLOUDINARY_CLOUD_NAME}" \
+            --dart-define=CLOUDINARY_API_KEY="${CLOUDINARY_API_KEY}" \
+            --dart-define=CLOUDINARY_API_SECRET="${CLOUDINARY_API_SECRET}"
 
       - name: Verify signing key
         run: |

@@ -5,15 +5,38 @@ import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 import 'package:image_picker/image_picker.dart';
 
-/// Service for uploading images to Cloudinary
+/// Service for uploading images to Cloudinary.
+///
+/// Credentials are **not** stored in the repo. Pass at build/run time:
+/// `--dart-define=CLOUDINARY_CLOUD_NAME=... --dart-define=CLOUDINARY_API_KEY=... --dart-define=CLOUDINARY_API_SECRET=...`
+/// GitHub Actions: set repository secrets with the same names.
 class CloudinaryService {
-  static const String _cloudName = 'dr0rzmwoe';
-  static const String _apiKey = '616978867843219';
-  static const String _apiSecret = 'cnJ5_sMYx4SbWssDzzodyR7lSNc';
+  static const String _cloudName =
+      String.fromEnvironment('CLOUDINARY_CLOUD_NAME');
+  static const String _apiKey = String.fromEnvironment('CLOUDINARY_API_KEY');
+  static const String _apiSecret =
+      String.fromEnvironment('CLOUDINARY_API_SECRET');
+
+  /// True when all three compile-time defines are non-empty.
+  static bool get isConfigured =>
+      _cloudName.isNotEmpty &&
+      _apiKey.isNotEmpty &&
+      _apiSecret.isNotEmpty;
 
   static final CloudinaryService _instance = CloudinaryService._internal();
   factory CloudinaryService() => _instance;
   CloudinaryService._internal();
+
+  void _ensureConfigured() {
+    if (!isConfigured) {
+      throw Exception(
+        'Cloudinary is not configured. Build or run with '
+        '--dart-define=CLOUDINARY_CLOUD_NAME=... '
+        '--dart-define=CLOUDINARY_API_KEY=... '
+        '--dart-define=CLOUDINARY_API_SECRET=...',
+      );
+    }
+  }
 
   /// Pick an image from gallery or camera
   Future<XFile?> pickImage({ImageSource source = ImageSource.gallery}) async {
@@ -28,6 +51,7 @@ class CloudinaryService {
 
   /// Upload an image file to Cloudinary and return the secure URL
   Future<String?> uploadImage(XFile imageFile, {String? folder}) async {
+    _ensureConfigured();
     try {
       final timestamp = DateTime.now().millisecondsSinceEpoch ~/ 1000;
 
@@ -89,6 +113,98 @@ class CloudinaryService {
     } catch (e) {
       debugPrint('Cloudinary upload exception: $e');
       rethrow;
+    }
+  }
+
+  /// Parses [public_id] from a `res.cloudinary.com` delivery URL (supports optional transforms + version).
+  static String? publicIdFromSecureUrl(String? url) {
+    if (url == null || url.isEmpty) return null;
+    final uri = Uri.tryParse(url);
+    if (uri == null || !uri.host.contains('cloudinary.com')) return null;
+    final segs = uri.pathSegments;
+    final u = segs.indexOf('upload');
+    if (u < 0 || u + 1 >= segs.length) return null;
+    var rest = segs.sublist(u + 1);
+    while (rest.isNotEmpty) {
+      final s = rest.first;
+      if (RegExp(r'^v\d+$').hasMatch(s)) {
+        rest = rest.sublist(1);
+        break;
+      }
+      if (s.contains(',') || _looksLikeCloudinaryTransformSegment(s)) {
+        rest = rest.sublist(1);
+        continue;
+      }
+      break;
+    }
+    if (rest.isEmpty) return null;
+    final lastSeg = rest.last;
+    final withoutExt =
+        lastSeg.replaceFirst(RegExp(r'\.[a-z0-9]+$', caseSensitive: false), '');
+    if (rest.length == 1) return withoutExt;
+    return '${rest.sublist(0, rest.length - 1).join('/')}/$withoutExt';
+  }
+
+  static bool _looksLikeCloudinaryTransformSegment(String s) {
+    if (s.isEmpty) return false;
+    return s.startsWith('c_') ||
+        s.startsWith('w_') ||
+        s.startsWith('h_') ||
+        s.startsWith('q_') ||
+        s.startsWith('f_') ||
+        s.startsWith('e_') ||
+        s.startsWith('b_') ||
+        s.startsWith('t_') ||
+        s.startsWith('a_') ||
+        s.startsWith('d_') ||
+        s.startsWith('l_') ||
+        s.startsWith('u_') ||
+        s.startsWith('x_') ||
+        s.startsWith('y_') ||
+        s.startsWith('z_') ||
+        s.startsWith('fl_') ||
+        s.startsWith('ar_') ||
+        s.startsWith('bo_') ||
+        s.startsWith('pg_') ||
+        s.startsWith('so_');
+  }
+
+  /// Deletes the asset at [secureUrl] from Cloudinary (no-op if URL is null or not Cloudinary).
+  /// Errors are logged only; callers should not depend on success for UX.
+  Future<void> deleteImageBySecureUrl(String? secureUrl) async {
+    final publicId = publicIdFromSecureUrl(secureUrl);
+    if (publicId == null) return;
+    if (!isConfigured) return;
+
+    try {
+      final timestamp = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+      final params = <String, String>{
+        'public_id': publicId,
+        'timestamp': timestamp.toString(),
+      };
+      final signature = _generateSignature(params);
+
+      final response = await http.post(
+        Uri.parse('https://api.cloudinary.com/v1_1/$_cloudName/image/destroy'),
+        body: {
+          'public_id': publicId,
+          'api_key': _apiKey,
+          'timestamp': timestamp.toString(),
+          'signature': signature,
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body) as Map<String, dynamic>;
+        final result = data['result'] as String?;
+        debugPrint('Cloudinary destroy: $result ($publicId)');
+      } else {
+        debugPrint(
+          'Cloudinary destroy failed: ${response.statusCode} ${response.body}',
+        );
+      }
+    } catch (e) {
+      debugPrint('Cloudinary destroy exception: $e');
     }
   }
 
