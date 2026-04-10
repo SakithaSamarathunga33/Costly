@@ -15,6 +15,8 @@ import 'screens/transactions_history.dart';
 import 'screens/analytics.dart';
 import 'screens/profile.dart';
 import 'screens/edit_profile.dart';
+import 'screens/income_list_screen.dart';
+import 'screens/expense_list_screen.dart';
 
 Route<dynamic>? generateRoute(RouteSettings settings) {
   switch (settings.name) {
@@ -38,6 +40,10 @@ Route<dynamic>? generateRoute(RouteSettings settings) {
       return _slideUpRoute(const ProfileScreen());
     case '/edit_profile':
       return _slideUpRoute(const EditProfileScreen());
+    case '/income_list':
+      return _slideUpRoute(const IncomeListScreen());
+    case '/expense_list':
+      return _slideUpRoute(const ExpenseListScreen());
     default:
       return _slideUpRoute(const SplashScreen());
   }

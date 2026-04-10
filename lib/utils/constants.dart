@@ -80,6 +80,8 @@ const Map<String, IconData> kIconPool = {
   'local_laundry_service': Icons.local_laundry_service,
   'book': Icons.book,
   'handyman': Icons.handyman,
+  'psychology': Icons.psychology,
+  'smart_toy': Icons.smart_toy,
 };
 
 // Color pool for custom categories

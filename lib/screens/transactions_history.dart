@@ -29,10 +29,14 @@ class _TransactionsHistoryScreenState extends State<TransactionsHistoryScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // Read category filter from route arguments (passed from category tap)
+    // Read filter from route arguments
     final args = ModalRoute.of(context)?.settings.arguments;
     if (args is String && _categoryFilter == null) {
       _categoryFilter = args;
+    } else if (args is Map<String, dynamic> && _filterIndex == 0) {
+      final type = args['type'] as String?;
+      if (type == 'income') _filterIndex = 2;
+      if (type == 'expense') _filterIndex = 1;
     }
   }
 

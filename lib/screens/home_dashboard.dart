@@ -8,6 +8,7 @@ import '../utils/constants.dart';
 import '../widgets/floating_nav_bar.dart';
 import '../widgets/app_animations.dart';
 import '../widgets/root_back_handler.dart';
+import '../utils/top_toast.dart';
 
 class HomeDashboard extends StatefulWidget {
   const HomeDashboard({super.key});
@@ -17,6 +18,8 @@ class HomeDashboard extends StatefulWidget {
 }
 
 class _HomeDashboardState extends State<HomeDashboard> {
+  String? _deletePendingId;
+
   @override
   void initState() {
     super.initState();
@@ -279,97 +282,117 @@ class _HomeDashboardState extends State<HomeDashboard> {
                       child: Row(
                         children: [
                           Expanded(
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 14),
-                              decoration: BoxDecoration(
-                                color: cardWhite,
-                                borderRadius: BorderRadius.circular(16),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.04),
-                                    blurRadius: 10,
-                                    offset: const Offset(0, 2),
-                                  ),
-                                ],
+                            child: GestureDetector(
+                              onTap: () => Navigator.pushNamed(
+                                context,
+                                '/income_list',
                               ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    children: [
-                                      Icon(Icons.arrow_downward,
-                                          color: greenAccent, size: 14),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        'RECEIVED',
-                                        style: TextStyle(
-                                          color: greenAccent,
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.w700,
-                                          letterSpacing: 0.5,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 6),
-                                  Text(
-                                    incomeStr,
-                                    style: const TextStyle(
-                                      color: textMain,
-                                      fontSize: 22,
-                                      fontWeight: FontWeight.bold,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 14),
+                                decoration: BoxDecoration(
+                                  color: cardWhite,
+                                  borderRadius: BorderRadius.circular(16),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.04),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 2),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Icon(Icons.arrow_downward,
+                                            color: greenAccent, size: 14),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          'RECEIVED',
+                                          style: TextStyle(
+                                            color: greenAccent,
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w700,
+                                            letterSpacing: 0.5,
+                                          ),
+                                        ),
+                                        const Spacer(),
+                                        Icon(Icons.chevron_right,
+                                            color: greenAccent.withOpacity(0.5),
+                                            size: 16),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 6),
+                                    Text(
+                                      incomeStr,
+                                      style: const TextStyle(
+                                        color: textMain,
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                           ),
                           const SizedBox(width: 12),
                           Expanded(
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 14),
-                              decoration: BoxDecoration(
-                                color: cardWhite,
-                                borderRadius: BorderRadius.circular(16),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.04),
-                                    blurRadius: 10,
-                                    offset: const Offset(0, 2),
-                                  ),
-                                ],
+                            child: GestureDetector(
+                              onTap: () => Navigator.pushNamed(
+                                context,
+                                '/expense_list',
                               ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    children: [
-                                      Icon(Icons.arrow_upward,
-                                          color: redAccent, size: 14),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        'EXPENSES',
-                                        style: TextStyle(
-                                          color: redAccent,
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.w700,
-                                          letterSpacing: 0.5,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 6),
-                                  Text(
-                                    expenseStr,
-                                    style: const TextStyle(
-                                      color: textMain,
-                                      fontSize: 22,
-                                      fontWeight: FontWeight.bold,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 14),
+                                decoration: BoxDecoration(
+                                  color: cardWhite,
+                                  borderRadius: BorderRadius.circular(16),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.04),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 2),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Icon(Icons.arrow_upward,
+                                            color: redAccent, size: 14),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          'EXPENSES',
+                                          style: TextStyle(
+                                            color: redAccent,
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w700,
+                                            letterSpacing: 0.5,
+                                          ),
+                                        ),
+                                        const Spacer(),
+                                        Icon(Icons.chevron_right,
+                                            color: redAccent.withOpacity(0.5),
+                                            size: 16),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 6),
+                                    Text(
+                                      expenseStr,
+                                      style: const TextStyle(
+                                        color: textMain,
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
                           ),
@@ -395,6 +418,54 @@ class _HomeDashboardState extends State<HomeDashboard> {
                           const SizedBox(height: 14),
                           Row(
                             children: [
+                              Expanded(
+                                child: GestureDetector(
+                                  onTap: () {
+                                    Navigator.pushNamed(context, '/add_income');
+                                  },
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 14),
+                                    decoration: BoxDecoration(
+                                      color: primary.withOpacity(0.08),
+                                      borderRadius: BorderRadius.circular(30),
+                                      border: Border.all(
+                                        color: primary.withOpacity(0.15),
+                                        width: 1,
+                                      ),
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Container(
+                                          width: 26,
+                                          height: 26,
+                                          decoration: BoxDecoration(
+                                            color: greenAccent,
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: const Icon(
+                                            Icons.account_balance_wallet,
+                                            color: Colors.white,
+                                            size: 14,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        const Text(
+                                          'Add Income',
+                                          style: TextStyle(
+                                            color: textMain,
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
                               Expanded(
                                 child: GestureDetector(
                                   onTap: () {
@@ -432,54 +503,6 @@ class _HomeDashboardState extends State<HomeDashboard> {
                                         const SizedBox(width: 8),
                                         const Text(
                                           'Add Expense',
-                                          style: TextStyle(
-                                            color: textMain,
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: GestureDetector(
-                                  onTap: () {
-                                    Navigator.pushNamed(context, '/add_income');
-                                  },
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 14),
-                                    decoration: BoxDecoration(
-                                      color: primary.withOpacity(0.08),
-                                      borderRadius: BorderRadius.circular(30),
-                                      border: Border.all(
-                                        color: primary.withOpacity(0.15),
-                                        width: 1,
-                                      ),
-                                    ),
-                                    child: Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Container(
-                                          width: 26,
-                                          height: 26,
-                                          decoration: BoxDecoration(
-                                            color: greenAccent,
-                                            shape: BoxShape.circle,
-                                          ),
-                                          child: const Icon(
-                                            Icons.account_balance_wallet,
-                                            color: Colors.white,
-                                            size: 14,
-                                          ),
-                                        ),
-                                        const SizedBox(width: 8),
-                                        const Text(
-                                          'Add Income',
                                           style: TextStyle(
                                             color: textMain,
                                             fontSize: 13,
@@ -668,19 +691,132 @@ class _HomeDashboardState extends State<HomeDashboard> {
                                     '${tx.category} • ${DateFormat('MMM dd, yyyy').format(tx.date)}';
                               }
 
+                              final isPending = _deletePendingId == tx.id;
+
                               return Padding(
                                 padding: const EdgeInsets.only(bottom: 12),
-                                child: _buildTransactionItem(
-                                  icon: catIcon,
-                                  iconColor: isIncome ? primary : catColor,
-                                  bgLight: (isIncome ? primary : catColor)
-                                      .withOpacity(0.12),
-                                  title: tx.title,
-                                  subtitle: dateStr,
-                                  amount:
-                                      '${isIncome ? '+' : '-'}${currencyFormat.format(tx.amount)}',
-                                  amountColor:
-                                      isIncome ? greenAccent : redAccent,
+                                child: GestureDetector(
+                                  onLongPress: () => setState(
+                                      () => _deletePendingId = tx.id),
+                                  onTap: () {
+                                    if (isPending) {
+                                      setState(
+                                          () => _deletePendingId = null);
+                                    }
+                                  },
+                                  child: AnimatedContainer(
+                                    duration:
+                                        const Duration(milliseconds: 220),
+                                    padding: const EdgeInsets.all(14),
+                                    decoration: BoxDecoration(
+                                      color: isPending
+                                          ? const Color(0xFFFFF0F0)
+                                          : Colors.white,
+                                      borderRadius:
+                                          BorderRadius.circular(18),
+                                      border: Border.all(
+                                        color: isPending
+                                            ? Colors.red.shade200
+                                            : Colors.transparent,
+                                        width: 1.5,
+                                      ),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black
+                                              .withOpacity(0.04),
+                                          blurRadius: 10,
+                                          offset: const Offset(0, 2),
+                                        ),
+                                      ],
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Container(
+                                          width: 46,
+                                          height: 46,
+                                          decoration: BoxDecoration(
+                                            color: (isIncome
+                                                    ? primary
+                                                    : catColor)
+                                                .withOpacity(0.12),
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: Icon(
+                                            catIcon,
+                                            color: isIncome
+                                                ? primary
+                                                : catColor,
+                                            size: 22,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 14),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                tx.title,
+                                                style: const TextStyle(
+                                                  color: textMain,
+                                                  fontSize: 15,
+                                                  fontWeight:
+                                                      FontWeight.w600,
+                                                ),
+                                                maxLines: 1,
+                                                overflow:
+                                                    TextOverflow.ellipsis,
+                                              ),
+                                              const SizedBox(height: 3),
+                                              Text(
+                                                dateStr,
+                                                style: TextStyle(
+                                                  color: Colors.black
+                                                      .withOpacity(0.45),
+                                                  fontSize: 12,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        if (isPending)
+                                          GestureDetector(
+                                            onTap: () {
+                                              txProvider.deleteTransaction(
+                                                  tx.id);
+                                              setState(() =>
+                                                  _deletePendingId = null);
+                                              showTopToast(context,
+                                                  '${tx.title} deleted');
+                                            },
+                                            child: Container(
+                                              width: 38,
+                                              height: 38,
+                                              decoration: const BoxDecoration(
+                                                color: Colors.red,
+                                                shape: BoxShape.circle,
+                                              ),
+                                              child: const Icon(
+                                                Icons.delete_outline,
+                                                color: Colors.white,
+                                                size: 20,
+                                              ),
+                                            ),
+                                          )
+                                        else
+                                          Text(
+                                            '${isIncome ? '+' : '-'}${currencyFormat.format(tx.amount)}',
+                                            style: TextStyle(
+                                              color: isIncome
+                                                  ? greenAccent
+                                                  : redAccent,
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                      ],
+                                    ),
+                                  ),
                                 ),
                               );
                             }),
@@ -778,74 +914,4 @@ class _HomeDashboardState extends State<HomeDashboard> {
     );
   }
 
-  // ──── Transaction list item ────
-  Widget _buildTransactionItem({
-    required IconData icon,
-    required Color iconColor,
-    required Color bgLight,
-    required String title,
-    required String subtitle,
-    required String amount,
-    required Color amountColor,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 46,
-            height: 46,
-            decoration: BoxDecoration(
-              color: bgLight,
-              shape: BoxShape.circle,
-            ),
-            child: Icon(icon, color: iconColor, size: 22),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    color: Color(0xFF2D2D2D),
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 3),
-                Text(
-                  subtitle,
-                  style: TextStyle(
-                    color: Colors.black.withOpacity(0.45),
-                    fontSize: 12,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Text(
-            amount,
-            style: TextStyle(
-              color: amountColor,
-              fontSize: 15,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }

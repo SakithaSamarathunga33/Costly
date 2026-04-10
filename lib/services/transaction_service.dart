@@ -69,6 +69,18 @@ class TransactionService {
     await _transactions.doc(transactionId).delete();
   }
 
+  /// Delete multiple transactions (batched for Firestore limits).
+  Future<void> deleteTransactions(List<String> transactionIds) async {
+    if (transactionIds.isEmpty) return;
+    for (var i = 0; i < transactionIds.length; i += 450) {
+      final batch = _firestore.batch();
+      for (final id in transactionIds.skip(i).take(450)) {
+        batch.delete(_transactions.doc(id));
+      }
+      await batch.commit();
+    }
+  }
+
   /// Update an existing transaction
   Future<void> updateTransaction(TransactionModel transaction) async {
     await _transactions.doc(transaction.id).update({

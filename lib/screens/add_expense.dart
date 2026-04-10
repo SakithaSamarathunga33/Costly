@@ -5,6 +5,8 @@ import '../providers/auth_provider.dart';
 import '../providers/transaction_provider.dart';
 import '../providers/category_provider.dart';
 import '../utils/constants.dart';
+import '../utils/keyboard_dialog_insets.dart';
+import '../widgets/category_icon_picker_grid.dart';
 import '../utils/top_toast.dart';
 import '../widgets/app_animations.dart';
 
@@ -596,12 +598,16 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
       builder: (ctx) {
         return StatefulBuilder(
           builder: (ctx, setDialogState) {
+            final imeOpen = MediaQuery.viewInsetsOf(ctx).bottom > 0;
             return Dialog(
               backgroundColor: Colors.white,
+              alignment: Alignment.bottomCenter,
+              insetPadding: keyboardAwareDialogInsets(ctx),
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20)),
-              child: Padding(
+              child: SingleChildScrollView(
                 padding: const EdgeInsets.all(24),
+                keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -613,11 +619,12 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                         color: Color(0xFF2D2D2D),
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    SizedBox(height: imeOpen ? 12 : 20),
 
                     // Category name field
                     TextField(
                       autofocus: true,
+                      scrollPadding: categoryNameFieldScrollPadding(ctx),
                       onChanged: (v) =>
                           setDialogState(() => categoryName = v),
                       style:
@@ -647,7 +654,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                             horizontal: 16, vertical: 14),
                       ),
                     ),
-                    const SizedBox(height: 18),
+                    SizedBox(height: imeOpen ? 10 : 18),
 
                     // Color picker
                     Align(
@@ -689,7 +696,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                         );
                       }).toList(),
                     ),
-                    const SizedBox(height: 18),
+                    SizedBox(height: imeOpen ? 8 : 18),
 
                     // Icon picker
                     Align(
@@ -703,43 +710,15 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 10),
-                    SizedBox(
-                      height: 180,
-                      child: GridView.count(
-                        crossAxisCount: 6,
-                        mainAxisSpacing: 10,
-                        crossAxisSpacing: 10,
-                        children: kIconPool.entries.map((entry) {
-                          final isActive = entry.key == selectedIcon;
-                          return GestureDetector(
-                            onTap: () => setDialogState(
-                                () => selectedIcon = entry.key),
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: isActive
-                                    ? primary
-                                    : const Color(0xFFF8F6FC),
-                                borderRadius: BorderRadius.circular(12),
-                                border: isActive
-                                    ? null
-                                    : Border.all(
-                                        color:
-                                            Colors.grey.withOpacity(0.15)),
-                              ),
-                              child: Icon(
-                                entry.value,
-                                size: 22,
-                                color: isActive
-                                    ? Colors.white
-                                    : Color(selectedColor),
-                              ),
-                            ),
-                          );
-                        }).toList(),
-                      ),
+                    SizedBox(height: imeOpen ? 6 : 10),
+                    CategoryIconPickerGrid(
+                      selectedIcon: selectedIcon,
+                      selectedColor: selectedColor,
+                      primary: primary,
+                      onIconSelected: (key) =>
+                          setDialogState(() => selectedIcon = key),
                     ),
-                    const SizedBox(height: 20),
+                    SizedBox(height: imeOpen ? 12 : 20),
 
                     // Save button
                     SizedBox(

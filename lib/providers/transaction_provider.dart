@@ -276,6 +276,22 @@ class TransactionProvider extends ChangeNotifier {
     }
   }
 
+  /// Delete several transactions at once (balance totals update via [notifyListeners]).
+  Future<bool> deleteTransactions(List<String> transactionIds) async {
+    if (transactionIds.isEmpty) return true;
+    try {
+      await _transactionService.deleteTransactions(transactionIds);
+      final idSet = transactionIds.toSet();
+      _transactions.removeWhere((t) => idSet.contains(t.id));
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _error = 'Failed to delete transactions';
+      notifyListeners();
+      return false;
+    }
+  }
+
   /// Update a transaction
   Future<bool> updateTransaction(TransactionModel transaction) async {
     _error = null;
