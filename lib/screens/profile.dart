@@ -450,6 +450,18 @@ class ProfileScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 14),
 
+                // Recurring Transactions item
+                _buildPreferenceItem(
+                  icon: Icons.repeat_rounded,
+                  iconBg: primary.withValues(alpha: 0.08),
+                  iconColor: primary,
+                  title: 'Recurring Transactions',
+                  subtitle: 'Manage repeating income & expenses',
+                  onTap: () =>
+                      Navigator.pushNamed(context, '/recurring_transactions'),
+                ),
+                const SizedBox(height: 10),
+
                 // Budget Settings item
                 _buildPreferenceItem(
                   icon: Icons.account_balance_wallet_outlined,

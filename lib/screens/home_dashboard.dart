@@ -10,6 +10,7 @@ import '../widgets/app_animations.dart';
 import '../widgets/root_back_handler.dart';
 import '../utils/top_toast.dart';
 import '../providers/budget_provider.dart';
+import '../providers/recurring_transaction_provider.dart';
 
 class HomeDashboard extends StatefulWidget {
   const HomeDashboard({super.key});
@@ -34,6 +35,8 @@ class _HomeDashboardState extends State<HomeDashboard> {
             .fetchCustomCategories(authProvider.userId);
         Provider.of<BudgetProvider>(context, listen: false)
             .fetchBudget(authProvider.userId, DateTime.now());
+        Provider.of<RecurringTransactionProvider>(context, listen: false)
+            .fetchAndProcess(authProvider.userId);
       }
     });
   }
