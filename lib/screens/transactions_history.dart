@@ -25,7 +25,11 @@ class _TransactionsHistoryScreenState extends State<TransactionsHistoryScreen> {
   String _searchQuery = '';
   String? _categoryFilter;
   String? _tagFilter;
+  final Set<String> _selectedIds = {};
   final _searchController = TextEditingController();
+
+  bool get _selectionActive => _selectedIds.isNotEmpty;
+  void _exitSelection() => setState(() => _selectedIds.clear());
 
   @override
   void didChangeDependencies() {
@@ -150,7 +154,12 @@ class _TransactionsHistoryScreenState extends State<TransactionsHistoryScreen> {
         ? ((monthTotal - lastMonthTotal) / lastMonthTotal.abs() * 100)
         : 0.0;
 
-    return RootBackHandler(
+    return PopScope(
+      canPop: !_selectionActive,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop && _selectionActive) _exitSelection();
+      },
+      child: RootBackHandler(
       child: Scaffold(
       backgroundColor: bg,
       appBar: AppBar(
@@ -159,34 +168,74 @@ class _TransactionsHistoryScreenState extends State<TransactionsHistoryScreen> {
         surfaceTintColor: Colors.transparent,
         automaticallyImplyLeading: false,
         centerTitle: true,
-        title: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text(
-              'Transaction History',
-              style: TextStyle(
-                color: textMain,
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
+        leading: _selectionActive
+            ? IconButton(
+                icon: const Icon(Icons.close_rounded,
+                    color: textMain, size: 22),
+                onPressed: _exitSelection,
+              )
+            : null,
+        title: _selectionActive
+            ? Text(
+                '${_selectedIds.length} selected',
+                style: const TextStyle(
+                  color: textMain,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                ),
+              )
+            : Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    'Transaction History',
+                    style: TextStyle(
+                      color: textMain,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  Text(
+                    DateFormat('MMMM yyyy').format(txProvider.selectedMonth),
+                    style: TextStyle(
+                      color: textMain.withOpacity(0.5),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
               ),
-            ),
-            Text(
-              DateFormat('MMMM yyyy').format(txProvider.selectedMonth),
-              style: TextStyle(
-                color: textMain.withOpacity(0.5),
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.calendar_today_outlined,
-                color: textMain, size: 20),
-            onPressed: () {},
-          ),
-        ],
+        actions: _selectionActive
+            ? [
+                IconButton(
+                  icon: const Icon(Icons.select_all_rounded,
+                      color: textMain, size: 22),
+                  tooltip: 'Select all',
+                  onPressed: () => setState(() => _selectedIds
+                      .addAll(filteredTx.map((t) => t.id))),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.delete_outline_rounded,
+                      color: Colors.red, size: 22),
+                  tooltip: 'Delete selected',
+                  onPressed: () async {
+                    final ids = _selectedIds.toList();
+                    _exitSelection();
+                    await txProvider.deleteTransactions(ids);
+                    if (mounted) {
+                      showTopToast(
+                          context, '${ids.length} transaction${ids.length == 1 ? '' : 's'} deleted');
+                    }
+                  },
+                ),
+              ]
+            : [
+                IconButton(
+                  icon: const Icon(Icons.calendar_today_outlined,
+                      color: textMain, size: 20),
+                  onPressed: () {},
+                ),
+              ],
       ),
       body: Stack(
         children: [
@@ -493,9 +542,23 @@ class _TransactionsHistoryScreenState extends State<TransactionsHistoryScreen> {
                               final timeStr =
                                   DateFormat('hh:mm a').format(tx.date);
 
-                              return Dismissible(
+                              return GestureDetector(
+                                onLongPress: () =>
+                                    setState(() => _selectedIds.add(tx.id)),
+                                onTap: _selectionActive
+                                    ? () => setState(() {
+                                          if (_selectedIds.contains(tx.id)) {
+                                            _selectedIds.remove(tx.id);
+                                          } else {
+                                            _selectedIds.add(tx.id);
+                                          }
+                                        })
+                                    : null,
+                                child: Dismissible(
                                 key: Key(tx.id),
-                                direction: DismissDirection.endToStart,
+                                direction: _selectionActive
+                                    ? DismissDirection.none
+                                    : DismissDirection.endToStart,
                                 background: Container(
                                   margin: const EdgeInsets.only(bottom: 10),
                                   decoration: BoxDecoration(
@@ -516,8 +579,15 @@ class _TransactionsHistoryScreenState extends State<TransactionsHistoryScreen> {
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 14, vertical: 14),
                                   decoration: BoxDecoration(
-                                    color: Colors.white,
+                                    color: _selectedIds.contains(tx.id)
+                                        ? primary.withValues(alpha: 0.08)
+                                        : Colors.white,
                                     borderRadius: BorderRadius.circular(16),
+                                    border: _selectedIds.contains(tx.id)
+                                        ? Border.all(
+                                            color: primary.withValues(alpha: 0.4),
+                                            width: 1.5)
+                                        : null,
                                     boxShadow: [
                                       BoxShadow(
                                         color: Colors.black.withOpacity(0.03),
@@ -670,7 +740,8 @@ class _TransactionsHistoryScreenState extends State<TransactionsHistoryScreen> {
                                     ],
                                   ),
                                 ),
-                              );
+                              ),
+                              ); // GestureDetector
                             },
                             childCount: entry.value.length,
                           ),
@@ -686,6 +757,7 @@ class _TransactionsHistoryScreenState extends State<TransactionsHistoryScreen> {
           ),
           const FloatingNavBar(currentIndex: 1),
         ],
+      ),
       ),
       ),
     );
