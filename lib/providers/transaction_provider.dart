@@ -296,6 +296,7 @@ class TransactionProvider extends ChangeNotifier {
     required String category,
     required DateTime date,
     String notes = '',
+    List<String> tags = const [],
   }) async {
     _error = null;
     try {
@@ -307,6 +308,7 @@ class TransactionProvider extends ChangeNotifier {
         category: category,
         date: date,
         notes: notes,
+        tags: tags,
       );
       _transactions.insert(0, transaction);
       // Re-sort by date
@@ -328,6 +330,7 @@ class TransactionProvider extends ChangeNotifier {
     required String category,
     required DateTime date,
     String notes = '',
+    List<String> tags = const [],
   }) async {
     _error = null;
     try {
@@ -339,6 +342,7 @@ class TransactionProvider extends ChangeNotifier {
         category: category,
         date: date,
         notes: notes,
+        tags: tags,
       );
       _transactions.insert(0, transaction);
       _transactions.sort((a, b) => b.date.compareTo(a.date));

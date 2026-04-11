@@ -9,6 +9,7 @@ import '../utils/keyboard_dialog_insets.dart';
 import '../widgets/category_icon_picker_grid.dart';
 import '../utils/top_toast.dart';
 import '../widgets/app_animations.dart';
+import '../widgets/tag_input_field.dart';
 
 class AddIncomeScreen extends StatefulWidget {
   const AddIncomeScreen({super.key});
@@ -23,6 +24,7 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
   final _notesController = TextEditingController();
   String _selectedCategory = 'Salary';
   DateTime _selectedDate = DateTime.now();
+  List<String> _tags = [];
   bool _isSaving = false;
 
   @override
@@ -93,6 +95,7 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
       category: _selectedCategory,
       date: _selectedDate,
       notes: _notesController.text,
+      tags: _tags,
     );
 
     setState(() => _isSaving = false);
@@ -478,6 +481,22 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
                         ],
                       );
                     },
+                  ),
+                  const SizedBox(height: 22),
+
+                  // ─── Tags ───
+                  const Text(
+                    'Tags',
+                    style: TextStyle(
+                      color: textMain,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  TagInputField(
+                    tags: _tags,
+                    onChanged: (updated) => setState(() => _tags = updated),
                   ),
                   const SizedBox(height: 22),
 

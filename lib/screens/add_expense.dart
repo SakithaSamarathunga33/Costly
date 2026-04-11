@@ -9,6 +9,7 @@ import '../utils/keyboard_dialog_insets.dart';
 import '../widgets/category_icon_picker_grid.dart';
 import '../utils/top_toast.dart';
 import '../widgets/app_animations.dart';
+import '../widgets/tag_input_field.dart';
 
 class AddExpenseScreen extends StatefulWidget {
   const AddExpenseScreen({super.key});
@@ -23,6 +24,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   final _notesController = TextEditingController();
   String _selectedCategory = 'Food';
   DateTime _selectedDate = DateTime.now();
+  List<String> _tags = [];
   bool _isSaving = false;
 
   @override
@@ -93,6 +95,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
       category: _selectedCategory,
       date: _selectedDate,
       notes: _notesController.text,
+      tags: _tags,
     );
 
     setState(() => _isSaving = false);
@@ -418,6 +421,16 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                         ],
                       );
                     },
+                  ),
+                  const SizedBox(height: 22),
+
+                  // ─── Tags ───
+                  _buildSectionLabel(
+                      Icons.label_outline, 'Tags', primary, textMain),
+                  const SizedBox(height: 10),
+                  TagInputField(
+                    tags: _tags,
+                    onChanged: (updated) => setState(() => _tags = updated),
                   ),
                   const SizedBox(height: 22),
 

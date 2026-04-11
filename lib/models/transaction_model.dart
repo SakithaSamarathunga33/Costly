@@ -10,6 +10,7 @@ class TransactionModel {
   final String category;
   final DateTime date;
   final String notes;
+  final List<String> tags;
 
   TransactionModel({
     required this.id,
@@ -20,6 +21,7 @@ class TransactionModel {
     required this.category,
     required this.date,
     this.notes = '',
+    this.tags = const [],
   });
 
   // Convert from Firestore document
@@ -35,6 +37,7 @@ class TransactionModel {
           ? (map['date'] as Timestamp).toDate()
           : DateTime.tryParse(map['date']?.toString() ?? '') ?? DateTime.now(),
       notes: map['notes'] ?? '',
+      tags: List<String>.from(map['tags'] ?? []),
     );
   }
 
@@ -48,6 +51,7 @@ class TransactionModel {
       'category': category,
       'date': Timestamp.fromDate(date),
       'notes': notes,
+      'tags': tags,
     };
   }
 
@@ -60,6 +64,7 @@ class TransactionModel {
     String? category,
     DateTime? date,
     String? notes,
+    List<String>? tags,
   }) {
     return TransactionModel(
       id: id ?? this.id,
@@ -70,6 +75,7 @@ class TransactionModel {
       category: category ?? this.category,
       date: date ?? this.date,
       notes: notes ?? this.notes,
+      tags: tags ?? this.tags,
     );
   }
 }

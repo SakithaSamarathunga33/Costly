@@ -24,6 +24,7 @@ class _TransactionsHistoryScreenState extends State<TransactionsHistoryScreen> {
   int _filterIndex = 0;
   String _searchQuery = '';
   String? _categoryFilter;
+  String? _tagFilter;
   final _searchController = TextEditingController();
 
   @override
@@ -69,6 +70,12 @@ class _TransactionsHistoryScreenState extends State<TransactionsHistoryScreen> {
     if (_categoryFilter != null) {
       filtered =
           filtered.where((tx) => tx.category == _categoryFilter).toList();
+    }
+
+    // Apply tag filter if set
+    if (_tagFilter != null) {
+      filtered =
+          filtered.where((tx) => tx.tags.contains(_tagFilter)).toList();
     }
 
     if (_searchQuery.isNotEmpty) {
@@ -382,6 +389,52 @@ class _TransactionsHistoryScreenState extends State<TransactionsHistoryScreen> {
                     ),
                   ),
 
+                // ─── Active Tag Filter ───
+                if (_tagFilter != null)
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 4),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: primary.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                  color: primary.withValues(alpha: 0.3)),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.label_outline,
+                                    size: 14, color: primary),
+                                const SizedBox(width: 6),
+                                Text(
+                                  '#$_tagFilter',
+                                  style: const TextStyle(
+                                    color: primary,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                GestureDetector(
+                                  onTap: () =>
+                                      setState(() => _tagFilter = null),
+                                  child: const Icon(Icons.close,
+                                      size: 14, color: primary),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
                 const SliverToBoxAdapter(child: SizedBox(height: 8)),
 
                 // ─── Grouped Transaction List ───
@@ -518,6 +571,60 @@ class _TransactionsHistoryScreenState extends State<TransactionsHistoryScreen> {
                                                 fontWeight: FontWeight.w400,
                                               ),
                                             ),
+                                            if (tx.tags.isNotEmpty) ...[
+                                              const SizedBox(height: 5),
+                                              Wrap(
+                                                spacing: 4,
+                                                runSpacing: 2,
+                                                children: tx.tags
+                                                    .map((tag) => GestureDetector(
+                                                          onTap: () => setState(
+                                                              () => _tagFilter =
+                                                                  _tagFilter ==
+                                                                          tag
+                                                                      ? null
+                                                                      : tag),
+                                                          child: Container(
+                                                            padding:
+                                                                const EdgeInsets
+                                                                    .symmetric(
+                                                                    horizontal:
+                                                                        7,
+                                                                    vertical:
+                                                                        2),
+                                                            decoration:
+                                                                BoxDecoration(
+                                                              color: _tagFilter ==
+                                                                      tag
+                                                                  ? primary
+                                                                  : primary
+                                                                      .withValues(
+                                                                          alpha:
+                                                                              0.1),
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          10),
+                                                            ),
+                                                            child: Text(
+                                                              '#$tag',
+                                                              style: TextStyle(
+                                                                fontSize: 10,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w600,
+                                                                color: _tagFilter ==
+                                                                        tag
+                                                                    ? Colors
+                                                                        .white
+                                                                    : primary,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ))
+                                                    .toList(),
+                                              ),
+                                            ],
                                           ],
                                         ),
                                       ),

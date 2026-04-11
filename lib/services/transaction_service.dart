@@ -17,6 +17,7 @@ class TransactionService {
     required String category,
     required DateTime date,
     String notes = '',
+    List<String> tags = const [],
   }) async {
     if (title.trim().isEmpty) throw Exception('Title is required');
     if (amount <= 0) throw Exception('Amount must be greater than zero');
@@ -32,6 +33,7 @@ class TransactionService {
       category: category,
       date: date,
       notes: notes.trim(),
+      tags: tags,
     );
 
     await docRef.set(transaction.toMap());
@@ -90,6 +92,7 @@ class TransactionService {
       'category': transaction.category,
       'date': Timestamp.fromDate(transaction.date),
       'notes': transaction.notes,
+      'tags': transaction.tags,
     });
   }
 
