@@ -450,6 +450,17 @@ class ProfileScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 14),
 
+                // Savings Goals item
+                _buildPreferenceItem(
+                  icon: Icons.savings_outlined,
+                  iconBg: primary.withValues(alpha: 0.08),
+                  iconColor: primary,
+                  title: 'Savings Goals',
+                  subtitle: 'Track progress toward financial goals',
+                  onTap: () => Navigator.pushNamed(context, '/savings_goals'),
+                ),
+                const SizedBox(height: 10),
+
                 // Recurring Transactions item
                 _buildPreferenceItem(
                   icon: Icons.repeat_rounded,

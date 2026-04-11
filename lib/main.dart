@@ -7,7 +7,9 @@ import 'providers/transaction_provider.dart';
 import 'providers/category_provider.dart';
 import 'providers/budget_provider.dart';
 import 'providers/recurring_transaction_provider.dart';
+import 'providers/savings_goal_provider.dart';
 import 'screens/recurring_transactions_screen.dart';
+import 'screens/savings_goals_screen.dart';
 import 'screens/splash_screen.dart';
 import 'screens/home_dashboard.dart';
 import 'screens/register_screen.dart';
@@ -52,6 +54,8 @@ Route<dynamic>? generateRoute(RouteSettings settings) {
       return _slideUpRoute(const BudgetSettingsScreen());
     case '/recurring_transactions':
       return _slideUpRoute(const RecurringTransactionsScreen());
+    case '/savings_goals':
+      return _slideUpRoute(const SavingsGoalsScreen());
     default:
       return _slideUpRoute(const SplashScreen());
   }
@@ -138,6 +142,7 @@ class ExpenseTrackerApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => CategoryProvider()),
         ChangeNotifierProvider(create: (_) => BudgetProvider()),
         ChangeNotifierProvider(create: (_) => RecurringTransactionProvider()),
+        ChangeNotifierProvider(create: (_) => SavingsGoalProvider()),
       ],
       child: MaterialApp(
         title: 'COSTLY',
