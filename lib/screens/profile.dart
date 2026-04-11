@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import '../providers/auth_provider.dart';
+import '../providers/theme_provider.dart';
 import '../providers/transaction_provider.dart';
 import '../providers/category_provider.dart';
 import '../services/cloudinary_service.dart';
@@ -142,6 +143,67 @@ class ProfileScreen extends StatelessWidget {
     }
   }
 
+  void _showThemePicker(BuildContext context, ThemeProvider themeProvider) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 8),
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 12),
+            ListTile(
+              leading: const Icon(Icons.light_mode_outlined),
+              title: const Text('Light'),
+              trailing: themeProvider.mode == ThemeMode.light
+                  ? const Icon(Icons.check, color: Color(0xFF5D3891))
+                  : null,
+              onTap: () {
+                themeProvider.setMode(ThemeMode.light);
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.dark_mode_outlined),
+              title: const Text('Dark'),
+              trailing: themeProvider.mode == ThemeMode.dark
+                  ? const Icon(Icons.check, color: Color(0xFF5D3891))
+                  : null,
+              onTap: () {
+                themeProvider.setMode(ThemeMode.dark);
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.brightness_auto_outlined),
+              title: const Text('System default'),
+              trailing: themeProvider.mode == ThemeMode.system
+                  ? const Icon(Icons.check, color: Color(0xFF5D3891))
+                  : null,
+              onTap: () {
+                themeProvider.setMode(ThemeMode.system);
+                Navigator.pop(context);
+              },
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+  }
+
   void _showCurrencyPicker(BuildContext context, AuthProvider authProvider) {
     showModalBottomSheet(
       context: context,
@@ -259,6 +321,7 @@ class ProfileScreen extends StatelessWidget {
 
     final authProvider = Provider.of<AuthProvider>(context);
     final txProvider = Provider.of<TransactionProvider>(context);
+    final themeProvider = Provider.of<ThemeProvider>(context);
 
     return RootBackHandler(
       child: Scaffold(
@@ -449,6 +512,21 @@ class ProfileScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 14),
+
+                // Appearance item
+                _buildPreferenceItem(
+                  icon: Icons.dark_mode_outlined,
+                  iconBg: primary.withValues(alpha: 0.08),
+                  iconColor: primary,
+                  title: 'Appearance',
+                  subtitle: themeProvider.mode == ThemeMode.dark
+                      ? 'Dark mode'
+                      : themeProvider.mode == ThemeMode.light
+                          ? 'Light mode'
+                          : 'System default',
+                  onTap: () => _showThemePicker(context, themeProvider),
+                ),
+                const SizedBox(height: 10),
 
                 // Notification Settings item
                 _buildPreferenceItem(

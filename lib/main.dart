@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'providers/auth_provider.dart';
+import 'providers/theme_provider.dart';
 import 'providers/transaction_provider.dart';
 import 'providers/category_provider.dart';
 import 'providers/budget_provider.dart';
@@ -135,17 +136,20 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
   await NotificationService().init();
-  runApp(const ExpenseTrackerApp());
+  final themeProvider = ThemeProvider();
+  await themeProvider.init();
+  runApp(ExpenseTrackerApp(themeProvider: themeProvider));
 }
 
 class ExpenseTrackerApp extends StatelessWidget {
-  const ExpenseTrackerApp({super.key});
+  final ThemeProvider themeProvider;
+  const ExpenseTrackerApp({super.key, required this.themeProvider});
 
   @override
   Widget build(BuildContext context) {
-    // Wrap the app with MultiProvider for global state management
     return MultiProvider(
       providers: [
+        ChangeNotifierProvider.value(value: themeProvider),
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => TransactionProvider()),
         ChangeNotifierProvider(create: (_) => CategoryProvider()),
@@ -154,19 +158,31 @@ class ExpenseTrackerApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => SavingsGoalProvider()),
         ChangeNotifierProvider(create: (_) => DebtProvider()),
       ],
-      child: MaterialApp(
-        title: 'COSTLY',
-        debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: const Color(0xFF5D3891),
-            brightness: Brightness.light,
+      child: Consumer<ThemeProvider>(
+        builder: (context, theme, _) => MaterialApp(
+          title: 'COSTLY',
+          debugShowCheckedModeBanner: false,
+          themeMode: theme.mode,
+          theme: ThemeData(
+            colorScheme: ColorScheme.fromSeed(
+              seedColor: const Color(0xFF5D3891),
+              brightness: Brightness.light,
+            ),
+            useMaterial3: true,
+            scaffoldBackgroundColor: const Color(0xFFF5F5F5),
           ),
-          useMaterial3: true,
-          scaffoldBackgroundColor: const Color(0xFFF5F5F5),
+          darkTheme: ThemeData(
+            colorScheme: ColorScheme.fromSeed(
+              seedColor: const Color(0xFF7B52AB),
+              brightness: Brightness.dark,
+            ),
+            useMaterial3: true,
+            scaffoldBackgroundColor: const Color(0xFF121212),
+            cardColor: const Color(0xFF1E1E1E),
+          ),
+          initialRoute: '/splash_screen',
+          onGenerateRoute: generateRoute,
         ),
-        initialRoute: '/splash_screen',
-        onGenerateRoute: generateRoute,
       ),
     );
   }
