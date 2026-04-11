@@ -4,6 +4,13 @@ import 'package:flutter/material.dart';
 const String kAppDisplayName = 'Costly';
 /// Use [PackageInfo.version] / [PackageInfo.buildNumber] in UI — do not hardcode a version string.
 
+/// Backend server base URL. Override at build time via --dart-define=BACKEND_URL=https://...
+/// Default points to Android emulator localhost (10.0.2.2 = host machine from emulator).
+const String kBackendBaseUrl = String.fromEnvironment(
+  'BACKEND_URL',
+  defaultValue: 'http://10.0.2.2:8080',
+);
+
 /// Public GitHub repo used by **Check for updates** (GitHub REST API, no token).
 /// Set `kGitHubRepoOwner` to your username or org (same repo you push this app to).
 /// Leave empty to hide/disable update checks.

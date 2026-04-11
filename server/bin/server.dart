@@ -214,6 +214,59 @@ void main() async {
     }
   });
 
+  /// GET /analytics/summary?userId=X&month=YYYY-MM - Monthly totals by category
+  router.get('/analytics/summary', (Request request) async {
+    try {
+      final params = request.url.queryParameters;
+      final userId = params['userId'] ?? '';
+      final month = params['month'] ?? ''; // e.g. '2026-04'
+
+      if (userId.isEmpty || month.isEmpty) {
+        return errorResponse('userId and month are required');
+      }
+
+      // Parse month prefix for date filtering (stored as ISO strings)
+      final results = await db
+          .collection(transactionsCollection)
+          .find({'userId': userId})
+          .toList();
+
+      final monthResults = results.where((doc) {
+        final dateStr = doc['date']?.toString() ?? '';
+        return dateStr.startsWith(month);
+      }).toList();
+
+      double totalIncome = 0;
+      double totalExpenses = 0;
+      final Map<String, double> byCategory = {};
+
+      for (final tx in monthResults) {
+        final amount = (tx['amount'] ?? 0).toDouble();
+        final type = tx['type']?.toString() ?? 'expense';
+        final category = tx['category']?.toString() ?? 'Other';
+
+        if (type == 'income') {
+          totalIncome += amount;
+        } else {
+          totalExpenses += amount;
+          byCategory[category] = (byCategory[category] ?? 0) + amount;
+        }
+      }
+
+      return jsonResponse({
+        'userId': userId,
+        'month': month,
+        'totalIncome': totalIncome,
+        'totalExpenses': totalExpenses,
+        'netCashFlow': totalIncome - totalExpenses,
+        'byCategory': byCategory,
+        'transactionCount': monthResults.length,
+      });
+    } catch (e) {
+      return errorResponse('Failed to get analytics: $e', statusCode: 500);
+    }
+  });
+
   /// DELETE /transactions/:transactionId - Delete a transaction
   router.delete('/transactions/<transactionId>',
       (Request request, String transactionId) async {

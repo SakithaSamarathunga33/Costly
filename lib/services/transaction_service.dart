@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/transaction_model.dart';
+import 'backend_service.dart';
 
 /// Service handling transaction CRUD operations with Cloud Firestore.
 class TransactionService {
@@ -37,6 +38,8 @@ class TransactionService {
     );
 
     await docRef.set(transaction.toMap());
+    // Mirror to backend (best-effort, fire-and-forget)
+    BackendService().syncTransaction(transaction.toMap());
     return transaction;
   }
 
