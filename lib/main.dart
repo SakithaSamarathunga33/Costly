@@ -5,6 +5,7 @@ import 'firebase_options.dart';
 import 'providers/auth_provider.dart';
 import 'providers/transaction_provider.dart';
 import 'providers/category_provider.dart';
+import 'providers/budget_provider.dart';
 import 'screens/splash_screen.dart';
 import 'screens/home_dashboard.dart';
 import 'screens/register_screen.dart';
@@ -17,6 +18,7 @@ import 'screens/profile.dart';
 import 'screens/edit_profile.dart';
 import 'screens/income_list_screen.dart';
 import 'screens/expense_list_screen.dart';
+import 'screens/budget_settings.dart';
 
 Route<dynamic>? generateRoute(RouteSettings settings) {
   switch (settings.name) {
@@ -44,6 +46,8 @@ Route<dynamic>? generateRoute(RouteSettings settings) {
       return _slideUpRoute(const IncomeListScreen());
     case '/expense_list':
       return _slideUpRoute(const ExpenseListScreen());
+    case '/budget_settings':
+      return _slideUpRoute(const BudgetSettingsScreen());
     default:
       return _slideUpRoute(const SplashScreen());
   }
@@ -128,6 +132,7 @@ class ExpenseTrackerApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => TransactionProvider()),
         ChangeNotifierProvider(create: (_) => CategoryProvider()),
+        ChangeNotifierProvider(create: (_) => BudgetProvider()),
       ],
       child: MaterialApp(
         title: 'COSTLY',
