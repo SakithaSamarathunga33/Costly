@@ -12,6 +12,7 @@ import '../utils/top_toast.dart';
 import '../providers/budget_provider.dart';
 import '../providers/recurring_transaction_provider.dart';
 import '../providers/savings_goal_provider.dart';
+import '../providers/debt_provider.dart';
 
 class HomeDashboard extends StatefulWidget {
   const HomeDashboard({super.key});
@@ -40,6 +41,8 @@ class _HomeDashboardState extends State<HomeDashboard> {
             .fetchAndProcess(authProvider.userId);
         Provider.of<SavingsGoalProvider>(context, listen: false)
             .fetchGoals(authProvider.userId);
+        Provider.of<DebtProvider>(context, listen: false)
+            .fetchDebts(authProvider.userId);
       }
     });
   }

@@ -450,6 +450,17 @@ class ProfileScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 14),
 
+                // Debts & Loans item
+                _buildPreferenceItem(
+                  icon: Icons.account_balance_outlined,
+                  iconBg: primary.withValues(alpha: 0.08),
+                  iconColor: primary,
+                  title: 'Debts & Loans',
+                  subtitle: 'Track money you owe or are owed',
+                  onTap: () => Navigator.pushNamed(context, '/debts'),
+                ),
+                const SizedBox(height: 10),
+
                 // Savings Goals item
                 _buildPreferenceItem(
                   icon: Icons.savings_outlined,
