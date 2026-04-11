@@ -5,6 +5,7 @@ import 'package:fl_chart/fl_chart.dart';
 import '../providers/auth_provider.dart';
 import '../providers/transaction_provider.dart';
 import '../providers/category_provider.dart';
+import '../providers/budget_provider.dart';
 import '../utils/constants.dart';
 import '../widgets/floating_nav_bar.dart';
 import '../widgets/app_animations.dart';
@@ -22,6 +23,7 @@ class AnalyticsScreen extends StatelessWidget {
     final txProvider = Provider.of<TransactionProvider>(context);
     final authProvider = Provider.of<AuthProvider>(context);
     final customCats = Provider.of<CategoryProvider>(context).customCategories;
+    final budgetProvider = Provider.of<BudgetProvider>(context);
     final currencySymbol = authProvider.currencySymbol;
     final currencyFormat =
         NumberFormat.currency(symbol: '$currencySymbol ', decimalDigits: 2);
@@ -600,6 +602,42 @@ class AnalyticsScreen extends StatelessWidget {
                                       fontWeight: FontWeight.w400,
                                     ),
                                   ),
+                                  Builder(builder: (_) {
+                                    final limit = budgetProvider.categoryLimit(entry.key);
+                                    if (limit <= 0) return const SizedBox.shrink();
+                                    final pct = budgetProvider.categoryUsedPercent(entry.key, entry.value);
+                                    final barColor = pct >= 90
+                                        ? const Color(0xFFE74C3C)
+                                        : pct >= 70
+                                            ? const Color(0xFFF39C12)
+                                            : catColor;
+                                    return Padding(
+                                      padding: const EdgeInsets.only(top: 6),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          ClipRRect(
+                                            borderRadius: BorderRadius.circular(4),
+                                            child: LinearProgressIndicator(
+                                              value: pct / 100,
+                                              backgroundColor: barColor.withValues(alpha: 0.15),
+                                              valueColor: AlwaysStoppedAnimation<Color>(barColor),
+                                              minHeight: 5,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 2),
+                                          Text(
+                                            '${pct.toStringAsFixed(0)}% of limit',
+                                            style: TextStyle(
+                                              color: barColor,
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  }),
                                 ],
                               ),
                             ),

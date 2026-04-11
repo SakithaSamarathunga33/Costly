@@ -450,6 +450,17 @@ class ProfileScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 14),
 
+                // Budget Settings item
+                _buildPreferenceItem(
+                  icon: Icons.account_balance_wallet_outlined,
+                  iconBg: primary.withValues(alpha: 0.08),
+                  iconColor: primary,
+                  title: 'Budget Settings',
+                  subtitle: 'Set monthly spending limits',
+                  onTap: () => Navigator.pushNamed(context, '/budget_settings'),
+                ),
+                const SizedBox(height: 10),
+
                 // Currency item
                 _buildPreferenceItem(
                   icon: Icons.attach_money,
