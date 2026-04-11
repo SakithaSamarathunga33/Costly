@@ -167,6 +167,110 @@ class TransactionProvider extends ChangeNotifier {
     return map;
   }
 
+  /// Income grouped by category in the selected month.
+  Map<String, double> get incomeByCategory {
+    final map = <String, double>{};
+    for (final t in incomeList) {
+      map[t.category] = (map[t.category] ?? 0) + t.amount;
+    }
+    return map;
+  }
+
+  /// Rolling 6-month INCOME totals (oldest → newest).
+  List<double> get rollingSixMonthIncomeTotals {
+    final out = <double>[];
+    for (int i = 5; i >= 0; i--) {
+      final m = DateTime(_selectedMonth.year, _selectedMonth.month - i, 1);
+      double sum = 0;
+      for (final t in _transactions) {
+        if (t.type == 'income' &&
+            t.date.year == m.year &&
+            t.date.month == m.month) {
+          sum += t.amount;
+        }
+      }
+      out.add(sum);
+    }
+    return out;
+  }
+
+  /// Per-category expense totals for each of the last 6 months.
+  /// Returns Map<categoryName, List<double>> oldest→newest.
+  Map<String, List<double>> get categoryTrends {
+    final categories = expensesByCategory.keys.toList();
+    final result = <String, List<double>>{};
+    for (final cat in categories) {
+      final totals = <double>[];
+      for (int i = 5; i >= 0; i--) {
+        final m = DateTime(_selectedMonth.year, _selectedMonth.month - i, 1);
+        double sum = 0;
+        for (final t in _transactions) {
+          if (t.type == 'expense' &&
+              t.category == cat &&
+              t.date.year == m.year &&
+              t.date.month == m.month) {
+            sum += t.amount;
+          }
+        }
+        totals.add(sum);
+      }
+      result[cat] = totals;
+    }
+    return result;
+  }
+
+  // ── Date-range filter ──────────────────────────────────────────────────────
+
+  DateTimeRange? _customDateRange;
+  DateTimeRange? get customDateRange => _customDateRange;
+  bool get hasCustomRange => _customDateRange != null;
+
+  void setCustomDateRange(DateTimeRange? range) {
+    _customDateRange = range;
+    notifyListeners();
+  }
+
+  void clearCustomDateRange() {
+    _customDateRange = null;
+    notifyListeners();
+  }
+
+  /// Transactions filtered by [customDateRange] when set, otherwise [selectedMonth].
+  List<TransactionModel> get filteredTransactions {
+    if (_customDateRange == null) return transactions;
+    return _transactions.where((t) {
+      return !t.date.isBefore(_customDateRange!.start) &&
+          t.date.isBefore(
+              _customDateRange!.end.add(const Duration(days: 1)));
+    }).toList();
+  }
+
+  double get filteredTotalExpenses => filteredTransactions
+      .where((t) => t.type == 'expense')
+      .fold(0.0, (s, t) => s + t.amount);
+
+  double get filteredTotalIncome => filteredTransactions
+      .where((t) => t.type == 'income')
+      .fold(0.0, (s, t) => s + t.amount);
+
+  Map<String, double> get filteredExpensesByCategory {
+    final map = <String, double>{};
+    for (final t
+        in filteredTransactions.where((t) => t.type == 'expense')) {
+      map[t.category] = (map[t.category] ?? 0) + t.amount;
+    }
+    return map;
+  }
+
+  Map<String, double> get filteredIncomeByCategory {
+    final map = <String, double>{};
+    for (final t
+        in filteredTransactions.where((t) => t.type == 'income')) {
+      map[t.category] = (map[t.category] ?? 0) + t.amount;
+    }
+    return map;
+  }
+
   /// Fetch all transactions for the logged-in user
   Future<void> fetchTransactions(String userId) async {
     _isLoading = true;

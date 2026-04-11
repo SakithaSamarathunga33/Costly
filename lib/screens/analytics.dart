@@ -8,11 +8,55 @@ import '../providers/category_provider.dart';
 import '../providers/budget_provider.dart';
 import '../utils/constants.dart';
 import '../widgets/floating_nav_bar.dart';
-import '../widgets/app_animations.dart';
 import '../widgets/root_back_handler.dart';
 
-class AnalyticsScreen extends StatelessWidget {
+class AnalyticsScreen extends StatefulWidget {
   const AnalyticsScreen({super.key});
+
+  @override
+  State<AnalyticsScreen> createState() => _AnalyticsScreenState();
+}
+
+class _AnalyticsScreenState extends State<AnalyticsScreen>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 3, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _pickDateRange(
+      BuildContext context, TransactionProvider txProvider) async {
+    final initial = txProvider.customDateRange ??
+        DateTimeRange(
+          start: txProvider.selectedMonth,
+          end: DateTime(txProvider.selectedMonth.year,
+              txProvider.selectedMonth.month + 1, 0),
+        );
+    final picked = await showDateRangePicker(
+      context: context,
+      firstDate: DateTime(2020),
+      lastDate: DateTime.now(),
+      initialDateRange: initial,
+      builder: (context, child) => Theme(
+        data: Theme.of(context).copyWith(
+          colorScheme: const ColorScheme.light(primary: Color(0xFF5D3891)),
+        ),
+        child: child!,
+      ),
+    );
+    if (picked != null) {
+      txProvider.setCustomDateRange(picked);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -22,656 +66,990 @@ class AnalyticsScreen extends StatelessWidget {
 
     final txProvider = Provider.of<TransactionProvider>(context);
     final authProvider = Provider.of<AuthProvider>(context);
-    final customCats = Provider.of<CategoryProvider>(context).customCategories;
+    final customCats =
+        Provider.of<CategoryProvider>(context).customCategories;
     final budgetProvider = Provider.of<BudgetProvider>(context);
     final currencySymbol = authProvider.currencySymbol;
-    final currencyFormat =
-        NumberFormat.currency(symbol: '$currencySymbol ', decimalDigits: 2);
-    final categoryTotals = txProvider.expensesByCategory;
-    final rollingTotals = txProvider.rollingSixMonthExpenseTotals;
-    final rollingLabels = txProvider.rollingSixMonthLabels;
-    final totalExpenses = txProvider.totalExpenses;
+    final fmt = NumberFormat.currency(
+        symbol: '$currencySymbol ', decimalDigits: 2);
 
-    // Category entries sorted by value
-    final pieEntries = categoryTotals.entries.toList()
-      ..sort((a, b) => b.value.compareTo(a.value));
-
-    // Budget percentage (assume a simple budget = total income)
-    final totalIncome = txProvider.totalIncome;
-    final budgetPercent =
-        totalIncome > 0 ? (totalExpenses / totalIncome * 100).clamp(0, 100) : 0;
-
-    // Format total for donut center
-    String _formatCompact(double value) {
-      if (value >= 1000) {
-        return '$currencySymbol ${(value / 1000).toStringAsFixed(1)}k';
-      }
-      return '$currencySymbol ${value.toStringAsFixed(0)}';
-    }
-
-    // Category colors for pie chart
-    final List<Color> catColors = [
-      const Color(0xFF5D3891),
-      const Color(0xFFFF6B6B),
-      const Color(0xFF51CF66),
-      const Color(0xFF339AF0),
-      const Color(0xFFFCC419),
-      const Color(0xFFFF922B),
-      const Color(0xFFCC5DE8),
-      const Color(0xFF20C997),
-      const Color(0xFFE64980),
-      const Color(0xFF22B8CF),
-    ];
+    final hasRange = txProvider.hasCustomRange;
+    final rangeLabel = hasRange
+        ? '${DateFormat('MMM d').format(txProvider.customDateRange!.start)} – '
+            '${DateFormat('MMM d').format(txProvider.customDateRange!.end)}'
+        : DateFormat('MMMM yyyy').format(txProvider.selectedMonth);
 
     return RootBackHandler(
       child: Scaffold(
-      backgroundColor: bg,
-      appBar: AppBar(
         backgroundColor: bg,
-        elevation: 0,
-        surfaceTintColor: Colors.transparent,
-        automaticallyImplyLeading: false,
-        centerTitle: true,
-        title: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text(
-              'Analytics',
-              style: TextStyle(
-                color: textMain,
-                fontSize: 18,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            Text(
-              DateFormat('MMMM yyyy').format(txProvider.selectedMonth),
-              style: TextStyle(
-                color: textMain.withOpacity(0.5),
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.calendar_today_outlined,
-                color: textMain, size: 20),
-            onPressed: () {},
-          ),
-        ],
-      ),
-      body: Stack(
-        fit: StackFit.expand,
-        children: [
-          ScreenEntrance(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.only(
-                  left: 20, right: 20, top: 8, bottom: 120),
-              child: StaggeredColumn(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // ─── Total Spending Card ───
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(22),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF5D3891), Color(0xFF7B52AB)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(
-                        color: primary.withOpacity(0.35),
-                        blurRadius: 20,
-                        offset: const Offset(0, 8),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Total Spending',
-                            style: TextStyle(
-                              color: Colors.white.withOpacity(0.7),
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          // Percentage badge
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.15),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Text(
-                              '+${budgetPercent.toStringAsFixed(0)}%',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        currencyFormat.format(totalExpenses),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 32,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      // Progress bar
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(6),
-                        child: LinearProgressIndicator(
-                          value: (budgetPercent / 100).toDouble(),
-                          minHeight: 8,
-                          backgroundColor: Colors.white.withOpacity(0.15),
-                          valueColor:
-                              const AlwaysStoppedAnimation<Color>(Colors.white),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: Text(
-                          '${budgetPercent.toStringAsFixed(0)}% of budget',
-                          style: TextStyle(
-                            color: Colors.white.withOpacity(0.6),
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 28),
-
-                // ─── Monthly Trends ───
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.04),
-                        blurRadius: 12,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text(
-                            'Monthly Trends',
-                            style: TextStyle(
-                              color: textMain,
-                              fontSize: 17,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 6),
-                            decoration: BoxDecoration(
-                              color: bg,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Row(
-                              children: [
-                                Text(
-                                  '6 mo to selected',
-                                  style: TextStyle(
-                                    color: textMain.withOpacity(0.5),
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                                const SizedBox(width: 4),
-                                Icon(Icons.keyboard_arrow_down,
-                                    color: textMain.withOpacity(0.4), size: 18),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 22),
-                      SizedBox(
-                        height: 160,
-                        child: BarChart(
-                          BarChartData(
-                            alignment: BarChartAlignment.spaceAround,
-                            maxY: _getMaxY(rollingTotals),
-                            barTouchData: BarTouchData(
-                              enabled: true,
-                              touchTooltipData: BarTouchTooltipData(
-                                tooltipRoundedRadius: 8,
-                                getTooltipItem:
-                                    (group, groupIndex, rod, rodIndex) {
-                                  return BarTooltipItem(
-                                    currencyFormat.format(rod.toY),
-                                    const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  );
-                                },
-                              ),
-                            ),
-                            titlesData: FlTitlesData(
-                              show: true,
-                              bottomTitles: AxisTitles(
-                                sideTitles: SideTitles(
-                                  showTitles: true,
-                                  getTitlesWidget: (value, meta) {
-                                    final idx = value.toInt();
-                                    if (idx >= 0 &&
-                                        idx < rollingLabels.length) {
-                                      final isSelectedMonth = idx == 5;
-                                      return Padding(
-                                        padding: const EdgeInsets.only(top: 8),
-                                        child: Text(
-                                          rollingLabels[idx],
-                                          style: TextStyle(
-                                            color: isSelectedMonth
-                                                ? primary
-                                                : textMain.withOpacity(0.35),
-                                            fontSize: 11,
-                                            fontWeight: isSelectedMonth
-                                                ? FontWeight.w700
-                                                : FontWeight.w500,
-                                          ),
-                                        ),
-                                      );
-                                    }
-                                    return const Text('');
-                                  },
-                                ),
-                              ),
-                              leftTitles: const AxisTitles(
-                                  sideTitles: SideTitles(showTitles: false)),
-                              topTitles: const AxisTitles(
-                                  sideTitles: SideTitles(showTitles: false)),
-                              rightTitles: const AxisTitles(
-                                  sideTitles: SideTitles(showTitles: false)),
-                            ),
-                            gridData: const FlGridData(show: false),
-                            borderData: FlBorderData(show: false),
-                            barGroups: List.generate(6, (index) {
-                              final isSelectedMonth = index == 5;
-                              return BarChartGroupData(
-                                x: index,
-                                barRods: [
-                                  BarChartRodData(
-                                    toY: rollingTotals[index],
-                                    gradient: isSelectedMonth
-                                        ? const LinearGradient(
-                                            colors: [
-                                              Color(0xFF5D3891),
-                                              Color(0xFF7B52AB),
-                                            ],
-                                            begin: Alignment.bottomCenter,
-                                            end: Alignment.topCenter,
-                                          )
-                                        : null,
-                                    color: isSelectedMonth
-                                        ? null
-                                        : primary.withOpacity(0.15),
-                                    width: 14,
-                                    borderRadius: BorderRadius.circular(6),
-                                  ),
-                                ],
-                              );
-                            }),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 28),
-
-                // ─── Category Breakdown ───
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.04),
-                        blurRadius: 12,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Category Breakdown',
-                        style: TextStyle(
-                          color: textMain,
-                          fontSize: 17,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      pieEntries.isEmpty
-                          ? SizedBox(
-                              height: 160,
-                              child: Center(
-                                child: Text('No expense data yet',
-                                    style: TextStyle(
-                                        color: textMain.withOpacity(0.4))),
-                              ),
-                            )
-                          : Row(
-                              children: [
-                                // Donut chart
-                                Expanded(
-                                  flex: 5,
-                                  child: SizedBox(
-                                    height: 140,
-                                    child: Stack(
-                                      alignment: Alignment.center,
-                                      children: [
-                                        PieChart(
-                                          PieChartData(
-                                            sections: pieEntries
-                                                .asMap()
-                                                .entries
-                                                .map((e) {
-                                              final idx = e.key;
-                                              final entry = e.value;
-                                              final color = idx <
-                                                      catColors.length
-                                                  ? catColors[idx]
-                                                  : getCategoryColor(
-                                                      entry.key, customCats);
-                                              return PieChartSectionData(
-                                                value: entry.value,
-                                                color: color,
-                                                title: '',
-                                                radius: 18,
-                                              );
-                                            }).toList(),
-                                            centerSpaceRadius: 42,
-                                            sectionsSpace: 3,
-                                          ),
-                                        ),
-                                        // Center label
-                                        Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            Text(
-                                              _formatCompact(totalExpenses),
-                                              style: const TextStyle(
-                                                color: textMain,
-                                                fontSize: 18,
-                                                fontWeight: FontWeight.w800,
-                                              ),
-                                            ),
-                                            Text(
-                                              'TOTAL',
-                                              style: TextStyle(
-                                                color:
-                                                    textMain.withOpacity(0.35),
-                                                fontSize: 10,
-                                                fontWeight: FontWeight.w600,
-                                                letterSpacing: 1,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                                // Legend
-                                Expanded(
-                                  flex: 4,
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: pieEntries
-                                        .asMap()
-                                        .entries
-                                        .take(5)
-                                        .map((e) {
-                                      final idx = e.key;
-                                      final entry = e.value;
-                                      final color = idx < catColors.length
-                                          ? catColors[idx]
-                                          : getCategoryColor(
-                                              entry.key, customCats);
-                                      final percent = totalExpenses > 0
-                                          ? (entry.value / totalExpenses * 100)
-                                              .toStringAsFixed(0)
-                                          : '0';
-                                      return Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            vertical: 5),
-                                        child: Row(
-                                          children: [
-                                            Container(
-                                              width: 10,
-                                              height: 10,
-                                              decoration: BoxDecoration(
-                                                color: color,
-                                                shape: BoxShape.circle,
-                                              ),
-                                            ),
-                                            const SizedBox(width: 8),
-                                            Expanded(
-                                              child: Text(
-                                                entry.key,
-                                                style: TextStyle(
-                                                  color:
-                                                      textMain.withOpacity(0.6),
-                                                  fontSize: 13,
-                                                  fontWeight: FontWeight.w500,
-                                                ),
-                                                overflow: TextOverflow.ellipsis,
-                                              ),
-                                            ),
-                                            Text(
-                                              '$percent%',
-                                              style: const TextStyle(
-                                                color: textMain,
-                                                fontSize: 13,
-                                                fontWeight: FontWeight.w700,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      );
-                                    }).toList(),
-                                  ),
-                                ),
-                              ],
-                            ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 28),
-
-                // ─── Top Categories List ───
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+        appBar: AppBar(
+          backgroundColor: bg,
+          elevation: 0,
+          surfaceTintColor: Colors.transparent,
+          automaticallyImplyLeading: false,
+          centerTitle: true,
+          title: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('Analytics',
+                  style: TextStyle(
+                      color: textMain,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700)),
+              GestureDetector(
+                onTap: () => _pickDateRange(context, txProvider),
+                child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        const Text(
-                          'Top Categories',
-                          style: TextStyle(
-                            color: textMain,
-                            fontSize: 17,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        Text(
-                          'View All',
-                          style: TextStyle(
-                            color: primary,
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 14),
-                    ...pieEntries.take(5).map((entry) {
-                      final catColor = getCategoryColor(entry.key, customCats);
-                      final catIcon =
-                          getCategoryIconByName(entry.key, customCats);
-                      final txCount = txProvider.transactions
-                          .where((tx) =>
-                              tx.category == entry.key && tx.type == 'expense')
-                          .length;
+                    Text(rangeLabel,
+                        style: TextStyle(
+                            color: hasRange ? primary : textMain.withValues(alpha: 0.5),
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600)),
+                    const SizedBox(width: 4),
+                    Icon(Icons.arrow_drop_down,
+                        size: 16,
+                        color: hasRange
+                            ? primary
+                            : textMain.withValues(alpha: 0.5)),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            if (hasRange)
+              IconButton(
+                icon: const Icon(Icons.close_rounded, size: 20, color: primary),
+                onPressed: () => txProvider.clearCustomDateRange(),
+                tooltip: 'Clear date range',
+              )
+            else
+              IconButton(
+                icon: const Icon(Icons.calendar_today_outlined,
+                    color: textMain, size: 20),
+                onPressed: () => _pickDateRange(context, txProvider),
+              ),
+          ],
+          bottom: TabBar(
+            controller: _tabController,
+            labelColor: primary,
+            unselectedLabelColor: textMain.withValues(alpha: 0.4),
+            indicatorColor: primary,
+            indicatorSize: TabBarIndicatorSize.label,
+            labelStyle: const TextStyle(
+                fontSize: 13, fontWeight: FontWeight.w700),
+            tabs: const [
+              Tab(text: 'Expenses'),
+              Tab(text: 'Income'),
+              Tab(text: 'Trends'),
+            ],
+          ),
+        ),
+        body: Stack(
+          fit: StackFit.expand,
+          children: [
+            TabBarView(
+              controller: _tabController,
+              children: [
+                _ExpensesTab(
+                    txProvider: txProvider,
+                    budgetProvider: budgetProvider,
+                    customCats: customCats,
+                    fmt: fmt,
+                    currencySymbol: currencySymbol),
+                _IncomeTab(
+                    txProvider: txProvider,
+                    customCats: customCats,
+                    fmt: fmt,
+                    currencySymbol: currencySymbol),
+                _TrendsTab(
+                    txProvider: txProvider,
+                    customCats: customCats,
+                    fmt: fmt),
+              ],
+            ),
+            const FloatingNavBar(currentIndex: 2),
+          ],
+        ),
+      ),
+    );
+  }
+}
 
-                      return Container(
-                        margin: const EdgeInsets.only(bottom: 10),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 14),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.03),
-                              blurRadius: 8,
-                              offset: const Offset(0, 2),
+// ─────────────────────────── EXPENSES TAB ────────────────────────────────────
+
+class _ExpensesTab extends StatelessWidget {
+  final TransactionProvider txProvider;
+  final BudgetProvider budgetProvider;
+  final List<Map<String, dynamic>> customCats;
+  final NumberFormat fmt;
+  final String currencySymbol;
+
+  const _ExpensesTab({
+    required this.txProvider,
+    required this.budgetProvider,
+    required this.customCats,
+    required this.fmt,
+    required this.currencySymbol,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    const primary = Color(0xFF5D3891);
+    const bg = Color(0xFFF8F6FC);
+    const textMain = Color(0xFF2D2D2D);
+
+    final totalExpenses = txProvider.filteredTotalExpenses;
+    final totalIncome = txProvider.filteredTotalIncome;
+    final categoryTotals = txProvider.filteredExpensesByCategory;
+    final rollingTotals = txProvider.rollingSixMonthExpenseTotals;
+    final rollingLabels = txProvider.rollingSixMonthLabels;
+    final budgetPercent =
+        totalIncome > 0 ? (totalExpenses / totalIncome * 100).clamp(0, 100) : 0;
+
+    final pieEntries = categoryTotals.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+
+    final List<Color> catColors = _catColorList();
+
+    String formatCompact(double v) => v >= 1000
+        ? '$currencySymbol ${(v / 1000).toStringAsFixed(1)}k'
+        : '$currencySymbol ${v.toStringAsFixed(0)}';
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.only(left: 20, right: 20, top: 16, bottom: 120),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        // Summary card
+        _summaryCard(
+          label: 'Total Expenses',
+          amount: fmt.format(totalExpenses),
+          badgeLabel: '+${budgetPercent.toStringAsFixed(0)}% of income',
+          progressValue: (budgetPercent / 100).toDouble(),
+        ),
+        const SizedBox(height: 24),
+
+        // Monthly bar chart
+        _chartCard(
+          title: '6-Month Trend',
+          child: SizedBox(
+            height: 160,
+            child: BarChart(_buildBarData(
+                rollingTotals, rollingLabels, fmt, primary, textMain)),
+          ),
+        ),
+        const SizedBox(height: 24),
+
+        // Category breakdown
+        _chartCard(
+          title: 'Category Breakdown',
+          child: pieEntries.isEmpty
+              ? SizedBox(
+                  height: 120,
+                  child: Center(
+                      child: Text('No expense data',
+                          style: TextStyle(
+                              color: textMain.withValues(alpha: 0.4)))))
+              : _DonutWithLegend(
+                  entries: pieEntries,
+                  total: totalExpenses,
+                  catColors: catColors,
+                  customCats: customCats,
+                  formatCompact: formatCompact,
+                  textMain: textMain),
+        ),
+        const SizedBox(height: 24),
+
+        // Top categories list
+        const Text('Top Categories',
+            style: TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF2D2D2D))),
+        const SizedBox(height: 14),
+        ...pieEntries.take(5).map((entry) => _CategoryRow(
+              entry: entry,
+              total: totalExpenses,
+              txCount: txProvider.filteredTransactions
+                  .where((t) =>
+                      t.category == entry.key && t.type == 'expense')
+                  .length,
+              customCats: customCats,
+              fmt: fmt,
+              budgetProvider: budgetProvider,
+              bg: bg,
+            )),
+        const SizedBox(height: 20),
+      ]),
+    );
+  }
+}
+
+// ─────────────────────────── INCOME TAB ──────────────────────────────────────
+
+class _IncomeTab extends StatelessWidget {
+  final TransactionProvider txProvider;
+  final List<Map<String, dynamic>> customCats;
+  final NumberFormat fmt;
+  final String currencySymbol;
+
+  const _IncomeTab({
+    required this.txProvider,
+    required this.customCats,
+    required this.fmt,
+    required this.currencySymbol,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    const primary = Color(0xFF5D3891);
+    const textMain = Color(0xFF2D2D2D);
+
+    final totalIncome = txProvider.filteredTotalIncome;
+    final totalExpenses = txProvider.filteredTotalExpenses;
+    final categoryTotals = txProvider.filteredIncomeByCategory;
+    final rollingTotals = txProvider.rollingSixMonthIncomeTotals;
+    final rollingLabels = txProvider.rollingSixMonthLabels;
+    final savingsRate = totalIncome > 0
+        ? ((totalIncome - totalExpenses) / totalIncome * 100).clamp(0, 100)
+        : 0;
+
+    final pieEntries = categoryTotals.entries.toList()
+      ..sort((a, b) => b.value.compareTo(a.value));
+
+    final List<Color> catColors = _catColorList();
+
+    String formatCompact(double v) => v >= 1000
+        ? '$currencySymbol ${(v / 1000).toStringAsFixed(1)}k'
+        : '$currencySymbol ${v.toStringAsFixed(0)}';
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.only(left: 20, right: 20, top: 16, bottom: 120),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        // Summary card
+        _summaryCard(
+          label: 'Total Income',
+          amount: fmt.format(totalIncome),
+          badgeLabel: '${savingsRate.toStringAsFixed(0)}% saved',
+          progressValue: (savingsRate / 100).toDouble(),
+          color: const Color(0xFF2ECC71),
+        ),
+        const SizedBox(height: 24),
+
+        // Monthly bar chart
+        _chartCard(
+          title: '6-Month Income Trend',
+          child: SizedBox(
+            height: 160,
+            child: BarChart(_buildBarData(
+                rollingTotals, rollingLabels, fmt,
+                const Color(0xFF2ECC71), textMain,
+                barColor: const Color(0xFF2ECC71))),
+          ),
+        ),
+        const SizedBox(height: 24),
+
+        // Income vs Expenses comparison
+        _chartCard(
+          title: 'Income vs Expenses',
+          child: Column(children: [
+            _comparisonRow('Income', totalIncome,
+                totalIncome > 0 ? totalIncome : 1, const Color(0xFF2ECC71), fmt),
+            const SizedBox(height: 10),
+            _comparisonRow('Expenses', totalExpenses,
+                totalIncome > 0 ? totalIncome : 1, const Color(0xFFE74C3C), fmt),
+            const SizedBox(height: 10),
+            _comparisonRow(
+                'Net',
+                totalIncome - totalExpenses,
+                totalIncome > 0 ? totalIncome : 1,
+                primary,
+                fmt),
+          ]),
+        ),
+        const SizedBox(height: 24),
+
+        if (pieEntries.isNotEmpty) ...[
+          // Income category breakdown
+          _chartCard(
+            title: 'Income Sources',
+            child: _DonutWithLegend(
+              entries: pieEntries,
+              total: totalIncome,
+              catColors: catColors,
+              customCats: customCats,
+              formatCompact: formatCompact,
+              textMain: textMain,
+            ),
+          ),
+          const SizedBox(height: 24),
+        ],
+
+        const Text('Income by Source',
+            style: TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF2D2D2D))),
+        const SizedBox(height: 14),
+        ...pieEntries.map((entry) => _CategoryRow(
+              entry: entry,
+              total: totalIncome,
+              txCount: txProvider.filteredTransactions
+                  .where((t) =>
+                      t.category == entry.key && t.type == 'income')
+                  .length,
+              customCats: customCats,
+              fmt: fmt,
+              budgetProvider: null,
+              bg: const Color(0xFFF8F6FC),
+            )),
+        const SizedBox(height: 20),
+      ]),
+    );
+  }
+
+  Widget _comparisonRow(
+      String label, double value, double max, Color color, NumberFormat fmt) {
+    final pct = max > 0 ? (value.abs() / max).clamp(0.0, 1.0) : 0.0;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(label,
+                style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF2D2D2D).withValues(alpha: 0.7))),
+            Text(fmt.format(value),
+                style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: color)),
+          ],
+        ),
+        const SizedBox(height: 4),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(4),
+          child: LinearProgressIndicator(
+            value: pct,
+            backgroundColor: color.withValues(alpha: 0.12),
+            valueColor: AlwaysStoppedAnimation<Color>(color),
+            minHeight: 6,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ─────────────────────────── TRENDS TAB ──────────────────────────────────────
+
+class _TrendsTab extends StatelessWidget {
+  final TransactionProvider txProvider;
+  final List<Map<String, dynamic>> customCats;
+  final NumberFormat fmt;
+
+  const _TrendsTab({
+    required this.txProvider,
+    required this.customCats,
+    required this.fmt,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    const textMain = Color(0xFF2D2D2D);
+    final rollingLabels = txProvider.rollingSixMonthLabels;
+    final trends = txProvider.categoryTrends;
+
+    if (trends.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.bar_chart_outlined,
+                size: 56,
+                color: const Color(0xFF5D3891).withValues(alpha: 0.3)),
+            const SizedBox(height: 16),
+            const Text('No spending data yet',
+                style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: textMain)),
+          ],
+        ),
+      );
+    }
+
+    return ListView(
+      padding:
+          const EdgeInsets.only(left: 20, right: 20, top: 16, bottom: 120),
+      children: [
+        const Text('Category Spending Trends',
+            style: TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.w700,
+                color: textMain)),
+        const SizedBox(height: 6),
+        Text('6-month history per category',
+            style: TextStyle(
+                fontSize: 12, color: textMain.withValues(alpha: 0.45))),
+        const SizedBox(height: 16),
+        ...trends.entries.map((e) {
+          final catColor = getCategoryColor(e.key, customCats);
+          final maxVal = e.value.reduce((a, b) => a > b ? a : b);
+          return Container(
+            margin: const EdgeInsets.only(bottom: 16),
+            padding: const EdgeInsets.all(18),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.04),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2)),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: catColor.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Icon(getCategoryIconByName(e.key, customCats),
+                          color: catColor, size: 18),
+                    ),
+                    const SizedBox(width: 10),
+                    Text(e.key,
+                        style: const TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                            color: textMain)),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                SizedBox(
+                  height: 80,
+                  child: BarChart(
+                    BarChartData(
+                      alignment: BarChartAlignment.spaceAround,
+                      maxY: maxVal > 0 ? maxVal * 1.3 : 100,
+                      barTouchData: BarTouchData(
+                        enabled: true,
+                        touchTooltipData: BarTouchTooltipData(
+                          tooltipRoundedRadius: 6,
+                          getTooltipItem: (group, gi, rod, ri) =>
+                              BarTooltipItem(
+                            fmt.format(rod.toY),
+                            const TextStyle(
+                                color: Colors.white,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600),
+                          ),
+                        ),
+                      ),
+                      titlesData: FlTitlesData(
+                        bottomTitles: AxisTitles(
+                          sideTitles: SideTitles(
+                            showTitles: true,
+                            getTitlesWidget: (v, _) {
+                              final idx = v.toInt();
+                              return Padding(
+                                padding: const EdgeInsets.only(top: 4),
+                                child: Text(
+                                  idx >= 0 && idx < rollingLabels.length
+                                      ? rollingLabels[idx]
+                                      : '',
+                                  style: TextStyle(
+                                      fontSize: 9,
+                                      color:
+                                          textMain.withValues(alpha: 0.4)),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                        leftTitles: const AxisTitles(
+                            sideTitles: SideTitles(showTitles: false)),
+                        topTitles: const AxisTitles(
+                            sideTitles: SideTitles(showTitles: false)),
+                        rightTitles: const AxisTitles(
+                            sideTitles: SideTitles(showTitles: false)),
+                      ),
+                      gridData: const FlGridData(show: false),
+                      borderData: FlBorderData(show: false),
+                      barGroups: List.generate(6, (i) {
+                        final isLast = i == 5;
+                        return BarChartGroupData(
+                          x: i,
+                          barRods: [
+                            BarChartRodData(
+                              toY: e.value[i],
+                              color: isLast
+                                  ? catColor
+                                  : catColor.withValues(alpha: 0.25),
+                              width: 12,
+                              borderRadius: BorderRadius.circular(4),
                             ),
                           ],
-                        ),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 44,
-                              height: 44,
-                              decoration: BoxDecoration(
-                                color: catColor.withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Icon(catIcon, color: catColor, size: 22),
-                            ),
-                            const SizedBox(width: 14),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    entry.key,
-                                    style: const TextStyle(
-                                      color: textMain,
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 3),
-                                  Text(
-                                    '$txCount Transaction${txCount != 1 ? 's' : ''}',
-                                    style: TextStyle(
-                                      color: textMain.withOpacity(0.4),
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w400,
-                                    ),
-                                  ),
-                                  Builder(builder: (_) {
-                                    final limit = budgetProvider.categoryLimit(entry.key);
-                                    if (limit <= 0) return const SizedBox.shrink();
-                                    final pct = budgetProvider.categoryUsedPercent(entry.key, entry.value);
-                                    final barColor = pct >= 90
-                                        ? const Color(0xFFE74C3C)
-                                        : pct >= 70
-                                            ? const Color(0xFFF39C12)
-                                            : catColor;
-                                    return Padding(
-                                      padding: const EdgeInsets.only(top: 6),
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          ClipRRect(
-                                            borderRadius: BorderRadius.circular(4),
-                                            child: LinearProgressIndicator(
-                                              value: pct / 100,
-                                              backgroundColor: barColor.withValues(alpha: 0.15),
-                                              valueColor: AlwaysStoppedAnimation<Color>(barColor),
-                                              minHeight: 5,
-                                            ),
-                                          ),
-                                          const SizedBox(height: 2),
-                                          Text(
-                                            '${pct.toStringAsFixed(0)}% of limit',
-                                            style: TextStyle(
-                                              color: barColor,
-                                              fontSize: 10,
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    );
-                                  }),
-                                ],
-                              ),
-                            ),
-                            Text(
-                              currencyFormat.format(entry.value),
-                              style: const TextStyle(
-                                color: textMain,
-                                fontSize: 15,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    }),
-                    const SizedBox(height: 20),
+                        );
+                      }),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }),
+      ],
+    );
+  }
+}
+
+// ─────────────────────────── SHARED WIDGETS ──────────────────────────────────
+
+class _DonutWithLegend extends StatelessWidget {
+  final List<MapEntry<String, double>> entries;
+  final double total;
+  final List<Color> catColors;
+  final List<Map<String, dynamic>> customCats;
+  final String Function(double) formatCompact;
+  final Color textMain;
+
+  const _DonutWithLegend({
+    required this.entries,
+    required this.total,
+    required this.catColors,
+    required this.customCats,
+    required this.formatCompact,
+    required this.textMain,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          flex: 5,
+          child: SizedBox(
+            height: 140,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                PieChart(PieChartData(
+                  sections: entries.asMap().entries.map((e) {
+                    final color = e.key < catColors.length
+                        ? catColors[e.key]
+                        : getCategoryColor(e.value.key, customCats);
+                    return PieChartSectionData(
+                        value: e.value.value,
+                        color: color,
+                        title: '',
+                        radius: 18);
+                  }).toList(),
+                  centerSpaceRadius: 42,
+                  sectionsSpace: 3,
+                )),
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(formatCompact(total),
+                        style: TextStyle(
+                            color: textMain,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w800)),
+                    Text('TOTAL',
+                        style: TextStyle(
+                            color: textMain.withValues(alpha: 0.35),
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 1)),
                   ],
                 ),
               ],
             ),
-            ),
           ),
-          const FloatingNavBar(currentIndex: 2),
+        ),
+        Expanded(
+          flex: 4,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: entries.asMap().entries.take(5).map((e) {
+              final color = e.key < catColors.length
+                  ? catColors[e.key]
+                  : getCategoryColor(e.value.key, customCats);
+              final pct =
+                  total > 0 ? (e.value.value / total * 100).toStringAsFixed(0) : '0';
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 5),
+                child: Row(
+                  children: [
+                    Container(
+                        width: 10,
+                        height: 10,
+                        decoration: BoxDecoration(
+                            color: color, shape: BoxShape.circle)),
+                    const SizedBox(width: 8),
+                    Expanded(
+                        child: Text(e.value.key,
+                            style: TextStyle(
+                                color: textMain.withValues(alpha: 0.6),
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500),
+                            overflow: TextOverflow.ellipsis)),
+                    Text('$pct%',
+                        style: TextStyle(
+                            color: textMain,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700)),
+                  ],
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _CategoryRow extends StatelessWidget {
+  final MapEntry<String, double> entry;
+  final double total;
+  final int txCount;
+  final List<Map<String, dynamic>> customCats;
+  final NumberFormat fmt;
+  final BudgetProvider? budgetProvider;
+  final Color bg;
+
+  const _CategoryRow({
+    required this.entry,
+    required this.total,
+    required this.txCount,
+    required this.customCats,
+    required this.fmt,
+    required this.budgetProvider,
+    required this.bg,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    const textMain = Color(0xFF2D2D2D);
+    final catColor = getCategoryColor(entry.key, customCats);
+    final catIcon = getCategoryIconByName(entry.key, customCats);
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+              color: Colors.black.withValues(alpha: 0.03),
+              blurRadius: 8,
+              offset: const Offset(0, 2)),
         ],
       ),
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: catColor.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(catIcon, color: catColor, size: 22),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(entry.key,
+                    style: const TextStyle(
+                        color: textMain,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600)),
+                const SizedBox(height: 3),
+                Text('$txCount Transaction${txCount != 1 ? 's' : ''}',
+                    style: TextStyle(
+                        color: textMain.withValues(alpha: 0.4),
+                        fontSize: 12)),
+                if (budgetProvider != null)
+                  Builder(builder: (_) {
+                    final limit =
+                        budgetProvider!.categoryLimit(entry.key);
+                    if (limit <= 0) return const SizedBox.shrink();
+                    final pct = budgetProvider!
+                        .categoryUsedPercent(entry.key, entry.value);
+                    final barColor = pct >= 90
+                        ? const Color(0xFFE74C3C)
+                        : pct >= 70
+                            ? const Color(0xFFF39C12)
+                            : catColor;
+                    return Padding(
+                      padding: const EdgeInsets.only(top: 6),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(4),
+                            child: LinearProgressIndicator(
+                              value: pct / 100,
+                              backgroundColor:
+                                  barColor.withValues(alpha: 0.15),
+                              valueColor:
+                                  AlwaysStoppedAnimation<Color>(barColor),
+                              minHeight: 5,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text('${pct.toStringAsFixed(0)}% of limit',
+                              style: TextStyle(
+                                  color: barColor,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w600)),
+                        ],
+                      ),
+                    );
+                  }),
+              ],
+            ),
+          ),
+          Text(fmt.format(entry.value),
+              style: const TextStyle(
+                  color: textMain,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700)),
+        ],
       ),
     );
   }
+}
 
-  double _getMaxY(List<double> values) {
-    double max = 100;
-    for (final v in values) {
-      if (v > max) max = v;
-    }
-    return max * 1.3;
+// ─────────────────────────── HELPERS ─────────────────────────────────────────
+
+List<Color> _catColorList() => const [
+      Color(0xFF5D3891),
+      Color(0xFFFF6B6B),
+      Color(0xFF51CF66),
+      Color(0xFF339AF0),
+      Color(0xFFFCC419),
+      Color(0xFFFF922B),
+      Color(0xFFCC5DE8),
+      Color(0xFF20C997),
+      Color(0xFFE64980),
+      Color(0xFF22B8CF),
+    ];
+
+Widget _summaryCard({
+  required String label,
+  required String amount,
+  required String badgeLabel,
+  required double progressValue,
+  Color color = const Color(0xFF5D3891),
+}) {
+  return Container(
+    width: double.infinity,
+    padding: const EdgeInsets.all(22),
+    decoration: BoxDecoration(
+      gradient: LinearGradient(
+        colors: [color, Color.lerp(color, Colors.white, 0.25)!],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      ),
+      borderRadius: BorderRadius.circular(20),
+      boxShadow: [
+        BoxShadow(
+            color: color.withValues(alpha: 0.35),
+            blurRadius: 20,
+            offset: const Offset(0, 8)),
+      ],
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(label,
+                style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.7),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500)),
+            Container(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(badgeLabel,
+                  style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700)),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Text(amount,
+            style: const TextStyle(
+                color: Colors.white,
+                fontSize: 32,
+                fontWeight: FontWeight.w800)),
+        const SizedBox(height: 16),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(6),
+          child: LinearProgressIndicator(
+            value: progressValue.clamp(0.0, 1.0),
+            minHeight: 8,
+            backgroundColor: Colors.white.withValues(alpha: 0.15),
+            valueColor:
+                const AlwaysStoppedAnimation<Color>(Colors.white),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Align(
+          alignment: Alignment.centerRight,
+          child: Text(badgeLabel,
+              style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.6),
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500)),
+        ),
+      ],
+    ),
+  );
+}
+
+Widget _chartCard({required String title, required Widget child}) {
+  return Container(
+    width: double.infinity,
+    padding: const EdgeInsets.all(20),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(20),
+      boxShadow: [
+        BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 4)),
+      ],
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(title,
+            style: const TextStyle(
+                color: Color(0xFF2D2D2D),
+                fontSize: 17,
+                fontWeight: FontWeight.w700)),
+        const SizedBox(height: 16),
+        child,
+      ],
+    ),
+  );
+}
+
+BarChartData _buildBarData(
+  List<double> totals,
+  List<String> labels,
+  NumberFormat fmt,
+  Color primary,
+  Color textMain, {
+  Color? barColor,
+}) {
+  return BarChartData(
+    alignment: BarChartAlignment.spaceAround,
+    maxY: _getMaxY(totals),
+    barTouchData: BarTouchData(
+      enabled: true,
+      touchTooltipData: BarTouchTooltipData(
+        tooltipRoundedRadius: 8,
+        getTooltipItem: (group, gi, rod, ri) => BarTooltipItem(
+          fmt.format(rod.toY),
+          const TextStyle(
+              color: Colors.white,
+              fontSize: 12,
+              fontWeight: FontWeight.w600),
+        ),
+      ),
+    ),
+    titlesData: FlTitlesData(
+      bottomTitles: AxisTitles(
+        sideTitles: SideTitles(
+          showTitles: true,
+          getTitlesWidget: (value, _) {
+            final idx = value.toInt();
+            if (idx < 0 || idx >= labels.length) return const Text('');
+            return Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Text(labels[idx],
+                  style: TextStyle(
+                      color: idx == 5
+                          ? primary
+                          : textMain.withValues(alpha: 0.35),
+                      fontSize: 11,
+                      fontWeight: idx == 5
+                          ? FontWeight.w700
+                          : FontWeight.w500)),
+            );
+          },
+        ),
+      ),
+      leftTitles:
+          const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+      topTitles:
+          const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+      rightTitles:
+          const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+    ),
+    gridData: const FlGridData(show: false),
+    borderData: FlBorderData(show: false),
+    barGroups: List.generate(6, (i) {
+      final isLast = i == 5;
+      final bc = barColor ?? primary;
+      return BarChartGroupData(
+        x: i,
+        barRods: [
+          BarChartRodData(
+            toY: totals[i],
+            gradient: (barColor == null && isLast)
+                ? const LinearGradient(
+                    colors: [Color(0xFF5D3891), Color(0xFF7B52AB)],
+                    begin: Alignment.bottomCenter,
+                    end: Alignment.topCenter,
+                  )
+                : null,
+            color: (barColor == null && isLast)
+                ? null
+                : isLast
+                    ? bc
+                    : bc.withValues(alpha: 0.25),
+            width: 14,
+            borderRadius: BorderRadius.circular(6),
+          ),
+        ],
+      );
+    }),
+  );
+}
+
+double _getMaxY(List<double> values) {
+  double max = 100;
+  for (final v in values) {
+    if (v > max) max = v;
   }
+  return max * 1.3;
 }
