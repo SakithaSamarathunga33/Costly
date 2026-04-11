@@ -9,7 +9,9 @@ import 'providers/budget_provider.dart';
 import 'providers/recurring_transaction_provider.dart';
 import 'providers/savings_goal_provider.dart';
 import 'providers/debt_provider.dart';
+import 'services/notification_service.dart';
 import 'screens/recurring_transactions_screen.dart';
+import 'screens/notification_settings_screen.dart';
 import 'screens/savings_goals_screen.dart';
 import 'screens/debts_screen.dart';
 import 'screens/splash_screen.dart';
@@ -60,6 +62,8 @@ Route<dynamic>? generateRoute(RouteSettings settings) {
       return _slideUpRoute(const SavingsGoalsScreen());
     case '/debts':
       return _slideUpRoute(const DebtsScreen());
+    case '/notification_settings':
+      return _slideUpRoute(const NotificationSettingsScreen());
     default:
       return _slideUpRoute(const SplashScreen());
   }
@@ -130,6 +134,7 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  await NotificationService().init();
   runApp(const ExpenseTrackerApp());
 }
 

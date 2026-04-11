@@ -450,6 +450,18 @@ class ProfileScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 14),
 
+                // Notification Settings item
+                _buildPreferenceItem(
+                  icon: Icons.notifications_outlined,
+                  iconBg: primary.withValues(alpha: 0.08),
+                  iconColor: primary,
+                  title: 'Notifications',
+                  subtitle: 'Daily reminders & budget alerts',
+                  onTap: () =>
+                      Navigator.pushNamed(context, '/notification_settings'),
+                ),
+                const SizedBox(height: 10),
+
                 // Debts & Loans item
                 _buildPreferenceItem(
                   icon: Icons.account_balance_outlined,

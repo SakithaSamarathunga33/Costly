@@ -40,6 +40,9 @@ dependencies:
   crypto: ^3.0.3
   # For multipart content type
   http_parser: ^4.0.2
+  # Local notifications & scheduling
+  flutter_local_notifications: ^18.0.1
+  timezone: ^0.9.4
 
 dev_dependencies:
   flutter_test:
