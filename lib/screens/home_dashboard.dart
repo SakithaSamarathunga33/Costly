@@ -9,6 +9,7 @@ import '../widgets/floating_nav_bar.dart';
 import '../widgets/app_animations.dart';
 import '../widgets/root_back_handler.dart';
 import '../utils/top_toast.dart';
+import '../providers/budget_provider.dart';
 
 class HomeDashboard extends StatefulWidget {
   const HomeDashboard({super.key});
@@ -31,6 +32,8 @@ class _HomeDashboardState extends State<HomeDashboard> {
             .fetchTransactions(authProvider.userId);
         Provider.of<CategoryProvider>(context, listen: false)
             .fetchCustomCategories(authProvider.userId);
+        Provider.of<BudgetProvider>(context, listen: false)
+            .fetchBudget(authProvider.userId, DateTime.now());
       }
     });
   }
@@ -48,6 +51,7 @@ class _HomeDashboardState extends State<HomeDashboard> {
     final authProvider = Provider.of<AuthProvider>(context);
     final currencySymbol = authProvider.currencySymbol;
     final txProvider = Provider.of<TransactionProvider>(context);
+    final budgetProvider = Provider.of<BudgetProvider>(context);
     final catProvider = Provider.of<CategoryProvider>(context);
     final customCats = catProvider.customCategories;
 
@@ -399,6 +403,16 @@ class _HomeDashboardState extends State<HomeDashboard> {
                         ],
                       ),
                     ),
+                    const SizedBox(height: 16),
+
+                    // Budget Card
+                    if (budgetProvider.hasOverallBudget)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        child: _buildBudgetCard(
+                            context, budgetProvider, txProvider, currencySymbol),
+                      ),
+
                     const SizedBox(height: 24),
 
                     // Quick Actions
@@ -910,6 +924,72 @@ class _HomeDashboardState extends State<HomeDashboard> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildBudgetCard(BuildContext context, BudgetProvider budgetProvider,
+      TransactionProvider txProvider, String currencySymbol) {
+    final spent = txProvider.totalExpenses;
+    final limit = budgetProvider.budget!.overall;
+    final pct = budgetProvider.overallUsedPercent(spent);
+    final color = pct >= 90
+        ? const Color(0xFFE74C3C)
+        : pct >= 70
+            ? const Color(0xFFF39C12)
+            : const Color(0xFF2ECC71);
+
+    return GestureDetector(
+      onTap: () => Navigator.pushNamed(context, '/budget_settings'),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(18),
+          boxShadow: [
+            BoxShadow(
+                color: Colors.black.withValues(alpha: 0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 4))
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text('Monthly Budget',
+                    style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 14,
+                        color: Color(0xFF2D2D2D))),
+                Text('${pct.toStringAsFixed(0)}% used',
+                    style: TextStyle(
+                        fontSize: 12, fontWeight: FontWeight.w600, color: color)),
+              ],
+            ),
+            const SizedBox(height: 10),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(6),
+              child: LinearProgressIndicator(
+                value: pct / 100,
+                backgroundColor: color.withValues(alpha: 0.15),
+                valueColor: AlwaysStoppedAnimation<Color>(color),
+                minHeight: 8,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              '$currencySymbol ${spent.toStringAsFixed(0)} / $currencySymbol ${limit.toStringAsFixed(0)}',
+              style: const TextStyle(
+                  fontSize: 12,
+                  color: Color(0xFF888888),
+                  fontWeight: FontWeight.w500),
+            ),
+          ],
+        ),
       ),
     );
   }
