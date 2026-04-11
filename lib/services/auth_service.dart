@@ -225,6 +225,30 @@ class AuthService {
     }
   }
 
+  /// Change password (requires re-authentication with current password)
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    final user = _auth.currentUser;
+    if (user == null || user.email == null) throw Exception('Not signed in');
+    final cred = EmailAuthProvider.credential(
+        email: user.email!, password: currentPassword);
+    await user.reauthenticateWithCredential(cred);
+    await user.updatePassword(newPassword);
+  }
+
+  /// Delete account (requires re-authentication, then deletes Firestore data + Auth account)
+  Future<void> deleteAccount({required String password}) async {
+    final user = _auth.currentUser;
+    if (user == null || user.email == null) throw Exception('Not signed in');
+    final cred = EmailAuthProvider.credential(
+        email: user.email!, password: password);
+    await user.reauthenticateWithCredential(cred);
+    await _firestore.collection('users').doc(user.uid).delete();
+    await user.delete();
+  }
+
   /// Send a password reset email (only works for email/password accounts)
   Future<void> sendPasswordResetEmail(String email) async {
     if (email.trim().isEmpty) throw Exception('Email is required');

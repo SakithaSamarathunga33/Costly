@@ -143,6 +143,238 @@ class ProfileScreen extends StatelessWidget {
     }
   }
 
+  void _showChangePasswordSheet(
+      BuildContext context, AuthProvider authProvider) {
+    final currentCtrl = TextEditingController();
+    final newCtrl = TextEditingController();
+    final confirmCtrl = TextEditingController();
+    bool obscureCurrent = true;
+    bool obscureNew = true;
+    bool obscureConfirm = true;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setSheet) => Padding(
+          padding: EdgeInsets.only(
+            left: 24,
+            right: 24,
+            top: 24,
+            bottom: MediaQuery.of(ctx).viewInsets.bottom + 24,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Change Password',
+                style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF2D2D2D)),
+              ),
+              const SizedBox(height: 20),
+              _passwordField(
+                controller: currentCtrl,
+                hint: 'Current password',
+                obscure: obscureCurrent,
+                onToggle: () =>
+                    setSheet(() => obscureCurrent = !obscureCurrent),
+              ),
+              const SizedBox(height: 12),
+              _passwordField(
+                controller: newCtrl,
+                hint: 'New password',
+                obscure: obscureNew,
+                onToggle: () => setSheet(() => obscureNew = !obscureNew),
+              ),
+              const SizedBox(height: 12),
+              _passwordField(
+                controller: confirmCtrl,
+                hint: 'Confirm new password',
+                obscure: obscureConfirm,
+                onToggle: () =>
+                    setSheet(() => obscureConfirm = !obscureConfirm),
+              ),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF5D3891),
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14)),
+                  ),
+                  onPressed: () async {
+                    if (newCtrl.text != confirmCtrl.text) {
+                      showTopToast(ctx, 'Passwords do not match',
+                          isError: true);
+                      return;
+                    }
+                    if (newCtrl.text.length < 6) {
+                      showTopToast(ctx, 'Password must be at least 6 characters',
+                          isError: true);
+                      return;
+                    }
+                    Navigator.pop(ctx);
+                    final ok = await authProvider.changePassword(
+                      currentPassword: currentCtrl.text,
+                      newPassword: newCtrl.text,
+                    );
+                    if (!context.mounted) return;
+                    if (ok) {
+                      showTopToast(context, 'Password updated successfully');
+                    } else {
+                      showTopToast(
+                          context,
+                          authProvider.error ??
+                              'Failed to change password',
+                          isError: true);
+                    }
+                  },
+                  child: const Text('Update Password',
+                      style: TextStyle(fontWeight: FontWeight.w700)),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _passwordField({
+    required TextEditingController controller,
+    required String hint,
+    required bool obscure,
+    required VoidCallback onToggle,
+  }) {
+    return TextField(
+      controller: controller,
+      obscureText: obscure,
+      decoration: InputDecoration(
+        hintText: hint,
+        filled: true,
+        fillColor: const Color(0xFFF8F6FC),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        suffixIcon: IconButton(
+          icon: Icon(
+            obscure ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+            size: 20,
+            color: const Color(0xFF2D2D2D).withValues(alpha: 0.4),
+          ),
+          onPressed: onToggle,
+        ),
+      ),
+    );
+  }
+
+  void _showDeleteAccountDialog(
+      BuildContext context, AuthProvider authProvider) {
+    final passwordCtrl = TextEditingController();
+    bool obscure = true;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialog) => AlertDialog(
+          backgroundColor: Colors.white,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: const Text(
+            'Delete Account',
+            style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF2D2D2D)),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'This will permanently delete your account and all data. This cannot be undone.',
+                style:
+                    TextStyle(fontSize: 14, color: Color(0xFF2D2D2D)),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: passwordCtrl,
+                obscureText: obscure,
+                decoration: InputDecoration(
+                  hintText: 'Enter your password to confirm',
+                  filled: true,
+                  fillColor: const Color(0xFFF8F6FC),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16, vertical: 12),
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      obscure
+                          ? Icons.visibility_outlined
+                          : Icons.visibility_off_outlined,
+                      size: 20,
+                    ),
+                    onPressed: () =>
+                        setDialog(() => obscure = !obscure),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancel',
+                  style: TextStyle(fontWeight: FontWeight.w600)),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+              ),
+              onPressed: () async {
+                Navigator.pop(ctx);
+                final ok = await authProvider.deleteAccount(
+                    password: passwordCtrl.text);
+                if (!context.mounted) return;
+                if (ok) {
+                  Navigator.pushNamedAndRemoveUntil(
+                      context, '/login_screen', (_) => false);
+                } else {
+                  showTopToast(
+                      context,
+                      authProvider.error ?? 'Failed to delete account',
+                      isError: true);
+                }
+              },
+              child: const Text('Delete',
+                  style: TextStyle(fontWeight: FontWeight.w700)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   void _showThemePicker(BuildContext context, ThemeProvider themeProvider) {
     showModalBottomSheet(
       context: context,
@@ -611,6 +843,42 @@ class ProfileScreen extends StatelessWidget {
                           AppUpdateService.checkForUpdate(context),
                     );
                   },
+                ),
+                const SizedBox(height: 24),
+
+                // ─── ACCOUNT Section ───
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'ACCOUNT',
+                    style: TextStyle(
+                      color: const Color(0xFF2D2D2D).withValues(alpha: 0.35),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 1.2,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 14),
+
+                _buildPreferenceItem(
+                  icon: Icons.lock_outline_rounded,
+                  iconBg: primary.withValues(alpha: 0.08),
+                  iconColor: primary,
+                  title: 'Change Password',
+                  subtitle: 'Update your account password',
+                  onTap: () => _showChangePasswordSheet(context, authProvider),
+                ),
+                const SizedBox(height: 10),
+
+                _buildPreferenceItem(
+                  icon: Icons.delete_forever_outlined,
+                  iconBg: Colors.red.withValues(alpha: 0.08),
+                  iconColor: Colors.red,
+                  title: 'Delete Account',
+                  subtitle: 'Permanently remove your account and data',
+                  onTap: () =>
+                      _showDeleteAccountDialog(context, authProvider),
                 ),
                 const SizedBox(height: 24),
 

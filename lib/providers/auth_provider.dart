@@ -238,6 +238,49 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
+  /// Change password — returns true on success, sets _error on failure
+  Future<bool> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+    try {
+      await _authService.changePassword(
+        currentPassword: currentPassword,
+        newPassword: newPassword,
+      );
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _error = e.toString().replaceFirst('Exception: ', '');
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  /// Delete account — returns true on success; caller should navigate to login
+  Future<bool> deleteAccount({required String password}) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+    try {
+      await _authService.deleteAccount(password: password);
+      _isLoading = false;
+      _user = null;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _error = e.toString().replaceFirst('Exception: ', '');
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
   /// Logout the current user
   Future<void> logout() async {
     _isLoading = true;
