@@ -742,7 +742,6 @@ class _CategoryRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final textMain = cs.onSurface;
     final catColor = getCategoryColor(entry.key, customCats);
     final catIcon = getCategoryIconByName(entry.key, customCats);
 

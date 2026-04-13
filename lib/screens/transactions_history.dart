@@ -631,7 +631,7 @@ class _TransactionsHistoryScreenState extends State<TransactionsHistoryScreen> {
                                             ),
                                             const SizedBox(height: 3),
                                             Text(
-                                              '${tx.category} • $timeStr',
+                                              '${tx.category} â€¢ $timeStr',
                                               style: TextStyle(
                                                 color:
                                                     cs.onSurface.withOpacity(0.4),

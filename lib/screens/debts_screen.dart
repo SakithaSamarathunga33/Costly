@@ -11,9 +11,8 @@ class DebtsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     const primary = Color(0xFF5D3891);
-    const bg = Color(0xFFF8F6FC);
-    const textMain = Color(0xFF2D2D2D);
 
     final provider = context.watch<DebtProvider>();
     final auth = context.watch<AuthProvider>();
@@ -21,20 +20,20 @@ class DebtsScreen extends StatelessWidget {
         symbol: '${auth.currencySymbol} ', decimalDigits: 2);
 
     return Scaffold(
-      backgroundColor: bg,
+      backgroundColor: cs.surface,
       appBar: AppBar(
-        backgroundColor: bg,
+        backgroundColor: cs.surface,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text('Debts & Loans',
+        title: Text('Debts & Loans',
             style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
-                color: textMain)),
+                color: cs.onSurface)),
         centerTitle: true,
         actions: [
           IconButton(
@@ -73,17 +72,16 @@ class DebtsScreen extends StatelessWidget {
                                   size: 56,
                                   color: primary.withValues(alpha: 0.3)),
                               const SizedBox(height: 16),
-                              const Text('No debts recorded',
+                              Text('No debts recorded',
                                   style: TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w600,
-                                      color: textMain)),
+                                      color: cs.onSurface)),
                               const SizedBox(height: 8),
                               Text('Tap + to add a debt or loan',
                                   style: TextStyle(
                                       fontSize: 13,
-                                      color:
-                                          textMain.withValues(alpha: 0.45))),
+                                      color: cs.onSurfaceVariant)),
                             ],
                           ),
                         )
@@ -178,7 +176,7 @@ class _DebtCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const textMain = Color(0xFF2D2D2D);
+    final cs = Theme.of(context).colorScheme;
     final isOwedByMe = debt.debtType == 'owed_by_me';
     final color = isOwedByMe
         ? const Color(0xFFE74C3C)
@@ -187,7 +185,7 @@ class _DebtCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: cs.surfaceContainerLow,
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
@@ -219,10 +217,10 @@ class _DebtCard extends StatelessWidget {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(debt.name,
-                    style: const TextStyle(
+                    style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w700,
-                        color: textMain),
+                        color: cs.onSurface),
                     overflow: TextOverflow.ellipsis),
               ),
               if (debt.isSettled)
@@ -241,7 +239,7 @@ class _DebtCard extends StatelessWidget {
           Text('${isOwedByMe ? 'To' : 'From'}: ${debt.person}',
               style: TextStyle(
                   fontSize: 12,
-                  color: textMain.withValues(alpha: 0.5))),
+                  color: cs.onSurfaceVariant)),
           if (debt.dueDate != null)
             Text(
                 'Due: ${DateFormat('MMM d, yyyy').format(debt.dueDate!)}',
@@ -250,7 +248,7 @@ class _DebtCard extends StatelessWidget {
                     color: DateTime.now().isAfter(debt.dueDate!) &&
                             !debt.isSettled
                         ? Colors.red
-                        : textMain.withValues(alpha: 0.45))),
+                        : cs.onSurfaceVariant)),
           const SizedBox(height: 12),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -265,7 +263,7 @@ class _DebtCard extends StatelessWidget {
               Text('of ${fmt.format(debt.totalAmount)}',
                   style: TextStyle(
                       fontSize: 13,
-                      color: textMain.withValues(alpha: 0.45))),
+                      color: cs.onSurfaceVariant)),
             ],
           ),
           const SizedBox(height: 8),
@@ -362,6 +360,7 @@ class _AddDebtSheetState extends State<_AddDebtSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     const primary = Color(0xFF5D3891);
     return DraggableScrollableSheet(
       initialChildSize: 0.85,
@@ -369,9 +368,9 @@ class _AddDebtSheetState extends State<_AddDebtSheet> {
       minChildSize: 0.5,
       expand: false,
       builder: (_, sc) => Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        decoration: BoxDecoration(
+          color: cs.surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         ),
         padding: EdgeInsets.only(
             left: 24,
@@ -390,11 +389,11 @@ class _AddDebtSheetState extends State<_AddDebtSheet> {
                       borderRadius: BorderRadius.circular(2))),
             ),
             const SizedBox(height: 16),
-            const Text('Add Debt / Loan',
+            Text('Add Debt / Loan',
                 style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFF2D2D2D))),
+                    color: cs.onSurface)),
             const SizedBox(height: 20),
             // Type toggle
             Row(
@@ -405,16 +404,16 @@ class _AddDebtSheetState extends State<_AddDebtSheet> {
               ],
             ),
             const SizedBox(height: 14),
-            _field(_nameCtrl, 'Description'),
+            _field(_nameCtrl, 'Description', cs),
             const SizedBox(height: 12),
             _field(_personCtrl,
-                _debtType == 'owed_by_me' ? 'Creditor name' : 'Debtor name'),
+                _debtType == 'owed_by_me' ? 'Creditor name' : 'Debtor name', cs),
             const SizedBox(height: 12),
-            _field(_amountCtrl, 'Total amount',
+            _field(_amountCtrl, 'Total amount', cs,
                 keyboardType:
                     const TextInputType.numberWithOptions(decimal: true)),
             const SizedBox(height: 12),
-            _field(_notesCtrl, 'Notes (optional)'),
+            _field(_notesCtrl, 'Notes (optional)', cs),
             const SizedBox(height: 12),
             GestureDetector(
               onTap: () async {
@@ -432,7 +431,7 @@ class _AddDebtSheetState extends State<_AddDebtSheet> {
                 padding: const EdgeInsets.symmetric(
                     horizontal: 16, vertical: 16),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF8F6FC),
+                  color: cs.surfaceContainerHighest,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
@@ -445,8 +444,8 @@ class _AddDebtSheetState extends State<_AddDebtSheet> {
                       style: TextStyle(
                           fontSize: 14,
                           color: _dueDate == null
-                              ? const Color(0xFF2D2D2D).withValues(alpha: 0.4)
-                              : const Color(0xFF2D2D2D),
+                              ? cs.onSurfaceVariant
+                              : cs.onSurface,
                           fontWeight: FontWeight.w500),
                     ),
                     const Icon(Icons.calendar_today_outlined,
@@ -504,7 +503,7 @@ class _AddDebtSheetState extends State<_AddDebtSheet> {
     );
   }
 
-  Widget _field(TextEditingController ctrl, String label,
+  Widget _field(TextEditingController ctrl, String label, ColorScheme cs,
       {TextInputType? keyboardType}) =>
       TextField(
         controller: ctrl,
@@ -512,7 +511,7 @@ class _AddDebtSheetState extends State<_AddDebtSheet> {
         decoration: InputDecoration(
           labelText: label,
           filled: true,
-          fillColor: const Color(0xFFF8F6FC),
+          fillColor: cs.surfaceContainerHighest,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide: BorderSide.none,
@@ -565,14 +564,15 @@ class _PaymentSheetState extends State<_PaymentSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     const primary = Color(0xFF5D3891);
     return Padding(
       padding:
           EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
       child: Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        decoration: BoxDecoration(
+          color: cs.surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         ),
         padding: const EdgeInsets.all(24),
         child: Column(
@@ -580,10 +580,10 @@ class _PaymentSheetState extends State<_PaymentSheet> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('Record payment for "${widget.debt.name}"',
-                style: const TextStyle(
+                style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFF2D2D2D))),
+                    color: cs.onSurface)),
             const SizedBox(height: 16),
             TextField(
               controller: _amountCtrl,
@@ -593,7 +593,7 @@ class _PaymentSheetState extends State<_PaymentSheet> {
               decoration: InputDecoration(
                 labelText: 'Amount paid',
                 filled: true,
-                fillColor: const Color(0xFFF8F6FC),
+                fillColor: cs.surfaceContainerHighest,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide.none,

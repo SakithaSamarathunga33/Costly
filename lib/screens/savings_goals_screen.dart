@@ -12,9 +12,8 @@ class SavingsGoalsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     const primary = Color(0xFF5D3891);
-    const bg = Color(0xFFF8F6FC);
-    const textMain = Color(0xFF2D2D2D);
 
     final provider = context.watch<SavingsGoalProvider>();
     final auth = context.watch<AuthProvider>();
@@ -22,20 +21,20 @@ class SavingsGoalsScreen extends StatelessWidget {
         symbol: '${auth.currencySymbol} ', decimalDigits: 2);
 
     return Scaffold(
-      backgroundColor: bg,
+      backgroundColor: cs.surface,
       appBar: AppBar(
-        backgroundColor: bg,
+        backgroundColor: cs.surface,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text('Savings Goals',
+        title: Text('Savings Goals',
             style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
-                color: textMain)),
+                color: cs.onSurface)),
         centerTitle: true,
         actions: [
           IconButton(
@@ -56,16 +55,16 @@ class SavingsGoalsScreen extends StatelessWidget {
                           size: 56,
                           color: primary.withValues(alpha: 0.3)),
                       const SizedBox(height: 16),
-                      const Text('No savings goals yet',
+                      Text('No savings goals yet',
                           style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
-                              color: textMain)),
+                              color: cs.onSurface)),
                       const SizedBox(height: 8),
                       Text('Tap + to create a goal',
                           style: TextStyle(
                               fontSize: 13,
-                              color: textMain.withValues(alpha: 0.45))),
+                              color: cs.onSurfaceVariant)),
                     ],
                   ),
                 )
@@ -129,7 +128,7 @@ class _GoalCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const textMain = Color(0xFF2D2D2D);
+    final cs = Theme.of(context).colorScheme;
     final goalColor = Color(goal.color);
     final pct = goal.progressPercent;
     final barColor = goal.isCompleted
@@ -141,7 +140,7 @@ class _GoalCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: cs.surfaceContainerLow,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
@@ -171,16 +170,16 @@ class _GoalCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(goal.name,
-                        style: const TextStyle(
+                        style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
-                            color: textMain)),
+                            color: cs.onSurface)),
                     if (goal.deadline != null)
                       Text(
                         'By ${DateFormat('MMM d, yyyy').format(goal.deadline!)}',
                         style: TextStyle(
                             fontSize: 12,
-                            color: textMain.withValues(alpha: 0.45)),
+                            color: cs.onSurfaceVariant),
                       ),
                   ],
                 ),
@@ -218,7 +217,7 @@ class _GoalCard extends StatelessWidget {
               Text(fmt.format(goal.targetAmount),
                   style: TextStyle(
                       fontSize: 14,
-                      color: textMain.withValues(alpha: 0.45),
+                      color: cs.onSurfaceVariant,
                       fontWeight: FontWeight.w500)),
             ],
           ),
@@ -319,6 +318,7 @@ class _AddGoalSheetState extends State<_AddGoalSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     const primary = Color(0xFF5D3891);
     final selectedIcons = [
       'savings', 'flight', 'home', 'laptop', 'directions_car',
@@ -331,9 +331,9 @@ class _AddGoalSheetState extends State<_AddGoalSheet> {
       minChildSize: 0.5,
       expand: false,
       builder: (_, scrollCtrl) => Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        decoration: BoxDecoration(
+          color: cs.surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         ),
         padding: EdgeInsets.only(
             left: 24,
@@ -352,23 +352,23 @@ class _AddGoalSheetState extends State<_AddGoalSheet> {
                       borderRadius: BorderRadius.circular(2))),
             ),
             const SizedBox(height: 16),
-            const Text('New Savings Goal',
+            Text('New Savings Goal',
                 style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFF2D2D2D))),
+                    color: cs.onSurface)),
             const SizedBox(height: 20),
-            _field(_nameCtrl, 'Goal name (e.g. Vacation)'),
+            _field(_nameCtrl, 'Goal name (e.g. Vacation)', cs),
             const SizedBox(height: 12),
-            _field(_targetCtrl, 'Target amount',
+            _field(_targetCtrl, 'Target amount', cs,
                 keyboardType:
                     const TextInputType.numberWithOptions(decimal: true)),
             const SizedBox(height: 16),
-            const Text('Icon',
+            Text('Icon',
                 style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
-                    color: Color(0xFF2D2D2D))),
+                    color: cs.onSurface)),
             const SizedBox(height: 8),
             Wrap(
               spacing: 10,
@@ -393,11 +393,11 @@ class _AddGoalSheetState extends State<_AddGoalSheet> {
               }).toList(),
             ),
             const SizedBox(height: 16),
-            const Text('Color',
+            Text('Color',
                 style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
-                    color: Color(0xFF2D2D2D))),
+                    color: cs.onSurface)),
             const SizedBox(height: 8),
             Wrap(
               spacing: 10,
@@ -413,7 +413,7 @@ class _AddGoalSheetState extends State<_AddGoalSheet> {
                       shape: BoxShape.circle,
                       border: isSelected
                           ? Border.all(
-                              color: const Color(0xFF2D2D2D), width: 2.5)
+                              color: cs.onSurface, width: 2.5)
                           : null,
                     ),
                   ),
@@ -437,7 +437,7 @@ class _AddGoalSheetState extends State<_AddGoalSheet> {
                 padding: const EdgeInsets.symmetric(
                     horizontal: 16, vertical: 16),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF8F6FC),
+                  color: cs.surfaceContainerHighest,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
@@ -450,9 +450,8 @@ class _AddGoalSheetState extends State<_AddGoalSheet> {
                         style: TextStyle(
                             fontSize: 14,
                             color: _deadline == null
-                                ? const Color(0xFF2D2D2D)
-                                    .withValues(alpha: 0.4)
-                                : const Color(0xFF2D2D2D),
+                                ? cs.onSurfaceVariant
+                                : cs.onSurface,
                             fontWeight: FontWeight.w500)),
                     const Icon(Icons.calendar_today_outlined,
                         size: 18, color: primary),
@@ -486,7 +485,7 @@ class _AddGoalSheetState extends State<_AddGoalSheet> {
     );
   }
 
-  Widget _field(TextEditingController ctrl, String label,
+  Widget _field(TextEditingController ctrl, String label, ColorScheme cs,
       {TextInputType? keyboardType}) =>
       TextField(
         controller: ctrl,
@@ -494,7 +493,7 @@ class _AddGoalSheetState extends State<_AddGoalSheet> {
         decoration: InputDecoration(
           labelText: label,
           filled: true,
-          fillColor: const Color(0xFFF8F6FC),
+          fillColor: cs.surfaceContainerHighest,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide: BorderSide.none,
@@ -547,14 +546,15 @@ class _ContributeSheetState extends State<_ContributeSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     const primary = Color(0xFF5D3891);
     return Padding(
       padding: EdgeInsets.only(
           bottom: MediaQuery.of(context).viewInsets.bottom),
       child: Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        decoration: BoxDecoration(
+          color: cs.surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         ),
         padding: const EdgeInsets.all(24),
         child: Column(
@@ -562,10 +562,10 @@ class _ContributeSheetState extends State<_ContributeSheet> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('Add to "${widget.goal.name}"',
-                style: const TextStyle(
+                style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFF2D2D2D))),
+                    color: cs.onSurface)),
             const SizedBox(height: 16),
             TextField(
               controller: _amountCtrl,
@@ -575,7 +575,7 @@ class _ContributeSheetState extends State<_ContributeSheet> {
               decoration: InputDecoration(
                 labelText: 'Amount',
                 filled: true,
-                fillColor: const Color(0xFFF8F6FC),
+                fillColor: cs.surfaceContainerHighest,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
                   borderSide: BorderSide.none,

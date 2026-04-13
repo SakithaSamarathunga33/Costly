@@ -118,9 +118,8 @@ class _NotificationSettingsScreenState
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     const primary = Color(0xFF5D3891);
-    const bg = Color(0xFFF8F6FC);
-    const textMain = Color(0xFF2D2D2D);
 
     if (_loading) {
       return const Scaffold(
@@ -129,31 +128,31 @@ class _NotificationSettingsScreenState
     }
 
     return Scaffold(
-      backgroundColor: bg,
+      backgroundColor: cs.surface,
       appBar: AppBar(
-        backgroundColor: bg,
+        backgroundColor: cs.surface,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text('Notifications',
+        title: Text('Notifications',
             style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
-                color: textMain)),
+                color: cs.onSurface)),
         centerTitle: true,
       ),
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
           // Daily reminder section
-          _sectionLabel('Daily Reminder'),
+          _sectionLabel('Daily Reminder', cs),
           const SizedBox(height: 10),
           Container(
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: cs.surfaceContainerLow,
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
@@ -165,15 +164,15 @@ class _NotificationSettingsScreenState
             child: Column(
               children: [
                 SwitchListTile(
-                  title: const Text('Enable daily reminder',
+                  title: Text('Enable daily reminder',
                       style: TextStyle(
                           fontWeight: FontWeight.w600,
-                          color: textMain)),
+                          color: cs.onSurface)),
                   subtitle: Text(
                       'Remind me to log expenses each day',
                       style: TextStyle(
                           fontSize: 12,
-                          color: textMain.withValues(alpha: 0.5))),
+                          color: cs.onSurfaceVariant)),
                   value: _dailyReminder,
                   onChanged: _toggleDailyReminder,
                   activeThumbColor: primary,
@@ -201,12 +200,12 @@ class _NotificationSettingsScreenState
           const SizedBox(height: 24),
 
           // Budget alerts section
-          _sectionLabel('Budget Alerts'),
+          _sectionLabel('Budget Alerts', cs),
           const SizedBox(height: 10),
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: cs.surfaceContainerLow,
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
@@ -232,15 +231,15 @@ class _NotificationSettingsScreenState
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('Budget exceeded alerts',
+                      Text('Budget exceeded alerts',
                           style: TextStyle(
                               fontWeight: FontWeight.w600,
-                              color: textMain)),
+                              color: cs.onSurface)),
                       Text(
                           'Automatically notified when you exceed budget thresholds (70%, 90%, 100%)',
                           style: TextStyle(
                               fontSize: 12,
-                              color: textMain.withValues(alpha: 0.5))),
+                              color: cs.onSurfaceVariant)),
                     ],
                   ),
                 ),
@@ -252,7 +251,7 @@ class _NotificationSettingsScreenState
           const SizedBox(height: 24),
 
           // Test notification
-          _sectionLabel('Test'),
+          _sectionLabel('Test', cs),
           const SizedBox(height: 10),
           SizedBox(
             width: double.infinity,
@@ -275,9 +274,9 @@ class _NotificationSettingsScreenState
     );
   }
 
-  Widget _sectionLabel(String text) => Text(text,
-      style: const TextStyle(
+  Widget _sectionLabel(String text, ColorScheme cs) => Text(text,
+      style: TextStyle(
           fontSize: 13,
           fontWeight: FontWeight.w700,
-          color: Color(0xFF2D2D2D)));
+          color: cs.onSurface));
 }
