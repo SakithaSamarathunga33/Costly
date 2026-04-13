@@ -31,9 +31,19 @@ class RecurringTransactionProvider extends ChangeNotifier {
   /// Auto-generate transactions for any overdue recurring entries.
   Future<void> _processDue(String userId) async {
     final now = DateTime.now();
-    for (final item in _items.where((r) => r.isActive)) {
-      if (item.nextDueDate.isBefore(now) ||
-          _isSameDay(item.nextDueDate, now)) {
+    for (int i = 0; i < _items.length; i++) {
+      final item = _items[i];
+      if (!item.isActive) continue;
+
+      // Auto-deactivate if past endDate
+      if (item.endDate != null && now.isAfter(item.endDate!)) {
+        final deactivated = item.copyWith(isActive: false);
+        await _service.update(deactivated);
+        _items[i] = deactivated;
+        continue;
+      }
+
+      if (item.nextDueDate.isBefore(now) || _isSameDay(item.nextDueDate, now)) {
         await _txService.addTransaction(
           userId: userId,
           title: item.title,
@@ -46,8 +56,7 @@ class RecurringTransactionProvider extends ChangeNotifier {
         // Advance nextDueDate
         final updated = item.copyWith(nextDueDate: item.nextAfter(item.nextDueDate));
         await _service.update(updated);
-        final idx = _items.indexWhere((r) => r.id == item.id);
-        if (idx != -1) _items[idx] = updated;
+        _items[i] = updated;
       }
     }
   }
@@ -64,6 +73,7 @@ class RecurringTransactionProvider extends ChangeNotifier {
     required String frequency,
     required DateTime startDate,
     String notes = '',
+    DateTime? endDate,
   }) async {
     final model = RecurringTransactionModel(
       id: '',
@@ -75,6 +85,7 @@ class RecurringTransactionProvider extends ChangeNotifier {
       notes: notes,
       frequency: frequency,
       nextDueDate: startDate,
+      endDate: endDate,
     );
     final saved = await _service.add(model);
     _items.add(saved);
