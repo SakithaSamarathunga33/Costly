@@ -16,7 +16,7 @@ class RecurringTransactionService {
   Future<RecurringTransactionModel> add(
       RecurringTransactionModel model) async {
     final ref = _col.doc();
-    final m = RecurringTransactionModel(
+    final withId = RecurringTransactionModel(
       id: ref.id,
       userId: model.userId,
       title: model.title,
@@ -27,9 +27,10 @@ class RecurringTransactionService {
       frequency: model.frequency,
       nextDueDate: model.nextDueDate,
       isActive: model.isActive,
+      endDate: model.endDate,
     );
-    await ref.set(m.toMap());
-    return m;
+    await ref.set(withId.toMap());
+    return withId;
   }
 
   Future<void> update(RecurringTransactionModel model) async {
