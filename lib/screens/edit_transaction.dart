@@ -134,8 +134,7 @@ class _EditTransactionScreenState extends State<EditTransactionScreen> {
   @override
   Widget build(BuildContext context) {
     const Color primary = Color(0xFF5D3891);
-    const Color bg = Color(0xFFF8F6FC);
-    const Color textMain = Color(0xFF2D2D2D);
+    final cs = Theme.of(context).colorScheme;
 
     final catProvider = Provider.of<CategoryProvider>(context);
     final categories = _selectedType == 'expense'
@@ -155,19 +154,19 @@ class _EditTransactionScreenState extends State<EditTransactionScreen> {
     }
 
     return Scaffold(
-      backgroundColor: bg,
+      backgroundColor: cs.surface,
       appBar: AppBar(
-        backgroundColor: bg,
+        backgroundColor: cs.surface,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: textMain),
+          icon: Icon(Icons.arrow_back, color: cs.onSurface),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
+        title: Text(
           'Edit Transaction',
           style: TextStyle(
-            color: textMain,
+            color: cs.onSurface,
             fontSize: 18,
             fontWeight: FontWeight.w700,
           ),
@@ -210,13 +209,13 @@ class _EditTransactionScreenState extends State<EditTransactionScreen> {
                   if (states.contains(MaterialState.selected)) {
                     return primary;
                   }
-                  return const Color(0xFF2D2D2D);
+                  return cs.onSurface;
                 }),
                 backgroundColor: MaterialStateProperty.resolveWith((states) {
                   if (states.contains(MaterialState.selected)) {
                     return primary.withOpacity(0.15);
                   }
-                  return Colors.white;
+                  return cs.surfaceContainerLow;
                 }),
               ),
             ),
@@ -254,12 +253,12 @@ class _EditTransactionScreenState extends State<EditTransactionScreen> {
                     duration: const Duration(milliseconds: 200),
                     padding: const EdgeInsets.symmetric(vertical: 10),
                     decoration: BoxDecoration(
-                      color: isSelected ? primary : Colors.white,
+                      color: isSelected ? primary : cs.surfaceContainerLow,
                       borderRadius: BorderRadius.circular(30),
                       border: Border.all(
                         color: isSelected
                             ? primary
-                            : Colors.grey.withOpacity(0.2),
+                            : cs.outlineVariant,
                         width: 1.4,
                       ),
                       boxShadow: isSelected
@@ -296,8 +295,7 @@ class _EditTransactionScreenState extends State<EditTransactionScreen> {
                                 Text(
                                   name,
                                   style: TextStyle(
-                                    color:
-                                        isSelected ? Colors.white : textMain,
+                                    color: isSelected ? Colors.white : cs.onSurface,
                                     fontSize: 13,
                                     fontWeight: FontWeight.w600,
                                   ),
@@ -313,7 +311,7 @@ class _EditTransactionScreenState extends State<EditTransactionScreen> {
                               onTap: () => _showEditCategoryDialog(
                                 context: context,
                                 primary: primary,
-                                textMain: textMain,
+                                textMain: cs.onSurface,
                                 category: cat,
                               ),
                               customBorder: const CircleBorder(),
@@ -336,12 +334,12 @@ class _EditTransactionScreenState extends State<EditTransactionScreen> {
                 }),
                 GestureDetector(
                   onTap: () =>
-                      _showAddCategoryDialog(context, primary, textMain),
+                      _showAddCategoryDialog(context, primary, cs.onSurface),
                   child: Container(
                     padding: const EdgeInsets.symmetric(
                         horizontal: 14, vertical: 10),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: cs.surfaceContainerLow,
                       borderRadius: BorderRadius.circular(30),
                       border: Border.all(
                         color: primary.withOpacity(0.3),
@@ -381,9 +379,9 @@ class _EditTransactionScreenState extends State<EditTransactionScreen> {
                   vertical: 14,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: cs.surfaceContainerLow,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.grey.withOpacity(0.22)),
+                  border: Border.all(color: cs.outlineVariant),
                 ),
                 child: Row(
                   children: [
@@ -392,8 +390,8 @@ class _EditTransactionScreenState extends State<EditTransactionScreen> {
                     const SizedBox(width: 10),
                     Text(
                       DateFormat('MMM d, yyyy').format(_selectedDate),
-                      style: const TextStyle(
-                        color: textMain,
+                      style: TextStyle(
+                        color: cs.onSurface,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -449,10 +447,11 @@ class _EditTransactionScreenState extends State<EditTransactionScreen> {
   }
 
   Widget _sectionLabel(String label) {
+    final cs = Theme.of(context).colorScheme;
     return Text(
       label,
-      style: const TextStyle(
-        color: Color(0xFF2D2D2D),
+      style: TextStyle(
+        color: cs.onSurface,
         fontSize: 14,
         fontWeight: FontWeight.w600,
       ),
@@ -472,7 +471,6 @@ class _EditTransactionScreenState extends State<EditTransactionScreen> {
           builder: (ctx, setDialogState) {
             final imeOpen = MediaQuery.viewInsetsOf(ctx).bottom > 0;
             return Dialog(
-              backgroundColor: Colors.white,
               alignment: Alignment.bottomCenter,
               insetPadding: keyboardAwareDialogInsets(ctx),
               shape: RoundedRectangleBorder(
@@ -484,12 +482,12 @@ class _EditTransactionScreenState extends State<EditTransactionScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Text(
+                    Text(
                       'New Category',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
-                        color: Color(0xFF2D2D2D),
+                        color: Theme.of(ctx).colorScheme.onSurface,
                       ),
                     ),
                     SizedBox(height: imeOpen ? 12 : 20),
@@ -497,14 +495,14 @@ class _EditTransactionScreenState extends State<EditTransactionScreen> {
                       autofocus: true,
                       scrollPadding: categoryNameFieldScrollPadding(ctx),
                       onChanged: (v) => setDialogState(() => categoryName = v),
-                      style: const TextStyle(
-                          fontSize: 15, color: Color(0xFF2D2D2D)),
+                      style: TextStyle(
+                          fontSize: 15, color: Theme.of(ctx).colorScheme.onSurface),
                       decoration: InputDecoration(
                         hintText: 'Category name',
                         hintStyle: TextStyle(
                             color: textMain.withOpacity(0.3), fontSize: 15),
                         filled: true,
-                        fillColor: const Color(0xFFF8F6FC),
+                        fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(14),
                           borderSide:
@@ -662,7 +660,6 @@ class _EditTransactionScreenState extends State<EditTransactionScreen> {
           builder: (ctx, setDialogState) {
             final imeOpen = MediaQuery.viewInsetsOf(ctx).bottom > 0;
             return Dialog(
-              backgroundColor: Colors.white,
               alignment: Alignment.bottomCenter,
               insetPadding: keyboardAwareDialogInsets(ctx),
               shape: RoundedRectangleBorder(
@@ -674,12 +671,12 @@ class _EditTransactionScreenState extends State<EditTransactionScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Text(
+                    Text(
                       'Edit Category',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
-                        color: Color(0xFF2D2D2D),
+                        color: Theme.of(ctx).colorScheme.onSurface,
                       ),
                     ),
                     SizedBox(height: imeOpen ? 12 : 20),
@@ -688,14 +685,14 @@ class _EditTransactionScreenState extends State<EditTransactionScreen> {
                       autofocus: true,
                       scrollPadding: categoryNameFieldScrollPadding(ctx),
                       onChanged: (_) => setDialogState(() {}),
-                      style: const TextStyle(
-                          fontSize: 15, color: Color(0xFF2D2D2D)),
+                      style: TextStyle(
+                          fontSize: 15, color: Theme.of(ctx).colorScheme.onSurface),
                       decoration: InputDecoration(
                         hintText: 'Category name',
                         hintStyle: TextStyle(
                             color: textMain.withOpacity(0.3), fontSize: 15),
                         filled: true,
-                        fillColor: const Color(0xFFF8F6FC),
+                        fillColor: Theme.of(context).colorScheme.surfaceContainerHighest,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(14),
                           borderSide:
@@ -858,18 +855,19 @@ class _EditTransactionScreenState extends State<EditTransactionScreen> {
   }
 
   InputDecoration _fieldDecoration(String hint) {
+    final cs = Theme.of(context).colorScheme;
     return InputDecoration(
       hintText: hint,
       filled: true,
-      fillColor: Colors.white,
+      fillColor: cs.surfaceContainerHighest,
       contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: Colors.grey.withOpacity(0.2)),
+        borderSide: BorderSide(color: cs.outlineVariant),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: Colors.grey.withOpacity(0.2)),
+        borderSide: BorderSide(color: cs.outlineVariant),
       ),
       focusedBorder: const OutlineInputBorder(
         borderRadius: BorderRadius.all(Radius.circular(12)),

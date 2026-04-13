@@ -86,9 +86,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 
   void _showImagePickerOptions() {
+    final cs = Theme.of(context).colorScheme;
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.white,
+      backgroundColor: cs.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -98,12 +99,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text(
+              Text(
                 'Change Profile Picture',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
-                  color: Color(0xFF2D2D2D),
+                  color: cs.onSurface,
                 ),
               ),
               const SizedBox(height: 20),
@@ -184,27 +185,25 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   @override
   Widget build(BuildContext context) {
     const Color primary = Color(0xFF5D3891);
-    const Color bg = Color(0xFFF8F6FC);
-    const Color textMain = Color(0xFF2D2D2D);
-    const Color fieldBg = Color(0xFFF8F6FC);
+    final cs = Theme.of(context).colorScheme;
 
     final authProvider = Provider.of<AuthProvider>(context);
 
     return Scaffold(
-      backgroundColor: bg,
+      backgroundColor: cs.surface,
       appBar: AppBar(
-        backgroundColor: bg,
+        backgroundColor: cs.surface,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: textMain),
+          icon: Icon(Icons.arrow_back, color: cs.onSurface),
           onPressed: () => Navigator.pop(context),
         ),
         centerTitle: true,
-        title: const Text(
+        title: Text(
           'Edit Profile',
           style: TextStyle(
-            color: textMain,
+            color: cs.onSurface,
             fontSize: 18,
             fontWeight: FontWeight.w700,
           ),
@@ -296,7 +295,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             decoration: BoxDecoration(
                               color: primary,
                               shape: BoxShape.circle,
-                              border: Border.all(color: bg, width: 2.5),
+                              border: Border.all(color: cs.surface, width: 2.5),
                               boxShadow: [
                                 BoxShadow(
                                   color: primary.withOpacity(0.3),
@@ -319,8 +318,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     authProvider.userName.isNotEmpty
                         ? authProvider.userName
                         : 'User',
-                    style: const TextStyle(
-                      color: textMain,
+                    style: TextStyle(
+                      color: cs.onSurface,
                       fontSize: 20,
                       fontWeight: FontWeight.w700,
                     ),
@@ -329,7 +328,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   Text(
                     'Personal Account',
                     style: TextStyle(
-                      color: textMain.withOpacity(0.45),
+                      color: cs.onSurfaceVariant,
                       fontSize: 13,
                     ),
                   ),
@@ -340,7 +339,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     width: double.infinity,
                     padding: const EdgeInsets.fromLTRB(20, 24, 20, 20),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: cs.surfaceContainerLow,
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
@@ -357,7 +356,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         Text(
                           'Full Name',
                           style: TextStyle(
-                            color: textMain.withOpacity(0.6),
+                            color: cs.onSurfaceVariant,
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
                           ),
@@ -365,15 +364,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         const SizedBox(height: 8),
                         TextField(
                           controller: _nameController,
-                          style:
-                              const TextStyle(color: textMain, fontSize: 14),
+                          style: TextStyle(color: cs.onSurface, fontSize: 14),
                           decoration: InputDecoration(
                             hintText: 'Enter your full name',
                             hintStyle: TextStyle(
-                                color: textMain.withOpacity(0.3),
+                                color: cs.onSurfaceVariant,
                                 fontSize: 14),
                             filled: true,
-                            fillColor: fieldBg,
+                            fillColor: cs.surfaceContainerHighest,
                             prefixIcon: Icon(Icons.person_outline,
                                 color: primary.withOpacity(0.5), size: 20),
                             border: OutlineInputBorder(
@@ -400,7 +398,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         Text(
                           'Email Address',
                           style: TextStyle(
-                            color: textMain.withOpacity(0.6),
+                            color: cs.onSurfaceVariant,
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
                           ),
@@ -410,10 +408,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           controller: _emailController,
                           readOnly: true,
                           style: TextStyle(
-                              color: textMain.withOpacity(0.5), fontSize: 14),
+                              color: cs.onSurfaceVariant, fontSize: 14),
                           decoration: InputDecoration(
                             filled: true,
-                            fillColor: fieldBg,
+                            fillColor: cs.surfaceContainerHighest,
                             prefixIcon: Icon(Icons.mail_outline,
                                 color: primary.withOpacity(0.35), size: 20),
                             border: OutlineInputBorder(
@@ -435,7 +433,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         Text(
                           'Phone Number',
                           style: TextStyle(
-                            color: textMain.withOpacity(0.6),
+                            color: cs.onSurfaceVariant,
                             fontSize: 13,
                             fontWeight: FontWeight.w600,
                           ),
@@ -444,15 +442,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         TextField(
                           controller: _phoneController,
                           keyboardType: TextInputType.phone,
-                          style:
-                              const TextStyle(color: textMain, fontSize: 14),
+                          style: TextStyle(color: cs.onSurface, fontSize: 14),
                           decoration: InputDecoration(
                             hintText: '+1 234 567 890',
                             hintStyle: TextStyle(
-                                color: textMain.withOpacity(0.3),
+                                color: cs.onSurfaceVariant,
                                 fontSize: 14),
                             filled: true,
-                            fillColor: fieldBg,
+                            fillColor: cs.surfaceContainerHighest,
                             prefixIcon: Icon(Icons.phone_outlined,
                                 color: primary.withOpacity(0.5), size: 20),
                             border: OutlineInputBorder(
@@ -488,7 +485,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             padding:
                 const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
             decoration: BoxDecoration(
-              color: bg,
+              color: cs.surface,
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.04),
