@@ -13,28 +13,27 @@ class RecurringTransactionsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const primary = Color(0xFF5D3891);
-    const bg = Color(0xFFF8F6FC);
-    const textMain = Color(0xFF2D2D2D);
+    final cs = Theme.of(context).colorScheme;
 
     final provider = context.watch<RecurringTransactionProvider>();
     final auth = context.watch<AuthProvider>();
     final currencySymbol = auth.currencySymbol;
 
     return Scaffold(
-      backgroundColor: bg,
+      backgroundColor: cs.surface,
       appBar: AppBar(
-        backgroundColor: bg,
+        backgroundColor: cs.surface,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text('Recurring',
+        title: Text('Recurring',
             style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
-                color: textMain)),
+                color: cs.onSurface)),
         centerTitle: true,
         actions: [
           IconButton(
@@ -54,16 +53,16 @@ class RecurringTransactionsScreen extends StatelessWidget {
                       Icon(Icons.repeat_rounded,
                           size: 56, color: primary.withValues(alpha: 0.3)),
                       const SizedBox(height: 16),
-                      const Text('No recurring transactions',
+                      Text('No recurring transactions',
                           style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
-                              color: textMain)),
+                              color: cs.onSurface)),
                       const SizedBox(height: 8),
                       Text('Tap + to add one',
                           style: TextStyle(
                               fontSize: 13,
-                              color: textMain.withValues(alpha: 0.45))),
+                              color: cs.onSurfaceVariant)),
                     ],
                   ),
                 )
@@ -113,7 +112,7 @@ class _RecurringTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const textMain = Color(0xFF2D2D2D);
+    final cs = Theme.of(context).colorScheme;
     final isIncome = item.type == 'income';
     final color =
         isIncome ? const Color(0xFF2ECC71) : const Color(0xFFE74C3C);
@@ -122,7 +121,7 @@ class _RecurringTile extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: cs.surfaceContainerLow,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -149,12 +148,15 @@ class _RecurringTile extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(item.title,
-                    style: const TextStyle(
+                    style: TextStyle(
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
-                        color: textMain)),
+                        color: cs.onSurface)),
                 const SizedBox(height: 3),
-                Row(
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 4,
+                  crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
                     Container(
                       padding: const EdgeInsets.symmetric(
@@ -171,13 +173,18 @@ class _RecurringTile extends StatelessWidget {
                             color: Color(0xFF5D3891)),
                       ),
                     ),
-                    const SizedBox(width: 6),
                     Text(
                       'Next: ${DateFormat('MMM d').format(item.nextDueDate)}',
                       style: TextStyle(
                           fontSize: 11,
-                          color: textMain.withValues(alpha: 0.45)),
+                          color: cs.onSurfaceVariant),
                     ),
+                    if (item.endDate != null)
+                      Text(
+                        'Ends: ${DateFormat('MMM yyyy').format(item.endDate!)}',
+                        style: TextStyle(
+                            fontSize: 11, color: cs.onSurfaceVariant),
+                      ),
                   ],
                 ),
               ],
@@ -241,6 +248,7 @@ class _AddRecurringSheetState extends State<_AddRecurringSheet> {
   String _type = 'expense';
   String _category = 'Food';
   String _frequency = 'monthly';
+  String _duration = '3m';
   DateTime _startDate = DateTime.now();
   bool _saving = false;
 
@@ -253,6 +261,13 @@ class _AddRecurringSheetState extends State<_AddRecurringSheet> {
 
   List<Map<String, dynamic>> get _categories =>
       _type == 'expense' ? kExpenseCategories : kIncomeCategories;
+
+  DateTime? get _computedEndDate {
+    if (_duration == 'none') return null;
+    final months = int.parse(_duration.replaceAll('m', ''));
+    return DateTime(
+        _startDate.year, _startDate.month + months, _startDate.day);
+  }
 
   Future<void> _save() async {
     final title = _titleCtrl.text.trim();
@@ -271,6 +286,7 @@ class _AddRecurringSheetState extends State<_AddRecurringSheet> {
             category: _category,
             frequency: _frequency,
             startDate: _startDate,
+            endDate: _computedEndDate,
           );
       if (!mounted) return;
       Navigator.pop(context);
@@ -286,15 +302,16 @@ class _AddRecurringSheetState extends State<_AddRecurringSheet> {
   @override
   Widget build(BuildContext context) {
     const primary = Color(0xFF5D3891);
+    final cs = Theme.of(context).colorScheme;
     return DraggableScrollableSheet(
-      initialChildSize: 0.85,
+      initialChildSize: 0.9,
       maxChildSize: 0.95,
       minChildSize: 0.5,
       expand: false,
       builder: (_, scrollCtrl) => Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        decoration: BoxDecoration(
+          color: cs.surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
         ),
         padding: EdgeInsets.only(
             left: 24,
@@ -309,16 +326,16 @@ class _AddRecurringSheetState extends State<_AddRecurringSheet> {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                    color: Colors.grey.shade300,
+                    color: cs.onSurfaceVariant.withValues(alpha: 0.3),
                     borderRadius: BorderRadius.circular(2)),
               ),
             ),
             const SizedBox(height: 16),
-            const Text('Add Recurring Transaction',
+            Text('Add Recurring Transaction',
                 style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFF2D2D2D))),
+                    color: cs.onSurface)),
             const SizedBox(height: 20),
             // Type toggle
             Row(
@@ -354,19 +371,21 @@ class _AddRecurringSheetState extends State<_AddRecurringSheet> {
               }).toList(),
             ),
             const SizedBox(height: 16),
-            _field(_titleCtrl, 'Title'),
+            _field(_titleCtrl, 'Title', cs),
             const SizedBox(height: 12),
-            _field(_amountCtrl, 'Amount',
+            _field(_amountCtrl, 'Amount', cs,
                 keyboardType: const TextInputType.numberWithOptions(decimal: true)),
             const SizedBox(height: 12),
             // Category
             DropdownButtonFormField<String>(
               value: _category,
-              decoration: _inputDeco('Category'),
+              decoration: _inputDeco('Category', cs),
+              dropdownColor: cs.surfaceContainerHighest,
               items: _categories
                   .map((c) => DropdownMenuItem(
                       value: c['name'] as String,
-                      child: Text(c['name'] as String)))
+                      child: Text(c['name'] as String,
+                          style: TextStyle(color: cs.onSurface))))
                   .toList(),
               onChanged: (v) => setState(() => _category = v!),
             ),
@@ -374,13 +393,35 @@ class _AddRecurringSheetState extends State<_AddRecurringSheet> {
             // Frequency
             DropdownButtonFormField<String>(
               value: _frequency,
-              decoration: _inputDeco('Frequency'),
-              items: const [
-                DropdownMenuItem(value: 'daily', child: Text('Daily')),
-                DropdownMenuItem(value: 'weekly', child: Text('Weekly')),
-                DropdownMenuItem(value: 'monthly', child: Text('Monthly')),
+              decoration: _inputDeco('Frequency', cs),
+              dropdownColor: cs.surfaceContainerHighest,
+              items: [
+                DropdownMenuItem(value: 'daily',
+                    child: Text('Daily', style: TextStyle(color: cs.onSurface))),
+                DropdownMenuItem(value: 'weekly',
+                    child: Text('Weekly', style: TextStyle(color: cs.onSurface))),
+                DropdownMenuItem(value: 'monthly',
+                    child: Text('Monthly', style: TextStyle(color: cs.onSurface))),
               ],
               onChanged: (v) => setState(() => _frequency = v!),
+            ),
+            const SizedBox(height: 12),
+            // Duration
+            DropdownButtonFormField<String>(
+              value: _duration,
+              decoration: _inputDeco('Duration', cs),
+              dropdownColor: cs.surfaceContainerHighest,
+              items: [
+                DropdownMenuItem(value: '3m',
+                    child: Text('3 months', style: TextStyle(color: cs.onSurface))),
+                DropdownMenuItem(value: '6m',
+                    child: Text('6 months', style: TextStyle(color: cs.onSurface))),
+                DropdownMenuItem(value: '12m',
+                    child: Text('12 months', style: TextStyle(color: cs.onSurface))),
+                DropdownMenuItem(value: 'none',
+                    child: Text('No end', style: TextStyle(color: cs.onSurface))),
+              ],
+              onChanged: (v) => setState(() => _duration = v!),
             ),
             const SizedBox(height: 12),
             // Start date
@@ -398,7 +439,7 @@ class _AddRecurringSheetState extends State<_AddRecurringSheet> {
                 padding: const EdgeInsets.symmetric(
                     horizontal: 16, vertical: 16),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF8F6FC),
+                  color: cs.surfaceContainerHighest,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
@@ -406,8 +447,9 @@ class _AddRecurringSheetState extends State<_AddRecurringSheet> {
                   children: [
                     Text(
                         'Start: ${DateFormat('MMM d, yyyy').format(_startDate)}',
-                        style: const TextStyle(
-                            fontSize: 14, fontWeight: FontWeight.w500)),
+                        style: TextStyle(
+                            fontSize: 14, fontWeight: FontWeight.w500,
+                            color: cs.onSurface)),
                     const Icon(Icons.calendar_today_outlined,
                         size: 18, color: primary),
                   ],
@@ -443,19 +485,21 @@ class _AddRecurringSheetState extends State<_AddRecurringSheet> {
     );
   }
 
-  Widget _field(TextEditingController ctrl, String label,
+  Widget _field(TextEditingController ctrl, String label, ColorScheme cs,
       {TextInputType? keyboardType}) {
     return TextField(
       controller: ctrl,
       keyboardType: keyboardType,
-      decoration: _inputDeco(label),
+      style: TextStyle(color: cs.onSurface),
+      decoration: _inputDeco(label, cs),
     );
   }
 
-  InputDecoration _inputDeco(String label) => InputDecoration(
+  InputDecoration _inputDeco(String label, ColorScheme cs) => InputDecoration(
         labelText: label,
+        labelStyle: TextStyle(color: cs.onSurfaceVariant),
         filled: true,
-        fillColor: const Color(0xFFF8F6FC),
+        fillColor: cs.surfaceContainerHighest,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide.none,
