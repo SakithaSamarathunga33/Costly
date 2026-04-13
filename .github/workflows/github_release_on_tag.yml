@@ -68,6 +68,13 @@ jobs:
             TAG="${GITHUB_REF#refs/tags/}"
           fi
           SEMVER="${TAG#v}"
+          # Normalize to MAJOR.MINOR.PATCH — Flutter requires all three components.
+          # v2.0 → 2.0.0 ; v2 → 2.0.0 ; v2.0.1 stays 2.0.1
+          IFS='.' read -r -a parts <<< "$SEMVER"
+          MAJOR="${parts[0]:-0}"
+          MINOR="${parts[1]:-0}"
+          PATCH="${parts[2]:-0}"
+          SEMVER="${MAJOR}.${MINOR}.${PATCH}"
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
           echo "semver=$SEMVER" >> "$GITHUB_OUTPUT"
           echo "Release tag=$TAG semver=$SEMVER"
