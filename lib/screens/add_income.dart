@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../providers/auth_provider.dart';
@@ -112,29 +112,26 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     const Color primary = Color(0xFF5D3891);
-    const Color bg = Color(0xFFF8F6FC);
-    const Color textMain = Color(0xFF2D2D2D);
-    const Color fieldBg = Colors.white;
-
     final authProvider = Provider.of<AuthProvider>(context);
     final currencySymbol = authProvider.currencySymbol;
 
     return Scaffold(
-      backgroundColor: bg,
+      backgroundColor: cs.surface,
       appBar: AppBar(
-        backgroundColor: bg,
+        backgroundColor: cs.surface,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: textMain, size: 22),
+          icon: Icon(Icons.arrow_back, color: cs.onSurface, size: 22),
           onPressed: () => Navigator.pop(context),
         ),
         centerTitle: true,
-        title: const Text(
+        title: Text(
           'Add Income',
           style: TextStyle(
-            color: textMain,
+            color: cs.onSurface,
             fontSize: 18,
             fontWeight: FontWeight.w700,
           ),
@@ -152,10 +149,10 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
                   const SizedBox(height: 12),
 
                   // ─── Title Field ───
-                  const Text(
-                    'Title',
-                    style: TextStyle(
-                      color: textMain,
+                  Text(
+                  'Title',
+                  style: TextStyle(
+                    color: cs.onSurface,
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
                     ),
@@ -163,21 +160,21 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
                   const SizedBox(height: 10),
                   TextField(
                     controller: _titleController,
-                    style: const TextStyle(color: textMain, fontSize: 15),
+                    style: TextStyle(color: cs.onSurface, fontSize: 15),
                     decoration: _fieldDecoration(
                       hint: 'e.g. Monthly Salary',
-                      fieldBg: fieldBg,
-                      textMain: textMain,
+                      fieldBg: cs.surfaceContainerLow,
+                      textMain: cs.onSurface,
                       primary: primary,
                     ),
                   ),
                   const SizedBox(height: 22),
 
                   // ─── Amount Field ───
-                  const Text(
-                    'Amount',
-                    style: TextStyle(
-                      color: textMain,
+                  Text(
+                  'Amount',
+                  style: TextStyle(
+                    color: cs.onSurface,
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
                     ),
@@ -187,11 +184,11 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
                     controller: _amountController,
                     keyboardType:
                         const TextInputType.numberWithOptions(decimal: true),
-                    style: const TextStyle(color: textMain, fontSize: 15),
+                    style: TextStyle(color: cs.onSurface, fontSize: 15),
                     decoration: InputDecoration(
                       hintText: '0.00',
                       hintStyle: TextStyle(
-                        color: textMain.withOpacity(0.3),
+                        color: cs.onSurface.withOpacity(0.3),
                         fontSize: 15,
                       ),
                       prefixIcon: Container(
@@ -208,12 +205,12 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
                       ),
                       suffixText: authProvider.userCurrency,
                       suffixStyle: TextStyle(
-                        color: textMain.withOpacity(0.5),
+                        color: cs.onSurface.withOpacity(0.5),
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                       ),
                       filled: true,
-                      fillColor: fieldBg,
+                      fillColor: cs.surfaceContainerLow,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(14),
                         borderSide: BorderSide(
@@ -236,10 +233,10 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
                   const SizedBox(height: 22),
 
                   // ─── Date Field ───
-                  const Text(
-                    'Date',
-                    style: TextStyle(
-                      color: textMain,
+                  Text(
+                  'Date',
+                  style: TextStyle(
+                    color: cs.onSurface,
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
                     ),
@@ -252,7 +249,7 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 16, vertical: 16),
                       decoration: BoxDecoration(
-                        color: fieldBg,
+                        color: cs.surfaceContainerLow,
                         borderRadius: BorderRadius.circular(14),
                         border: Border.all(
                             color: Colors.grey.withOpacity(0.15)),
@@ -261,14 +258,14 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
                         children: [
                           Text(
                             DateFormat('MM/dd/yyyy').format(_selectedDate),
-                            style: const TextStyle(
-                              color: textMain,
+                            style: TextStyle(
+                              color: cs.onSurface,
                               fontSize: 15,
                             ),
                           ),
                           const SizedBox(width: 10),
                           Icon(Icons.calendar_today,
-                              color: textMain.withOpacity(0.3), size: 18),
+                              color: cs.onSurface.withOpacity(0.3), size: 18),
                           const Spacer(),
                         ],
                       ),
@@ -277,10 +274,10 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
                   const SizedBox(height: 22),
 
                   // ─── Source Dropdown ───
-                  const Text(
-                    'Source',
-                    style: TextStyle(
-                      color: textMain,
+                  Text(
+                  'Source',
+                  style: TextStyle(
+                    color: cs.onSurface,
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
                     ),
@@ -290,7 +287,7 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
                     width: double.infinity,
                     padding: const EdgeInsets.symmetric(horizontal: 14),
                     decoration: BoxDecoration(
-                      color: fieldBg,
+                      color: cs.surfaceContainerLow,
                       borderRadius: BorderRadius.circular(14),
                       border: Border.all(
                           color: Colors.grey.withOpacity(0.15)),
@@ -309,10 +306,10 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
                                 : null,
                             isExpanded: true,
                             icon: Icon(Icons.keyboard_arrow_down,
-                                color: textMain.withOpacity(0.4)),
-                            dropdownColor: Colors.white,
-                            style: const TextStyle(
-                                color: textMain, fontSize: 15),
+                                color: cs.onSurface.withOpacity(0.4)),
+                            dropdownColor: cs.surfaceContainerLow,
+                            style: TextStyle(
+                                color: cs.onSurface, fontSize: 15),
                             items: allCategories.map((cat) {
                               return DropdownMenuItem<String>(
                                 value: cat['name'] as String,
@@ -327,7 +324,7 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
                             hint: Text(
                               'Select income source',
                               style: TextStyle(
-                                color: textMain.withOpacity(0.3),
+                                color: cs.onSurface.withOpacity(0.3),
                                 fontSize: 15,
                               ),
                             ),
@@ -408,7 +405,7 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
                                             style: TextStyle(
                                               color: isSelected
                                                   ? Colors.white
-                                                  : textMain,
+                                                  : cs.onSurface,
                                               fontSize: 13,
                                               fontWeight: FontWeight.w600,
                                             ),
@@ -448,12 +445,12 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
                           // ─── Add Custom Category (+) chip ───
                           GestureDetector(
                             onTap: () => _showAddCategoryDialog(
-                                context, primary, textMain),
+                                context, primary, cs.onSurface),
                             child: Container(
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 14, vertical: 10),
                               decoration: BoxDecoration(
-                                color: Colors.white,
+                                color: cs.surfaceContainerLow,
                                 borderRadius: BorderRadius.circular(30),
                                 border: Border.all(
                                   color: primary.withOpacity(0.3),
@@ -485,10 +482,10 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
                   const SizedBox(height: 22),
 
                   // ─── Tags ───
-                  const Text(
-                    'Tags',
-                    style: TextStyle(
-                      color: textMain,
+                  Text(
+                  'Tags',
+                  style: TextStyle(
+                    color: cs.onSurface,
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
                     ),
@@ -501,10 +498,10 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
                   const SizedBox(height: 22),
 
                   // ─── Notes Field ───
-                  const Text(
-                    'Notes (Optional)',
-                    style: TextStyle(
-                      color: textMain,
+                  Text(
+                  'Notes (Optional)',
+                  style: TextStyle(
+                    color: cs.onSurface,
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
                     ),
@@ -513,11 +510,11 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
                   TextField(
                     controller: _notesController,
                     maxLines: 4,
-                    style: const TextStyle(color: textMain, fontSize: 15),
+                    style: TextStyle(color: cs.onSurface, fontSize: 15),
                     decoration: _fieldDecoration(
                       hint: 'Add a description...',
-                      fieldBg: fieldBg,
-                      textMain: textMain,
+                      fieldBg: cs.surfaceContainerLow,
+                      textMain: cs.onSurface,
                       primary: primary,
                     ),
                   ),
@@ -577,27 +574,28 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
   // ─── Delete custom category confirmation ───
   void _showDeleteCategoryDialog(
       BuildContext context, Map<String, dynamic> cat, Color primary) {
+    final cs = Theme.of(context).colorScheme;
     final name = cat['name'] as String;
     final categoryId = cat['id'] as String;
 
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: Colors.white,
+        backgroundColor: cs.surfaceContainerLow,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text(
+        title: Text(
           'Delete Category',
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w700,
-            color: Color(0xFF2D2D2D),
+            color: cs.onSurface,
           ),
         ),
         content: Text(
           'Delete "$name" and all expenses/income related to this category?',
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 14,
-            color: Color(0xFF2D2D2D),
+            color: cs.onSurface,
           ),
         ),
         actions: [
@@ -606,7 +604,7 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
             child: Text(
               'Cancel',
               style: TextStyle(
-                color: const Color(0xFF2D2D2D).withOpacity(0.5),
+                color: cs.onSurfaceVariant,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -662,6 +660,7 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
   // ─── Add custom category dialog ───
   void _showAddCategoryDialog(
       BuildContext context, Color primary, Color textMain) {
+    final cs = Theme.of(context).colorScheme;
     String categoryName = '';
     String selectedIcon = 'payments';
     int selectedColor = kColorPool[0];
@@ -673,7 +672,7 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
           builder: (ctx, setDialogState) {
             final imeOpen = MediaQuery.viewInsetsOf(ctx).bottom > 0;
             return Dialog(
-              backgroundColor: Colors.white,
+              backgroundColor: cs.surfaceContainerLow,
               alignment: Alignment.bottomCenter,
               insetPadding: keyboardAwareDialogInsets(ctx),
               shape: RoundedRectangleBorder(
@@ -684,12 +683,12 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Text(
-                      'New Category',
+                    Text(
+                    'New Category',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
-                        color: Color(0xFF2D2D2D),
+                        color: cs.onSurface,
                       ),
                     ),
                     SizedBox(height: imeOpen ? 12 : 20),
@@ -700,14 +699,14 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
                       scrollPadding: categoryNameFieldScrollPadding(ctx),
                       onChanged: (v) =>
                           setDialogState(() => categoryName = v),
-                      style: const TextStyle(
-                          fontSize: 15, color: Color(0xFF2D2D2D)),
+                      style: TextStyle(
+                          fontSize: 15, color: cs.onSurface),
                       decoration: InputDecoration(
                         hintText: 'Category name',
                         hintStyle: TextStyle(
-                            color: textMain.withOpacity(0.3), fontSize: 15),
+                            color: cs.onSurface.withOpacity(0.3), fontSize: 15),
                         filled: true,
-                        fillColor: const Color(0xFFF8F6FC),
+                        fillColor: cs.surfaceContainerHighest,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(14),
                           borderSide: BorderSide(
@@ -735,7 +734,7 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
                       child: Text(
                         'Color',
                         style: TextStyle(
-                          color: textMain.withOpacity(0.6),
+                          color: cs.onSurface.withOpacity(0.6),
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
                         ),
@@ -758,12 +757,11 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
                               shape: BoxShape.circle,
                               border: isActive
                                   ? Border.all(
-                                      color: textMain, width: 2.5)
+                                      color: cs.onSurface, width: 2.5)
                                   : null,
                             ),
                             child: isActive
-                                ? const Icon(Icons.check,
-                                    color: Colors.white, size: 16)
+                                ? const Icon(Icons.check, color: Colors.white, size: 16)
                                 : null,
                           ),
                         );
@@ -777,7 +775,7 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
                       child: Text(
                         'Icon',
                         style: TextStyle(
-                          color: textMain.withOpacity(0.6),
+                          color: cs.onSurface.withOpacity(0.6),
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
                         ),

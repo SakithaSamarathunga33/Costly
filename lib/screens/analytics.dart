@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -60,10 +60,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     const Color primary = Color(0xFF5D3891);
-    const Color bg = Color(0xFFF8F6FC);
-    const Color textMain = Color(0xFF2D2D2D);
-
     final txProvider = Provider.of<TransactionProvider>(context);
     final authProvider = Provider.of<AuthProvider>(context);
     final customCats =
@@ -81,9 +79,9 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
 
     return RootBackHandler(
       child: Scaffold(
-        backgroundColor: bg,
+        backgroundColor: cs.surface,
         appBar: AppBar(
-          backgroundColor: bg,
+          backgroundColor: cs.surface,
           elevation: 0,
           surfaceTintColor: Colors.transparent,
           automaticallyImplyLeading: false,
@@ -91,9 +89,9 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
           title: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text('Analytics',
+              Text('Analytics',
                   style: TextStyle(
-                      color: textMain,
+                      color: cs.onSurface,
                       fontSize: 18,
                       fontWeight: FontWeight.w700)),
               GestureDetector(
@@ -103,7 +101,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
                   children: [
                     Text(rangeLabel,
                         style: TextStyle(
-                            color: hasRange ? primary : textMain.withValues(alpha: 0.5),
+                            color: hasRange ? primary : cs.onSurfaceVariant,
                             fontSize: 12,
                             fontWeight: FontWeight.w600)),
                     const SizedBox(width: 4),
@@ -111,7 +109,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
                         size: 16,
                         color: hasRange
                             ? primary
-                            : textMain.withValues(alpha: 0.5)),
+                            : cs.onSurfaceVariant),
                   ],
                 ),
               ),
@@ -126,15 +124,15 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
               )
             else
               IconButton(
-                icon: const Icon(Icons.calendar_today_outlined,
-                    color: textMain, size: 20),
+                icon: Icon(Icons.calendar_today_outlined,
+                    color: cs.onSurface, size: 20),
                 onPressed: () => _pickDateRange(context, txProvider),
               ),
           ],
           bottom: TabBar(
             controller: _tabController,
             labelColor: primary,
-            unselectedLabelColor: textMain.withValues(alpha: 0.4),
+            unselectedLabelColor: cs.onSurface.withValues(alpha: 0.4),
             indicatorColor: primary,
             indicatorSize: TabBarIndicatorSize.label,
             labelStyle: const TextStyle(
@@ -196,9 +194,8 @@ class _ExpensesTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     const primary = Color(0xFF5D3891);
-    const bg = Color(0xFFF8F6FC);
-    const textMain = Color(0xFF2D2D2D);
 
     final totalExpenses = txProvider.filteredTotalExpenses;
     final totalIncome = txProvider.filteredTotalIncome;
@@ -230,18 +227,18 @@ class _ExpensesTab extends StatelessWidget {
         const SizedBox(height: 24),
 
         // Monthly bar chart
-        _chartCard(
+        _chartCard(context, 
           title: '6-Month Trend',
           child: SizedBox(
             height: 160,
             child: BarChart(_buildBarData(
-                rollingTotals, rollingLabels, fmt, primary, textMain)),
+                rollingTotals, rollingLabels, fmt, primary, cs.onSurface)),
           ),
         ),
         const SizedBox(height: 24),
 
         // Category breakdown
-        _chartCard(
+        _chartCard(context, 
           title: 'Category Breakdown',
           child: pieEntries.isEmpty
               ? SizedBox(
@@ -249,23 +246,23 @@ class _ExpensesTab extends StatelessWidget {
                   child: Center(
                       child: Text('No expense data',
                           style: TextStyle(
-                              color: textMain.withValues(alpha: 0.4)))))
+                              color: cs.onSurface.withValues(alpha: 0.4)))))
               : _DonutWithLegend(
                   entries: pieEntries,
                   total: totalExpenses,
                   catColors: catColors,
                   customCats: customCats,
                   formatCompact: formatCompact,
-                  textMain: textMain),
+                  textMain: cs.onSurface),
         ),
         const SizedBox(height: 24),
 
         // Top categories list
-        const Text('Top Categories',
+        Text('Top Categories',
             style: TextStyle(
                 fontSize: 17,
                 fontWeight: FontWeight.w700,
-                color: Color(0xFF2D2D2D))),
+                color: cs.onSurface)),
         const SizedBox(height: 14),
         ...pieEntries.take(5).map((entry) => _CategoryRow(
               entry: entry,
@@ -277,7 +274,7 @@ class _ExpensesTab extends StatelessWidget {
               customCats: customCats,
               fmt: fmt,
               budgetProvider: budgetProvider,
-              bg: bg,
+              bg: Theme.of(context).colorScheme.surfaceContainerLow,
             )),
         const SizedBox(height: 20),
       ]),
@@ -303,7 +300,7 @@ class _IncomeTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const primary = Color(0xFF5D3891);
-    const textMain = Color(0xFF2D2D2D);
+    final textMain = Theme.of(context).colorScheme.onSurface;
 
     final totalIncome = txProvider.filteredTotalIncome;
     final totalExpenses = txProvider.filteredTotalExpenses;
@@ -337,7 +334,7 @@ class _IncomeTab extends StatelessWidget {
         const SizedBox(height: 24),
 
         // Monthly bar chart
-        _chartCard(
+        _chartCard(context, 
           title: '6-Month Income Trend',
           child: SizedBox(
             height: 160,
@@ -350,7 +347,7 @@ class _IncomeTab extends StatelessWidget {
         const SizedBox(height: 24),
 
         // Income vs Expenses comparison
-        _chartCard(
+        _chartCard(context, 
           title: 'Income vs Expenses',
           child: Column(children: [
             _comparisonRow('Income', totalIncome,
@@ -371,7 +368,7 @@ class _IncomeTab extends StatelessWidget {
 
         if (pieEntries.isNotEmpty) ...[
           // Income category breakdown
-          _chartCard(
+          _chartCard(context, 
             title: 'Income Sources',
             child: _DonutWithLegend(
               entries: pieEntries,
@@ -385,11 +382,11 @@ class _IncomeTab extends StatelessWidget {
           const SizedBox(height: 24),
         ],
 
-        const Text('Income by Source',
+        Text('Income by Source',
             style: TextStyle(
                 fontSize: 17,
                 fontWeight: FontWeight.w700,
-                color: Color(0xFF2D2D2D))),
+                color: textMain)),
         const SizedBox(height: 14),
         ...pieEntries.map((entry) => _CategoryRow(
               entry: entry,
@@ -401,7 +398,7 @@ class _IncomeTab extends StatelessWidget {
               customCats: customCats,
               fmt: fmt,
               budgetProvider: null,
-              bg: const Color(0xFFF8F6FC),
+              bg: Theme.of(context).colorScheme.surfaceContainerLow,
             )),
         const SizedBox(height: 20),
       ]),
@@ -459,7 +456,8 @@ class _TrendsTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const textMain = Color(0xFF2D2D2D);
+    final cs = Theme.of(context).colorScheme;
+    final textMain = cs.onSurface;
     final rollingLabels = txProvider.rollingSixMonthLabels;
     final trends = txProvider.categoryTrends;
 
@@ -472,7 +470,7 @@ class _TrendsTab extends StatelessWidget {
                 size: 56,
                 color: const Color(0xFF5D3891).withValues(alpha: 0.3)),
             const SizedBox(height: 16),
-            const Text('No spending data yet',
+            Text('No spending data yet',
                 style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -486,7 +484,7 @@ class _TrendsTab extends StatelessWidget {
       padding:
           const EdgeInsets.only(left: 20, right: 20, top: 16, bottom: 120),
       children: [
-        const Text('Category Spending Trends',
+        Text('Category Spending Trends',
             style: TextStyle(
                 fontSize: 17,
                 fontWeight: FontWeight.w700,
@@ -503,7 +501,7 @@ class _TrendsTab extends StatelessWidget {
             margin: const EdgeInsets.only(bottom: 16),
             padding: const EdgeInsets.all(18),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: cs.surfaceContainerLow,
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
@@ -529,7 +527,7 @@ class _TrendsTab extends StatelessWidget {
                     ),
                     const SizedBox(width: 10),
                     Text(e.key,
-                        style: const TextStyle(
+                        style: TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w700,
                             color: textMain)),
@@ -635,6 +633,7 @@ class _DonutWithLegend extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Row(
       children: [
         Expanded(
@@ -663,12 +662,12 @@ class _DonutWithLegend extends StatelessWidget {
                   children: [
                     Text(formatCompact(total),
                         style: TextStyle(
-                            color: textMain,
+                            color: cs.onSurface,
                             fontSize: 16,
                             fontWeight: FontWeight.w800)),
                     Text('TOTAL',
                         style: TextStyle(
-                            color: textMain.withValues(alpha: 0.35),
+                            color: cs.onSurface.withValues(alpha: 0.35),
                             fontSize: 10,
                             fontWeight: FontWeight.w600,
                             letterSpacing: 1)),
@@ -701,13 +700,13 @@ class _DonutWithLegend extends StatelessWidget {
                     Expanded(
                         child: Text(e.value.key,
                             style: TextStyle(
-                                color: textMain.withValues(alpha: 0.6),
+                                color: cs.onSurface.withValues(alpha: 0.6),
                                 fontSize: 12,
                                 fontWeight: FontWeight.w500),
                             overflow: TextOverflow.ellipsis)),
                     Text('$pct%',
                         style: TextStyle(
-                            color: textMain,
+                            color: cs.onSurface,
                             fontSize: 12,
                             fontWeight: FontWeight.w700)),
                   ],
@@ -742,7 +741,8 @@ class _CategoryRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const textMain = Color(0xFF2D2D2D);
+    final cs = Theme.of(context).colorScheme;
+    final textMain = cs.onSurface;
     final catColor = getCategoryColor(entry.key, customCats);
     final catIcon = getCategoryIconByName(entry.key, customCats);
 
@@ -750,7 +750,7 @@ class _CategoryRow extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: cs.surfaceContainerLow,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -776,14 +776,14 @@ class _CategoryRow extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(entry.key,
-                    style: const TextStyle(
-                        color: textMain,
+                    style: TextStyle(
+                        color: cs.onSurface,
                         fontSize: 15,
                         fontWeight: FontWeight.w600)),
                 const SizedBox(height: 3),
                 Text('$txCount Transaction${txCount != 1 ? 's' : ''}',
                     style: TextStyle(
-                        color: textMain.withValues(alpha: 0.4),
+                        color: cs.onSurface.withValues(alpha: 0.4),
                         fontSize: 12)),
                 if (budgetProvider != null)
                   Builder(builder: (_) {
@@ -827,8 +827,8 @@ class _CategoryRow extends StatelessWidget {
             ),
           ),
           Text(fmt.format(entry.value),
-              style: const TextStyle(
-                  color: textMain,
+              style: TextStyle(
+                  color: cs.onSurface,
                   fontSize: 15,
                   fontWeight: FontWeight.w700)),
         ],
@@ -933,12 +933,13 @@ Widget _summaryCard({
   );
 }
 
-Widget _chartCard({required String title, required Widget child}) {
+Widget _chartCard(BuildContext context, {required String title, required Widget child}) {
+  final cs = Theme.of(context).colorScheme;
   return Container(
     width: double.infinity,
     padding: const EdgeInsets.all(20),
     decoration: BoxDecoration(
-      color: Colors.white,
+      color: cs.surfaceContainerLow,
       borderRadius: BorderRadius.circular(20),
       boxShadow: [
         BoxShadow(
@@ -951,8 +952,8 @@ Widget _chartCard({required String title, required Widget child}) {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(title,
-            style: const TextStyle(
-                color: Color(0xFF2D2D2D),
+            style: TextStyle(
+                color: cs.onSurface,
                 fontSize: 17,
                 fontWeight: FontWeight.w700)),
         const SizedBox(height: 16),

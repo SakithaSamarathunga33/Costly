@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/budget_provider.dart';
@@ -79,13 +79,14 @@ class _BudgetSettingsScreenState extends State<BudgetSettingsScreen> {
   @override
   Widget build(BuildContext context) {
     const primary = Color(0xFF5D3891);
+    final cs = Theme.of(context).colorScheme;
     final month = context.watch<TransactionProvider>().selectedMonth;
     final monthLabel = '${_monthName(month.month)} ${month.year}';
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F6FC),
+      backgroundColor: cs.surface,
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF8F6FC),
+        backgroundColor: cs.surface,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
         leading: IconButton(
@@ -95,15 +96,15 @@ class _BudgetSettingsScreenState extends State<BudgetSettingsScreen> {
         title: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('Budget Settings',
+            Text('Budget Settings',
                 style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFF2D2D2D))),
+                    color: cs.onSurface)),
             Text(monthLabel,
                 style: TextStyle(
                     fontSize: 12,
-                    color: const Color(0xFF2D2D2D).withValues(alpha: 0.5),
+                    color: cs.onSurfaceVariant,
                     fontWeight: FontWeight.w600)),
           ],
         ),
@@ -172,10 +173,10 @@ class _BudgetSettingsScreenState extends State<BudgetSettingsScreen> {
   }
 
   Widget _sectionLabel(String text) => Text(text,
-      style: const TextStyle(
+      style: TextStyle(
           fontSize: 14,
           fontWeight: FontWeight.w700,
-          color: Color(0xFF2D2D2D)));
+          color: Theme.of(context).colorScheme.onSurface));
 
   Widget _buildField(TextEditingController ctrl, String hint,
       {String? label}) {
@@ -186,7 +187,7 @@ class _BudgetSettingsScreenState extends State<BudgetSettingsScreen> {
         labelText: label,
         hintText: hint,
         filled: true,
-        fillColor: Colors.white,
+        fillColor: Theme.of(context).colorScheme.surfaceContainerLow,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide.none,

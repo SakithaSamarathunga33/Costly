@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../providers/auth_provider.dart';
@@ -112,11 +112,8 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     const Color primary = Color(0xFF5D3891);
-    const Color bg = Color(0xFFF8F6FC);
-    const Color textMain = Color(0xFF2D2D2D);
-    const Color fieldBg = Colors.white;
-
     final authProvider = Provider.of<AuthProvider>(context);
     final currencySymbol = authProvider.currencySymbol;
 
@@ -127,20 +124,20 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
             '0.00');
 
     return Scaffold(
-      backgroundColor: bg,
+      backgroundColor: cs.surface,
       appBar: AppBar(
-        backgroundColor: bg,
+        backgroundColor: cs.surface,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: textMain, size: 22),
+          icon: Icon(Icons.arrow_back, color: cs.onSurface, size: 22),
           onPressed: () => Navigator.pop(context),
         ),
         centerTitle: true,
-        title: const Text(
+        title: Text(
           'Add Expense',
           style: TextStyle(
-            color: textMain,
+            color: cs.onSurface,
             fontSize: 18,
             fontWeight: FontWeight.w700,
           ),
@@ -163,7 +160,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                     padding: const EdgeInsets.symmetric(
                         horizontal: 24, vertical: 24),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: cs.surfaceContainerLow,
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
@@ -206,19 +203,19 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                   const SizedBox(height: 24),
 
                   // ─── Title Field ───
-                  _buildSectionLabel(Icons.edit, 'Title', primary, textMain),
+                  _buildSectionLabel(Icons.edit, 'Title', primary, cs.onSurface),
                   const SizedBox(height: 10),
                   TextField(
                     controller: _titleController,
-                    style: const TextStyle(color: textMain, fontSize: 15),
+                    style: TextStyle(color: cs.onSurface, fontSize: 15),
                     decoration: InputDecoration(
                       hintText: 'e.g. Grocery Shopping',
                       hintStyle: TextStyle(
-                        color: textMain.withOpacity(0.3),
+                        color: cs.onSurface.withOpacity(0.3),
                         fontSize: 15,
                       ),
                       filled: true,
-                      fillColor: fieldBg,
+                      fillColor: cs.surfaceContainerLow,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(14),
                         borderSide: BorderSide(
@@ -242,7 +239,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
 
                   // ─── Date Field ───
                   _buildSectionLabel(
-                      Icons.calendar_today, 'Date', primary, textMain),
+                      Icons.calendar_today, 'Date', primary, cs.onSurface),
                   const SizedBox(height: 10),
                   GestureDetector(
                     onTap: _pickDate,
@@ -251,7 +248,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                       padding: const EdgeInsets.symmetric(
                           horizontal: 16, vertical: 16),
                       decoration: BoxDecoration(
-                        color: fieldBg,
+                        color: cs.surfaceContainerLow,
                         borderRadius: BorderRadius.circular(14),
                         border: Border.all(
                             color: Colors.grey.withOpacity(0.15)),
@@ -260,14 +257,14 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                         children: [
                           Text(
                             DateFormat('MM/dd/yyyy').format(_selectedDate),
-                            style: const TextStyle(
-                              color: textMain,
+                            style: TextStyle(
+                              color: cs.onSurface,
                               fontSize: 15,
                             ),
                           ),
                           const Spacer(),
                           Icon(Icons.calendar_today,
-                              color: textMain.withOpacity(0.3), size: 20),
+                              color: cs.onSurface.withOpacity(0.3), size: 20),
                         ],
                       ),
                     ),
@@ -276,7 +273,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
 
                   // ─── Category Chips ───
                   _buildSectionLabel(
-                      Icons.category, 'Category', primary, textMain),
+                      Icons.category, 'Category', primary, cs.onSurface),
                   const SizedBox(height: 12),
                   Consumer<CategoryProvider>(
                     builder: (context, catProvider, _) {
@@ -347,7 +344,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                                             style: TextStyle(
                                               color: isSelected
                                                   ? Colors.white
-                                                  : textMain,
+                                                  : cs.onSurface,
                                               fontSize: 13,
                                               fontWeight: FontWeight.w600,
                                             ),
@@ -387,12 +384,12 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                           // ─── Add Custom Category (+) chip ───
                           GestureDetector(
                             onTap: () => _showAddCategoryDialog(
-                                context, primary, textMain),
+                                context, primary, cs.onSurface),
                             child: Container(
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 14, vertical: 10),
                               decoration: BoxDecoration(
-                                color: Colors.white,
+                                color: cs.surfaceContainerLow,
                                 borderRadius: BorderRadius.circular(30),
                                 border: Border.all(
                                   color: primary.withOpacity(0.3),
@@ -426,7 +423,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
 
                   // ─── Tags ───
                   _buildSectionLabel(
-                      Icons.label_outline, 'Tags', primary, textMain),
+                      Icons.label_outline, 'Tags', primary, cs.onSurface),
                   const SizedBox(height: 10),
                   TagInputField(
                     tags: _tags,
@@ -436,20 +433,20 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
 
                   // ─── Notes Field ───
                   _buildSectionLabel(
-                      Icons.notes, 'Optional Notes', primary, textMain),
+                      Icons.notes, 'Optional Notes', primary, cs.onSurface),
                   const SizedBox(height: 10),
                   TextField(
                     controller: _notesController,
                     maxLines: 4,
-                    style: const TextStyle(color: textMain, fontSize: 15),
+                    style: TextStyle(color: cs.onSurface, fontSize: 15),
                     decoration: InputDecoration(
                       hintText: 'Add additional details...',
                       hintStyle: TextStyle(
-                        color: textMain.withOpacity(0.3),
+                        color: cs.onSurface.withOpacity(0.3),
                         fontSize: 15,
                       ),
                       filled: true,
-                      fillColor: fieldBg,
+                      fillColor: cs.surfaceContainerLow,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(14),
                         borderSide: BorderSide(
@@ -517,27 +514,28 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   // ─── Delete custom category confirmation ───
   void _showDeleteCategoryDialog(
       BuildContext context, Map<String, dynamic> cat, Color primary) {
+    final cs = Theme.of(context).colorScheme;
     final name = cat['name'] as String;
     final categoryId = cat['id'] as String;
 
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: Colors.white,
+        backgroundColor: cs.surfaceContainerLow,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text(
+        title: Text(
           'Delete Category',
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w700,
-            color: Color(0xFF2D2D2D),
+            color: cs.onSurface,
           ),
         ),
         content: Text(
           'Delete "$name" and all expenses/income related to this category?',
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 14,
-            color: Color(0xFF2D2D2D),
+            color: cs.onSurface,
           ),
         ),
         actions: [
@@ -546,7 +544,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
             child: Text(
               'Cancel',
               style: TextStyle(
-                color: const Color(0xFF2D2D2D).withOpacity(0.5),
+                color: cs.onSurfaceVariant,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -602,6 +600,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   // ─── Add custom category dialog ───
   void _showAddCategoryDialog(
       BuildContext context, Color primary, Color textMain) {
+    final cs = Theme.of(context).colorScheme;
     String categoryName = '';
     String selectedIcon = 'restaurant';
     int selectedColor = kColorPool[0];
@@ -613,7 +612,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
           builder: (ctx, setDialogState) {
             final imeOpen = MediaQuery.viewInsetsOf(ctx).bottom > 0;
             return Dialog(
-              backgroundColor: Colors.white,
+              backgroundColor: cs.surfaceContainerLow,
               alignment: Alignment.bottomCenter,
               insetPadding: keyboardAwareDialogInsets(ctx),
               shape: RoundedRectangleBorder(
@@ -624,12 +623,12 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Text(
+                    Text(
                       'New Category',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
-                        color: Color(0xFF2D2D2D),
+                        color: cs.onSurface,
                       ),
                     ),
                     SizedBox(height: imeOpen ? 12 : 20),
@@ -641,13 +640,13 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                       onChanged: (v) =>
                           setDialogState(() => categoryName = v),
                       style:
-                          const TextStyle(fontSize: 15, color: Color(0xFF2D2D2D)),
+                          TextStyle(fontSize: 15, color: cs.onSurface),
                       decoration: InputDecoration(
                         hintText: 'Category name',
                         hintStyle: TextStyle(
-                            color: textMain.withOpacity(0.3), fontSize: 15),
+                            color: cs.onSurface.withOpacity(0.3), fontSize: 15),
                         filled: true,
-                        fillColor: const Color(0xFFF8F6FC),
+                        fillColor: cs.surfaceContainerHighest,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(14),
                           borderSide: BorderSide(
@@ -675,7 +674,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                       child: Text(
                         'Color',
                         style: TextStyle(
-                          color: textMain.withOpacity(0.6),
+                          color: cs.onSurface.withOpacity(0.6),
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
                         ),
@@ -698,7 +697,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                               shape: BoxShape.circle,
                               border: isActive
                                   ? Border.all(
-                                      color: textMain, width: 2.5)
+                                      color: cs.onSurface, width: 2.5)
                                   : null,
                             ),
                             child: isActive
@@ -717,7 +716,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                       child: Text(
                         'Icon',
                         style: TextStyle(
-                          color: textMain.withOpacity(0.6),
+                          color: cs.onSurface.withOpacity(0.6),
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
                         ),
@@ -815,10 +814,11 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
 
   // ─── Amount input dialog ───
   void _showAmountInput(BuildContext context, Color primary, String currencySymbol) {
+    final cs = Theme.of(context).colorScheme;
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
+      backgroundColor: cs.surfaceContainerLow,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -832,12 +832,12 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
+            Text(
               'Enter Amount',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
-                color: Color(0xFF2D2D2D),
+                color: cs.onSurface,
               ),
             ),
             const SizedBox(height: 20),

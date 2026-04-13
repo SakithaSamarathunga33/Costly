@@ -19,11 +19,12 @@ class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
   void _showImagePickerOptions(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
 
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.white,
+      backgroundColor: cs.surfaceContainerLow,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -33,12 +34,12 @@ class ProfileScreen extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text(
+              Text(
                 'Change Profile Picture',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
-                  color: Color(0xFF2D2D2D),
+                  color: cs.onSurface,
                 ),
               ),
               const SizedBox(height: 20),
@@ -145,6 +146,7 @@ class ProfileScreen extends StatelessWidget {
 
   void _showChangePasswordSheet(
       BuildContext context, AuthProvider authProvider) {
+    final cs = Theme.of(context).colorScheme;
     final currentCtrl = TextEditingController();
     final newCtrl = TextEditingController();
     final confirmCtrl = TextEditingController();
@@ -155,7 +157,7 @@ class ProfileScreen extends StatelessWidget {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
+      backgroundColor: cs.surfaceContainerLow,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -171,15 +173,16 @@ class ProfileScreen extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 'Change Password',
                 style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFF2D2D2D)),
+                    color: cs.onSurface),
               ),
               const SizedBox(height: 20),
               _passwordField(
+                ctx,
                 controller: currentCtrl,
                 hint: 'Current password',
                 obscure: obscureCurrent,
@@ -188,6 +191,7 @@ class ProfileScreen extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               _passwordField(
+                ctx,
                 controller: newCtrl,
                 hint: 'New password',
                 obscure: obscureNew,
@@ -195,6 +199,7 @@ class ProfileScreen extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               _passwordField(
+                ctx,
                 controller: confirmCtrl,
                 hint: 'Confirm new password',
                 obscure: obscureConfirm,
@@ -251,19 +256,21 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _passwordField({
+  Widget _passwordField(
+    BuildContext context, {
     required TextEditingController controller,
     required String hint,
     required bool obscure,
     required VoidCallback onToggle,
   }) {
+    final cs = Theme.of(context).colorScheme;
     return TextField(
       controller: controller,
       obscureText: obscure,
       decoration: InputDecoration(
         hintText: hint,
         filled: true,
-        fillColor: const Color(0xFFF8F6FC),
+        fillColor: cs.surfaceContainerHighest,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide.none,
@@ -274,7 +281,7 @@ class ProfileScreen extends StatelessWidget {
           icon: Icon(
             obscure ? Icons.visibility_outlined : Icons.visibility_off_outlined,
             size: 20,
-            color: const Color(0xFF2D2D2D).withValues(alpha: 0.4),
+            color: cs.onSurfaceVariant,
           ),
           onPressed: onToggle,
         ),
@@ -284,6 +291,7 @@ class ProfileScreen extends StatelessWidget {
 
   void _showDeleteAccountDialog(
       BuildContext context, AuthProvider authProvider) {
+    final cs = Theme.of(context).colorScheme;
     final passwordCtrl = TextEditingController();
     bool obscure = true;
 
@@ -291,23 +299,23 @@ class ProfileScreen extends StatelessWidget {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDialog) => AlertDialog(
-          backgroundColor: Colors.white,
+          backgroundColor: cs.surfaceContainerLow,
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: const Text(
+          title: Text(
             'Delete Account',
             style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
-                color: Color(0xFF2D2D2D)),
+                color: cs.onSurface),
           ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text(
+              Text(
                 'This will permanently delete your account and all data. This cannot be undone.',
                 style:
-                    TextStyle(fontSize: 14, color: Color(0xFF2D2D2D)),
+                    TextStyle(fontSize: 14, color: cs.onSurface),
               ),
               const SizedBox(height: 16),
               TextField(
@@ -316,7 +324,7 @@ class ProfileScreen extends StatelessWidget {
                 decoration: InputDecoration(
                   hintText: 'Enter your password to confirm',
                   filled: true,
-                  fillColor: const Color(0xFFF8F6FC),
+                  fillColor: cs.surfaceContainerHighest,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide.none,
@@ -376,9 +384,10 @@ class ProfileScreen extends StatelessWidget {
   }
 
   void _showThemePicker(BuildContext context, ThemeProvider themeProvider) {
+    final cs = Theme.of(context).colorScheme;
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.white,
+      backgroundColor: cs.surfaceContainerLow,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -437,9 +446,10 @@ class ProfileScreen extends StatelessWidget {
   }
 
   void _showCurrencyPicker(BuildContext context, AuthProvider authProvider) {
+    final cs = Theme.of(context).colorScheme;
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.white,
+      backgroundColor: cs.surfaceContainerLow,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -465,12 +475,12 @@ class ProfileScreen extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    const Text(
+                    Text(
                       'Select Currency',
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
-                        color: Color(0xFF2D2D2D),
+                        color: cs.onSurface,
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -548,26 +558,24 @@ class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const Color primary = Color(0xFF5D3891);
-    const Color bg = Color(0xFFF8F6FC);
-    const Color textMain = Color(0xFF2D2D2D);
-
+    final cs = Theme.of(context).colorScheme;
     final authProvider = Provider.of<AuthProvider>(context);
     final txProvider = Provider.of<TransactionProvider>(context);
     final themeProvider = Provider.of<ThemeProvider>(context);
 
     return RootBackHandler(
       child: Scaffold(
-      backgroundColor: bg,
+      backgroundColor: cs.surface,
       appBar: AppBar(
-        backgroundColor: bg,
+        backgroundColor: cs.surface,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
         automaticallyImplyLeading: false,
         centerTitle: true,
-        title: const Text(
+        title: Text(
           'Profile',
           style: TextStyle(
-            color: textMain,
+            color: cs.onSurface,
             fontSize: 18,
             fontWeight: FontWeight.w700,
           ),
@@ -583,7 +591,7 @@ class ProfileScreen extends StatelessWidget {
               child: StaggeredColumn(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                // ─── Avatar + Name Section ───
+                // --- Avatar + Name Section ---
                 const SizedBox(height: 10),
                 GestureDetector(
                   onTap: () => _showImagePickerOptions(context),
@@ -659,7 +667,7 @@ class ProfileScreen extends StatelessWidget {
                           decoration: BoxDecoration(
                             color: primary,
                             shape: BoxShape.circle,
-                            border: Border.all(color: bg, width: 2.5),
+                            border: Border.all(color: cs.surface, width: 2.5),
                             boxShadow: [
                               BoxShadow(
                                 color: primary.withOpacity(0.3),
@@ -682,8 +690,8 @@ class ProfileScreen extends StatelessWidget {
                   authProvider.userName.isNotEmpty
                       ? authProvider.userName
                       : 'User',
-                  style: const TextStyle(
-                    color: textMain,
+                  style: TextStyle(
+                    color: cs.onSurface,
                     fontSize: 22,
                     fontWeight: FontWeight.w700,
                   ),
@@ -696,14 +704,14 @@ class ProfileScreen extends StatelessWidget {
                       ? authProvider.userEmail
                       : 'user@example.com',
                   style: TextStyle(
-                    color: textMain.withOpacity(0.45),
+                    color: cs.onSurface.withOpacity(0.45),
                     fontSize: 14,
                     fontWeight: FontWeight.w400,
                   ),
                 ),
                 const SizedBox(height: 22),
 
-                // ─── Action Buttons ───
+                // --- Action Buttons ---
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
@@ -712,7 +720,7 @@ class ProfileScreen extends StatelessWidget {
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: primary,
-                      foregroundColor: Colors.white,
+                      foregroundColor: cs.surfaceContainerLow,
                       elevation: 0,
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
@@ -730,13 +738,13 @@ class ProfileScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 30),
 
-                // ─── PREFERENCES Section ───
+                // --- PREFERENCES Section ---
                 Align(
                   alignment: Alignment.centerLeft,
                   child: Text(
                     'PREFERENCES',
                     style: TextStyle(
-                      color: textMain.withOpacity(0.35),
+                      color: cs.onSurface.withOpacity(0.35),
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
                       letterSpacing: 1.2,
@@ -746,7 +754,7 @@ class ProfileScreen extends StatelessWidget {
                 const SizedBox(height: 14),
 
                 // Appearance item
-                _buildPreferenceItem(
+                _buildPreferenceItem(context,
                   icon: Icons.dark_mode_outlined,
                   iconBg: primary.withValues(alpha: 0.08),
                   iconColor: primary,
@@ -761,7 +769,7 @@ class ProfileScreen extends StatelessWidget {
                 const SizedBox(height: 10),
 
                 // Notification Settings item
-                _buildPreferenceItem(
+                _buildPreferenceItem(context,
                   icon: Icons.notifications_outlined,
                   iconBg: primary.withValues(alpha: 0.08),
                   iconColor: primary,
@@ -773,7 +781,7 @@ class ProfileScreen extends StatelessWidget {
                 const SizedBox(height: 10),
 
                 // Debts & Loans item
-                _buildPreferenceItem(
+                _buildPreferenceItem(context,
                   icon: Icons.account_balance_outlined,
                   iconBg: primary.withValues(alpha: 0.08),
                   iconColor: primary,
@@ -784,7 +792,7 @@ class ProfileScreen extends StatelessWidget {
                 const SizedBox(height: 10),
 
                 // Savings Goals item
-                _buildPreferenceItem(
+                _buildPreferenceItem(context,
                   icon: Icons.savings_outlined,
                   iconBg: primary.withValues(alpha: 0.08),
                   iconColor: primary,
@@ -795,7 +803,7 @@ class ProfileScreen extends StatelessWidget {
                 const SizedBox(height: 10),
 
                 // Recurring Transactions item
-                _buildPreferenceItem(
+                _buildPreferenceItem(context,
                   icon: Icons.repeat_rounded,
                   iconBg: primary.withValues(alpha: 0.08),
                   iconColor: primary,
@@ -807,7 +815,7 @@ class ProfileScreen extends StatelessWidget {
                 const SizedBox(height: 10),
 
                 // Budget Settings item
-                _buildPreferenceItem(
+                _buildPreferenceItem(context,
                   icon: Icons.account_balance_wallet_outlined,
                   iconBg: primary.withValues(alpha: 0.08),
                   iconColor: primary,
@@ -818,7 +826,7 @@ class ProfileScreen extends StatelessWidget {
                 const SizedBox(height: 10),
 
                 // Currency item
-                _buildPreferenceItem(
+                _buildPreferenceItem(context,
                   icon: Icons.attach_money,
                   iconBg: primary.withOpacity(0.08),
                   iconColor: primary,
@@ -832,13 +840,13 @@ class ProfileScreen extends StatelessWidget {
                   builder: (context, snap) {
                     final sub = snap.hasData
                         ? 'v${snap.data!.version} (${snap.data!.buildNumber})'
-                        : '…';
-                    return _buildPreferenceItem(
+                        : '�';
+                    return _buildPreferenceItem(context,
                       icon: Icons.system_update_alt,
                       iconBg: primary.withOpacity(0.08),
                       iconColor: primary,
                       title: 'Check for updates',
-                      subtitle: 'Installed $sub · GitHub releases',
+                      subtitle: 'Installed $sub � GitHub releases',
                       onTap: () =>
                           AppUpdateService.checkForUpdate(context),
                     );
@@ -846,13 +854,13 @@ class ProfileScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 24),
 
-                // ─── ACCOUNT Section ───
+                // --- ACCOUNT Section ---
                 Align(
                   alignment: Alignment.centerLeft,
                   child: Text(
                     'ACCOUNT',
                     style: TextStyle(
-                      color: const Color(0xFF2D2D2D).withValues(alpha: 0.35),
+                      color: cs.onSurfaceVariant,
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
                       letterSpacing: 1.2,
@@ -861,7 +869,7 @@ class ProfileScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 14),
 
-                _buildPreferenceItem(
+                _buildPreferenceItem(context,
                   icon: Icons.lock_outline_rounded,
                   iconBg: primary.withValues(alpha: 0.08),
                   iconColor: primary,
@@ -871,7 +879,7 @@ class ProfileScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 10),
 
-                _buildPreferenceItem(
+                _buildPreferenceItem(context,
                   icon: Icons.delete_forever_outlined,
                   iconBg: Colors.red.withValues(alpha: 0.08),
                   iconColor: Colors.red,
@@ -882,7 +890,7 @@ class ProfileScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 24),
 
-                // ─── Logout ───
+                // --- Logout ---
                 SizedBox(
                   width: double.infinity,
                   height: 52,
@@ -967,8 +975,9 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  // ─── Preference list item ───
-  Widget _buildPreferenceItem({
+  // --- Preference list item ---
+  Widget _buildPreferenceItem(
+    BuildContext context, {
     required IconData icon,
     required Color iconBg,
     required Color iconColor,
@@ -976,8 +985,9 @@ class ProfileScreen extends StatelessWidget {
     required String subtitle,
     required VoidCallback onTap,
   }) {
+    final cs = Theme.of(context).colorScheme;
     return Material(
-      color: Colors.white,
+      color: cs.surfaceContainerLow,
       borderRadius: BorderRadius.circular(16),
       elevation: 0,
       shadowColor: Colors.black.withOpacity(0.03),
@@ -1016,8 +1026,8 @@ class ProfileScreen extends StatelessWidget {
                   children: [
                     Text(
                       title,
-                      style: const TextStyle(
-                        color: Color(0xFF2D2D2D),
+                      style: TextStyle(
+                        color: cs.onSurface,
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
                       ),
@@ -1026,7 +1036,7 @@ class ProfileScreen extends StatelessWidget {
                     Text(
                       subtitle,
                       style: TextStyle(
-                        color: const Color(0xFF2D2D2D).withOpacity(0.4),
+                        color: cs.onSurfaceVariant,
                         fontSize: 12,
                         fontWeight: FontWeight.w400,
                       ),

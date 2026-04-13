@@ -129,10 +129,8 @@ class _TransactionsHistoryScreenState extends State<TransactionsHistoryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     const Color primary = Color(0xFF5D3891);
-    const Color bg = Color(0xFFF8F6FC);
-    const Color textMain = Color(0xFF2D2D2D);
-
     final txProvider = Provider.of<TransactionProvider>(context);
     final authProvider = Provider.of<AuthProvider>(context);
     final customCats = Provider.of<CategoryProvider>(context).customCategories;
@@ -161,25 +159,25 @@ class _TransactionsHistoryScreenState extends State<TransactionsHistoryScreen> {
       },
       child: RootBackHandler(
       child: Scaffold(
-      backgroundColor: bg,
+      backgroundColor: cs.surface,
       appBar: AppBar(
-        backgroundColor: bg,
+        backgroundColor: cs.surface,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
         automaticallyImplyLeading: false,
         centerTitle: true,
         leading: _selectionActive
             ? IconButton(
-                icon: const Icon(Icons.close_rounded,
-                    color: textMain, size: 22),
+                icon: Icon(Icons.close_rounded,
+                    color: cs.onSurface, size: 22),
                 onPressed: _exitSelection,
               )
             : null,
         title: _selectionActive
             ? Text(
                 '${_selectedIds.length} selected',
-                style: const TextStyle(
-                  color: textMain,
+                style: TextStyle(
+                  color: cs.onSurface,
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
                 ),
@@ -187,10 +185,10 @@ class _TransactionsHistoryScreenState extends State<TransactionsHistoryScreen> {
             : Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text(
+                  Text(
                     'Transaction History',
                     style: TextStyle(
-                      color: textMain,
+                      color: cs.onSurface,
                       fontSize: 18,
                       fontWeight: FontWeight.w700,
                     ),
@@ -198,7 +196,7 @@ class _TransactionsHistoryScreenState extends State<TransactionsHistoryScreen> {
                   Text(
                     DateFormat('MMMM yyyy').format(txProvider.selectedMonth),
                     style: TextStyle(
-                      color: textMain.withOpacity(0.5),
+                      color: cs.onSurface.withOpacity(0.5),
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                     ),
@@ -208,8 +206,8 @@ class _TransactionsHistoryScreenState extends State<TransactionsHistoryScreen> {
         actions: _selectionActive
             ? [
                 IconButton(
-                  icon: const Icon(Icons.select_all_rounded,
-                      color: textMain, size: 22),
+                  icon: Icon(Icons.select_all_rounded,
+                      color: cs.onSurface, size: 22),
                   tooltip: 'Select all',
                   onPressed: () => setState(() => _selectedIds
                       .addAll(filteredTx.map((t) => t.id))),
@@ -231,8 +229,8 @@ class _TransactionsHistoryScreenState extends State<TransactionsHistoryScreen> {
               ]
             : [
                 IconButton(
-                  icon: const Icon(Icons.calendar_today_outlined,
-                      color: textMain, size: 20),
+                  icon: Icon(Icons.calendar_today_outlined,
+                      color: cs.onSurface, size: 20),
                   onPressed: () {},
                 ),
               ],
@@ -242,7 +240,7 @@ class _TransactionsHistoryScreenState extends State<TransactionsHistoryScreen> {
           ScreenEntrance(
             child: CustomScrollView(
               slivers: [
-                // ─── Summary Card ───
+                // --- Summary Card ---
                 SliverToBoxAdapter(
                   child: Padding(
                     padding:
@@ -279,8 +277,8 @@ class _TransactionsHistoryScreenState extends State<TransactionsHistoryScreen> {
                           const SizedBox(height: 8),
                           Text(
                             currencyFormat.format(monthTotal.abs()),
-                            style: const TextStyle(
-                              color: Colors.white,
+                            style: TextStyle(
+                              color: cs.surfaceContainerLow,
                               fontSize: 32,
                               fontWeight: FontWeight.w800,
                             ),
@@ -316,35 +314,35 @@ class _TransactionsHistoryScreenState extends State<TransactionsHistoryScreen> {
                   ),
                 ),
 
-                // ─── Search Bar ───
+                // --- Search Bar ---
                 SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
                         horizontal: 20, vertical: 10),
                     child: Container(
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: cs.surfaceContainerLow,
                         borderRadius: BorderRadius.circular(14),
                         border: Border.all(
                             color: Colors.grey.withOpacity(0.15), width: 1),
                       ),
                       child: TextField(
                         controller: _searchController,
-                        style: const TextStyle(color: textMain, fontSize: 14),
+                        style: TextStyle(color: cs.onSurface, fontSize: 14),
                         onChanged: (value) =>
                             setState(() => _searchQuery = value),
                         decoration: InputDecoration(
                           hintText: 'Search transactions',
                           hintStyle: TextStyle(
-                            color: textMain.withOpacity(0.3),
+                            color: cs.onSurface.withOpacity(0.3),
                             fontSize: 14,
                           ),
                           prefixIcon: Icon(Icons.search,
-                              color: textMain.withOpacity(0.35), size: 20),
+                              color: cs.onSurface.withOpacity(0.35), size: 20),
                           suffixIcon: _searchQuery.isNotEmpty
                               ? IconButton(
                                   icon: Icon(Icons.clear,
-                                      color: textMain.withOpacity(0.4),
+                                      color: cs.onSurface.withOpacity(0.4),
                                       size: 18),
                                   onPressed: () {
                                     _searchController.clear();
@@ -361,7 +359,7 @@ class _TransactionsHistoryScreenState extends State<TransactionsHistoryScreen> {
                   ),
                 ),
 
-                // ─── Filter Chips ───
+                // --- Filter Chips ---
                 SliverToBoxAdapter(
                   child: Padding(
                     padding:
@@ -378,7 +376,7 @@ class _TransactionsHistoryScreenState extends State<TransactionsHistoryScreen> {
                   ),
                 ),
 
-                // ─── Active Category Filter ───
+                // --- Active Category Filter ---
                 if (_categoryFilter != null)
                   SliverToBoxAdapter(
                     child: Padding(
@@ -438,7 +436,7 @@ class _TransactionsHistoryScreenState extends State<TransactionsHistoryScreen> {
                     ),
                   ),
 
-                // ─── Active Tag Filter ───
+                // --- Active Tag Filter ---
                 if (_tagFilter != null)
                   SliverToBoxAdapter(
                     child: Padding(
@@ -463,7 +461,7 @@ class _TransactionsHistoryScreenState extends State<TransactionsHistoryScreen> {
                                 const SizedBox(width: 6),
                                 Text(
                                   '#$_tagFilter',
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     color: primary,
                                     fontSize: 13,
                                     fontWeight: FontWeight.w600,
@@ -486,7 +484,7 @@ class _TransactionsHistoryScreenState extends State<TransactionsHistoryScreen> {
 
                 const SliverToBoxAdapter(child: SizedBox(height: 8)),
 
-                // ─── Grouped Transaction List ───
+                // --- Grouped Transaction List ---
                 if (filteredTx.isEmpty)
                   SliverFillRemaining(
                     hasScrollBody: false,
@@ -495,12 +493,12 @@ class _TransactionsHistoryScreenState extends State<TransactionsHistoryScreen> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(Icons.receipt_long,
-                              size: 56, color: textMain.withOpacity(0.15)),
+                              size: 56, color: cs.onSurface.withOpacity(0.15)),
                           const SizedBox(height: 12),
                           Text(
                             'No transactions found',
                             style: TextStyle(
-                              color: textMain.withOpacity(0.4),
+                              color: cs.onSurface.withOpacity(0.4),
                               fontSize: 15,
                               fontWeight: FontWeight.w500,
                             ),
@@ -519,7 +517,7 @@ class _TransactionsHistoryScreenState extends State<TransactionsHistoryScreen> {
                           child: Text(
                             entry.key,
                             style: TextStyle(
-                              color: textMain.withOpacity(0.4),
+                              color: cs.onSurface.withOpacity(0.4),
                               fontSize: 12,
                               fontWeight: FontWeight.w700,
                               letterSpacing: 0.8,
@@ -623,8 +621,8 @@ class _TransactionsHistoryScreenState extends State<TransactionsHistoryScreen> {
                                           children: [
                                             Text(
                                               tx.title,
-                                              style: const TextStyle(
-                                                color: textMain,
+                                              style: TextStyle(
+                                                color: cs.onSurface,
                                                 fontSize: 15,
                                                 fontWeight: FontWeight.w600,
                                               ),
@@ -633,10 +631,10 @@ class _TransactionsHistoryScreenState extends State<TransactionsHistoryScreen> {
                                             ),
                                             const SizedBox(height: 3),
                                             Text(
-                                              '${tx.category} • $timeStr',
+                                              '${tx.category} � $timeStr',
                                               style: TextStyle(
                                                 color:
-                                                    textMain.withOpacity(0.4),
+                                                    cs.onSurface.withOpacity(0.4),
                                                 fontSize: 12,
                                                 fontWeight: FontWeight.w400,
                                               ),
@@ -707,7 +705,7 @@ class _TransactionsHistoryScreenState extends State<TransactionsHistoryScreen> {
                                             style: TextStyle(
                                               color: isIncome
                                                   ? const Color(0xFF22C55E)
-                                                  : textMain,
+                                                  : cs.onSurface,
                                               fontSize: 15,
                                               fontWeight: FontWeight.w700,
                                             ),
@@ -726,10 +724,10 @@ class _TransactionsHistoryScreenState extends State<TransactionsHistoryScreen> {
                                                 ),
                                               );
                                             },
-                                            icon: const Icon(
+                                            icon: Icon(
                                               Icons.edit_outlined,
                                               size: 18,
-                                              color: textMain,
+                                              color: cs.onSurface,
                                             ),
                                             visualDensity:
                                                 VisualDensity.compact,
@@ -763,7 +761,7 @@ class _TransactionsHistoryScreenState extends State<TransactionsHistoryScreen> {
     );
   }
 
-  // ─── Filter Chip ───
+  // --- Filter Chip ---
   Widget _buildChip(String label, int index, Color primary) {
     final isActive = _filterIndex == index;
     return GestureDetector(

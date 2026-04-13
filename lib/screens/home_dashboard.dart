@@ -49,10 +49,8 @@ class _HomeDashboardState extends State<HomeDashboard> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     const Color primary = Color(0xFF5D3891);
-    const Color bgLight = Color(0xFFF8F6FC);
-    const Color cardWhite = Colors.white;
-    const Color textMain = Color(0xFF2D2D2D);
     const Color greenAccent = Color(0xFF2ECC71);
     const Color redAccent = Color(0xFFE74C3C);
 
@@ -73,7 +71,7 @@ class _HomeDashboardState extends State<HomeDashboard> {
 
     return RootBackHandler(
       child: Scaffold(
-      backgroundColor: bgLight,
+      backgroundColor: cs.surface,
       body: Stack(
         children: [
           // ─── Main scrollable content ───
@@ -147,10 +145,10 @@ class _HomeDashboardState extends State<HomeDashboard> {
                             ),
                           ),
                           const Spacer(),
-                          const Text(
+                          Text(
                             'Smart Tracker',
                             style: TextStyle(
-                              color: textMain,
+                              color: cs.onSurface,
                               fontSize: 20,
                               fontWeight: FontWeight.w700,
                               letterSpacing: -0.3,
@@ -197,8 +195,8 @@ class _HomeDashboardState extends State<HomeDashboard> {
                                 Text(
                                   DateFormat('MMMM yyyy')
                                       .format(txProvider.selectedMonth),
-                                  style: const TextStyle(
-                                    color: textMain,
+                                  style: TextStyle(
+                                    color: cs.onSurface,
                                     fontSize: 17,
                                     fontWeight: FontWeight.w800,
                                     letterSpacing: -0.2,
@@ -208,7 +206,7 @@ class _HomeDashboardState extends State<HomeDashboard> {
                                   Text(
                                     'Viewing past activity',
                                     style: TextStyle(
-                                      color: textMain.withOpacity(0.45),
+                                      color: cs.onSurfaceVariant,
                                       fontSize: 11,
                                       fontWeight: FontWeight.w500,
                                     ),
@@ -304,7 +302,7 @@ class _HomeDashboardState extends State<HomeDashboard> {
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 16, vertical: 14),
                                 decoration: BoxDecoration(
-                                  color: cardWhite,
+                                  color: cs.surfaceContainerLow,
                                   borderRadius: BorderRadius.circular(16),
                                   boxShadow: [
                                     BoxShadow(
@@ -340,8 +338,8 @@ class _HomeDashboardState extends State<HomeDashboard> {
                                     const SizedBox(height: 6),
                                     Text(
                                       incomeStr,
-                                      style: const TextStyle(
-                                        color: textMain,
+                                      style: TextStyle(
+                                        color: cs.onSurface,
                                         fontSize: 22,
                                         fontWeight: FontWeight.bold,
                                       ),
@@ -362,7 +360,7 @@ class _HomeDashboardState extends State<HomeDashboard> {
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 16, vertical: 14),
                                 decoration: BoxDecoration(
-                                  color: cardWhite,
+                                  color: cs.surfaceContainerLow,
                                   borderRadius: BorderRadius.circular(16),
                                   boxShadow: [
                                     BoxShadow(
@@ -398,8 +396,8 @@ class _HomeDashboardState extends State<HomeDashboard> {
                                     const SizedBox(height: 6),
                                     Text(
                                       expenseStr,
-                                      style: const TextStyle(
-                                        color: textMain,
+                                      style: TextStyle(
+                                        color: cs.onSurface,
                                         fontSize: 22,
                                         fontWeight: FontWeight.bold,
                                       ),
@@ -430,10 +428,10 @@ class _HomeDashboardState extends State<HomeDashboard> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
+                          Text(
                             'Quick Actions',
                             style: TextStyle(
-                              color: textMain,
+                              color: cs.onSurface,
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
                             ),
@@ -475,10 +473,10 @@ class _HomeDashboardState extends State<HomeDashboard> {
                                           ),
                                         ),
                                         const SizedBox(width: 8),
-                                        const Text(
+                                        Text(
                                           'Add Income',
                                           style: TextStyle(
-                                            color: textMain,
+                                            color: cs.onSurface,
                                             fontSize: 13,
                                             fontWeight: FontWeight.w600,
                                           ),
@@ -524,10 +522,10 @@ class _HomeDashboardState extends State<HomeDashboard> {
                                           ),
                                         ),
                                         const SizedBox(width: 8),
-                                        const Text(
+                                        Text(
                                           'Add Expense',
                                           style: TextStyle(
-                                            color: textMain,
+                                            color: cs.onSurface,
                                             fontSize: 13,
                                             fontWeight: FontWeight.w600,
                                           ),
@@ -564,10 +562,10 @@ class _HomeDashboardState extends State<HomeDashboard> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text(
+                              Text(
                                 'Categories',
                                 style: TextStyle(
-                                  color: textMain,
+                                  color: cs.onSurface,
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -628,10 +626,10 @@ class _HomeDashboardState extends State<HomeDashboard> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              const Text(
+                              Text(
                                 'Recent Transactions',
                                 style: TextStyle(
-                                  color: textMain,
+                                  color: cs.onSurface,
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -657,7 +655,7 @@ class _HomeDashboardState extends State<HomeDashboard> {
                             Container(
                               padding: const EdgeInsets.all(28),
                               decoration: BoxDecoration(
-                                color: cardWhite,
+                                color: cs.surfaceContainerLow,
                                 borderRadius: BorderRadius.circular(20),
                                 boxShadow: [
                                   BoxShadow(
@@ -680,7 +678,7 @@ class _HomeDashboardState extends State<HomeDashboard> {
                                       'No transactions yet.\nAdd your first income or expense!',
                                       textAlign: TextAlign.center,
                                       style: TextStyle(
-                                        color: Colors.black.withOpacity(0.4),
+                                        color: cs.onSurfaceVariant,
                                         fontSize: 14,
                                       ),
                                     ),
@@ -780,8 +778,8 @@ class _HomeDashboardState extends State<HomeDashboard> {
                                             children: [
                                               Text(
                                                 tx.title,
-                                                style: const TextStyle(
-                                                  color: textMain,
+                                                style: TextStyle(
+                                                  color: cs.onSurface,
                                                   fontSize: 15,
                                                   fontWeight:
                                                       FontWeight.w600,
@@ -870,6 +868,7 @@ class _HomeDashboardState extends State<HomeDashboard> {
     int count = 0,
     VoidCallback? onTap,
   }) {
+    final cs = Theme.of(context).colorScheme;
     return GestureDetector(
       onTap: onTap,
       child: Column(
@@ -903,7 +902,7 @@ class _HomeDashboardState extends State<HomeDashboard> {
                       color: color,
                       shape: BoxShape.circle,
                       border:
-                          Border.all(color: const Color(0xFFF8F6FC), width: 2),
+                          Border.all(color: cs.surface, width: 2),
                     ),
                     constraints: const BoxConstraints(
                       minWidth: 22,
@@ -927,7 +926,7 @@ class _HomeDashboardState extends State<HomeDashboard> {
           Text(
             label,
             style: TextStyle(
-              color: Colors.black.withOpacity(0.6),
+              color: cs.onSurfaceVariant,
               fontSize: 11,
               fontWeight: FontWeight.w600,
             ),
@@ -939,6 +938,7 @@ class _HomeDashboardState extends State<HomeDashboard> {
 
   Widget _buildBudgetCard(BuildContext context, BudgetProvider budgetProvider,
       TransactionProvider txProvider, String currencySymbol) {
+    final cs = Theme.of(context).colorScheme;
     final spent = txProvider.totalExpenses;
     final limit = budgetProvider.budget!.overall;
     final pct = budgetProvider.overallUsedPercent(spent);
@@ -954,7 +954,7 @@ class _HomeDashboardState extends State<HomeDashboard> {
         width: double.infinity,
         padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: cs.surfaceContainerLow,
           borderRadius: BorderRadius.circular(18),
           boxShadow: [
             BoxShadow(
@@ -969,11 +969,11 @@ class _HomeDashboardState extends State<HomeDashboard> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('Monthly Budget',
+                Text('Monthly Budget',
                     style: TextStyle(
                         fontWeight: FontWeight.w700,
                         fontSize: 14,
-                        color: Color(0xFF2D2D2D))),
+                        color: cs.onSurface)),
                 Text('${pct.toStringAsFixed(0)}% used',
                     style: TextStyle(
                         fontSize: 12, fontWeight: FontWeight.w600, color: color)),
@@ -992,9 +992,9 @@ class _HomeDashboardState extends State<HomeDashboard> {
             const SizedBox(height: 8),
             Text(
               '$currencySymbol ${spent.toStringAsFixed(0)} / $currencySymbol ${limit.toStringAsFixed(0)}',
-              style: const TextStyle(
+              style: TextStyle(
                   fontSize: 12,
-                  color: Color(0xFF888888),
+                  color: cs.onSurfaceVariant,
                   fontWeight: FontWeight.w500),
             ),
           ],
