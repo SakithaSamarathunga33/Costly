@@ -116,8 +116,7 @@ class _ExpenseListScreenState extends State<ExpenseListScreen> {
   @override
   Widget build(BuildContext context) {
     const Color red = Color(0xFFE74C3C);
-    const Color bg = Color(0xFFF8F6FC);
-    const Color textMain = Color(0xFF2D2D2D);
+    final cs = Theme.of(context).colorScheme;
 
     final txProvider = Provider.of<TransactionProvider>(context);
     final authProvider = Provider.of<AuthProvider>(context);
@@ -141,29 +140,29 @@ class _ExpenseListScreenState extends State<ExpenseListScreen> {
         }
       },
       child: Scaffold(
-        backgroundColor: bg,
+        backgroundColor: cs.surface,
         appBar: AppBar(
-          backgroundColor: bg,
+          backgroundColor: cs.surface,
           elevation: 0,
           surfaceTintColor: Colors.transparent,
           leading: _selectionActive
               ? IconButton(
                   icon:
-                      const Icon(Icons.close_rounded, color: textMain, size: 22),
+                      Icon(Icons.close_rounded, color: cs.onSurface, size: 22),
                   onPressed: _exitSelection,
                   tooltip: 'Cancel',
                 )
               : IconButton(
-                  icon: const Icon(Icons.arrow_back_rounded,
-                      color: textMain, size: 22),
+                  icon: Icon(Icons.arrow_back_rounded,
+                      color: cs.onSurface, size: 22),
                   onPressed: () => Navigator.pop(context),
                 ),
           centerTitle: true,
           title: _selectionActive
               ? Text(
                   '${_selectedIds.length} selected',
-                  style: const TextStyle(
-                    color: textMain,
+                  style: TextStyle(
+                    color: cs.onSurface,
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
                   ),
@@ -171,10 +170,10 @@ class _ExpenseListScreenState extends State<ExpenseListScreen> {
               : Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Text(
+                    Text(
                       'Expenses',
                       style: TextStyle(
-                        color: textMain,
+                        color: cs.onSurface,
                         fontSize: 18,
                         fontWeight: FontWeight.w700,
                       ),
@@ -182,7 +181,7 @@ class _ExpenseListScreenState extends State<ExpenseListScreen> {
                     Text(
                       DateFormat('MMMM yyyy').format(sm),
                       style: TextStyle(
-                        color: textMain.withOpacity(0.5),
+                        color: cs.onSurfaceVariant,
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
                       ),
@@ -289,25 +288,25 @@ class _ExpenseListScreenState extends State<ExpenseListScreen> {
                     const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                 child: Container(
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: cs.surfaceContainerLow,
                     borderRadius: BorderRadius.circular(14),
                     border: Border.all(
                         color: Colors.grey.withOpacity(0.15), width: 1),
                   ),
                   child: TextField(
                     controller: _searchController,
-                    style: const TextStyle(color: textMain, fontSize: 14),
+                    style: TextStyle(color: cs.onSurface, fontSize: 14),
                     onChanged: (v) => setState(() => _searchQuery = v),
                     decoration: InputDecoration(
                       hintText: 'Search expenses',
                       hintStyle: TextStyle(
-                          color: textMain.withOpacity(0.3), fontSize: 14),
+                          color: cs.onSurfaceVariant, fontSize: 14),
                       prefixIcon: Icon(Icons.search,
-                          color: textMain.withOpacity(0.35), size: 20),
+                          color: cs.onSurfaceVariant, size: 20),
                       suffixIcon: _searchQuery.isNotEmpty
                           ? IconButton(
                               icon: Icon(Icons.clear,
-                                  color: textMain.withOpacity(0.4), size: 18),
+                                  color: cs.onSurfaceVariant, size: 18),
                               onPressed: () {
                                 _searchController.clear();
                                 setState(() => _searchQuery = '');
@@ -334,12 +333,12 @@ class _ExpenseListScreenState extends State<ExpenseListScreen> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(Icons.receipt_long_outlined,
-                          size: 56, color: textMain.withOpacity(0.15)),
+                          size: 56, color: cs.onSurfaceVariant),
                       const SizedBox(height: 12),
                       Text(
                         'No expenses found',
                         style: TextStyle(
-                          color: textMain.withOpacity(0.4),
+                          color: cs.onSurfaceVariant,
                           fontSize: 15,
                           fontWeight: FontWeight.w500,
                         ),
@@ -357,7 +356,7 @@ class _ExpenseListScreenState extends State<ExpenseListScreen> {
                       child: Text(
                         entry.key,
                         style: TextStyle(
-                          color: textMain.withOpacity(0.4),
+                          color: cs.onSurfaceVariant,
                           fontSize: 12,
                           fontWeight: FontWeight.w700,
                           letterSpacing: 0.8,
@@ -423,7 +422,7 @@ class _ExpenseListScreenState extends State<ExpenseListScreen> {
                                 decoration: BoxDecoration(
                                   color: isSelected
                                       ? const Color(0xFFFFF0F0)
-                                      : Colors.white,
+                                      : cs.surfaceContainerLow,
                                   borderRadius: BorderRadius.circular(16),
                                   border: Border.all(
                                     color: isSelected
@@ -452,7 +451,7 @@ class _ExpenseListScreenState extends State<ExpenseListScreen> {
                                                   .radio_button_unchecked_rounded,
                                           color: isSelected
                                               ? red
-                                              : textMain.withOpacity(0.35),
+                                              : cs.onSurfaceVariant,
                                           size: 22,
                                         ),
                                       ),
@@ -476,8 +475,8 @@ class _ExpenseListScreenState extends State<ExpenseListScreen> {
                                         children: [
                                           Text(
                                             tx.title,
-                                            style: const TextStyle(
-                                              color: textMain,
+                                            style: TextStyle(
+                                              color: cs.onSurface,
                                               fontSize: 15,
                                               fontWeight: FontWeight.w600,
                                             ),
@@ -488,8 +487,7 @@ class _ExpenseListScreenState extends State<ExpenseListScreen> {
                                           Text(
                                             '${tx.category} • $timeStr',
                                             style: TextStyle(
-                                              color:
-                                                  textMain.withOpacity(0.4),
+                                              color: cs.onSurfaceVariant,
                                               fontSize: 12,
                                             ),
                                           ),
@@ -524,8 +522,7 @@ class _ExpenseListScreenState extends State<ExpenseListScreen> {
                                             icon: Icon(
                                               Icons.edit_outlined,
                                               size: 18,
-                                              color:
-                                                  textMain.withOpacity(0.4),
+                                              color: cs.onSurfaceVariant,
                                             ),
                                             visualDensity:
                                                 VisualDensity.compact,

@@ -116,7 +116,7 @@ class _LoginScreenState extends State<LoginScreen> {
   /// Show forgot password dialog
   void _showForgotPasswordDialog(BuildContext context) {
     const Color primary = Color(0xFF5D3891);
-    const Color textMain = Color(0xFF2D2D2D);
+    final cs = Theme.of(context).colorScheme;
     final resetEmailController = TextEditingController(
       text: _emailController.text.trim(),
     );
@@ -128,15 +128,15 @@ class _LoginScreenState extends State<LoginScreen> {
         return StatefulBuilder(
           builder: (ctx, setDialogState) {
             return AlertDialog(
-              backgroundColor: Colors.white,
+              backgroundColor: cs.surfaceContainerLow,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20)),
-              title: const Text(
+              title: Text(
                 'Reset Password',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
-                  color: textMain,
+                  color: cs.onSurface,
                 ),
               ),
               content: Column(
@@ -146,7 +146,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   Text(
                     'Enter your email address and we\'ll send you a link to reset your password.',
                     style: TextStyle(
-                      color: textMain.withOpacity(0.6),
+                      color: cs.onSurfaceVariant,
                       fontSize: 13,
                     ),
                   ),
@@ -154,7 +154,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   Text(
                     'Note: This only works for email/password accounts, not Google sign-in.',
                     style: TextStyle(
-                      color: textMain.withOpacity(0.4),
+                      color: cs.onSurfaceVariant,
                       fontSize: 12,
                       fontStyle: FontStyle.italic,
                     ),
@@ -163,13 +163,13 @@ class _LoginScreenState extends State<LoginScreen> {
                   TextField(
                     controller: resetEmailController,
                     keyboardType: TextInputType.emailAddress,
-                    style: const TextStyle(fontSize: 14, color: textMain),
+                    style: TextStyle(fontSize: 14, color: cs.onSurface),
                     decoration: InputDecoration(
                       hintText: 'name@example.com',
                       hintStyle: TextStyle(
-                          color: textMain.withOpacity(0.3), fontSize: 14),
+                          color: cs.onSurfaceVariant, fontSize: 14),
                       filled: true,
-                      fillColor: const Color(0xFFF8F6FC),
+                      fillColor: cs.surfaceContainerHighest,
                       prefixIcon: Icon(Icons.mail_outline,
                           color: primary.withOpacity(0.5), size: 20),
                       border: OutlineInputBorder(
@@ -198,7 +198,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: Text(
                     'Cancel',
                     style: TextStyle(
-                      color: textMain.withOpacity(0.5),
+                      color: cs.onSurfaceVariant,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -263,15 +263,13 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     const Color primary = Color(0xFF5D3891);
-    const Color bgLight = Color(0xFFF8F6FC);
-    const Color cardWhite = Colors.white;
-    const Color textMain = Color(0xFF2D2D2D);
+    final cs = Theme.of(context).colorScheme;
 
     // Listen to loading state
     final authProvider = Provider.of<AuthProvider>(context);
 
     return Scaffold(
-      backgroundColor: bgLight,
+      backgroundColor: cs.surface,
       body: SafeArea(
         child: ScreenEntrance(
           child: SingleChildScrollView(
@@ -288,7 +286,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   width: 96,
                   height: 96,
                   decoration: BoxDecoration(
-                    color: cardWhite,
+                    color: cs.surfaceContainerLow,
                     borderRadius: BorderRadius.circular(24),
                     boxShadow: [
                       BoxShadow(
@@ -314,12 +312,12 @@ class _LoginScreenState extends State<LoginScreen> {
                 const SizedBox(height: 20),
 
                 // ─── Title ───
-                const Text(
+                Text(
                   'Smart Expense Tracker',
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.w700,
-                    color: textMain,
+                    color: cs.onSurface,
                     letterSpacing: -0.3,
                   ),
                 ),
@@ -327,7 +325,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 Text(
                   'Manage your finances with ease',
                   style: TextStyle(
-                    color: textMain.withOpacity(0.5),
+                    color: cs.onSurfaceVariant,
                     fontSize: 14,
                     fontWeight: FontWeight.w400,
                   ),
@@ -339,7 +337,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   width: double.infinity,
                   padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
                   decoration: BoxDecoration(
-                    color: cardWhite,
+                    color: cs.surfaceContainerLow,
                     borderRadius: BorderRadius.circular(24),
                     boxShadow: [
                       BoxShadow(
@@ -353,11 +351,11 @@ class _LoginScreenState extends State<LoginScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // Welcome Back header
-                      const Center(
+                      Center(
                         child: Text(
                           'Welcome Back',
                           style: TextStyle(
-                            color: textMain,
+                            color: cs.onSurface,
                             fontSize: 22,
                             fontWeight: FontWeight.w700,
                           ),
@@ -369,7 +367,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       Text(
                         'Email Address',
                         style: TextStyle(
-                          color: textMain.withOpacity(0.7),
+                          color: cs.onSurfaceVariant,
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
                         ),
@@ -378,13 +376,13 @@ class _LoginScreenState extends State<LoginScreen> {
                       TextField(
                         controller: _emailController,
                         keyboardType: TextInputType.emailAddress,
-                        style: const TextStyle(color: textMain, fontSize: 14),
+                        style: TextStyle(color: cs.onSurface, fontSize: 14),
                         decoration: InputDecoration(
                           hintText: 'name@example.com',
                           hintStyle:
-                              TextStyle(color: textMain.withOpacity(0.3)),
+                              TextStyle(color: cs.onSurfaceVariant),
                           filled: true,
-                          fillColor: bgLight,
+                          fillColor: cs.surfaceContainerHighest,
                           prefixIcon: Icon(Icons.mail_outline,
                               color: primary.withOpacity(0.5), size: 20),
                           border: OutlineInputBorder(
@@ -411,7 +409,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       Text(
                         'Password',
                         style: TextStyle(
-                          color: textMain.withOpacity(0.7),
+                          color: cs.onSurfaceVariant,
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
                         ),
@@ -420,13 +418,13 @@ class _LoginScreenState extends State<LoginScreen> {
                       TextField(
                         controller: _passwordController,
                         obscureText: _obscureText,
-                        style: const TextStyle(color: textMain, fontSize: 14),
+                        style: TextStyle(color: cs.onSurface, fontSize: 14),
                         decoration: InputDecoration(
                           hintText: 'Enter your password',
                           hintStyle:
-                              TextStyle(color: textMain.withOpacity(0.3)),
+                              TextStyle(color: cs.onSurfaceVariant),
                           filled: true,
-                          fillColor: bgLight,
+                          fillColor: cs.surfaceContainerHighest,
                           prefixIcon: Icon(Icons.lock_outline,
                               color: primary.withOpacity(0.5), size: 20),
                           suffixIcon: IconButton(
@@ -434,7 +432,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               _obscureText
                                   ? Icons.visibility_outlined
                                   : Icons.visibility_off_outlined,
-                              color: textMain.withOpacity(0.35),
+                              color: cs.onSurfaceVariant,
                               size: 20,
                             ),
                             onPressed: () {
@@ -479,7 +477,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               activeColor: primary,
                               checkColor: Colors.white,
                               side:
-                                  BorderSide(color: textMain.withOpacity(0.25)),
+                                  BorderSide(color: cs.onSurfaceVariant),
                               shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(4)),
                               materialTapTargetSize:
@@ -490,7 +488,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           Text(
                             'Remember me',
                             style: TextStyle(
-                              color: textMain.withOpacity(0.6),
+                              color: cs.onSurfaceVariant,
                               fontSize: 13,
                             ),
                           ),
@@ -566,7 +564,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               child: Text(
                                 'OR CONTINUE WITH',
                                 style: TextStyle(
-                                  color: textMain.withOpacity(0.35),
+                                  color: cs.onSurfaceVariant,
                                   fontSize: 11,
                                   fontWeight: FontWeight.w600,
                                   letterSpacing: 0.5,
@@ -595,7 +593,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(14),
                               ),
-                              backgroundColor: Colors.white,
+                              backgroundColor: cs.surfaceContainerLow,
                             ),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
@@ -607,10 +605,10 @@ class _LoginScreenState extends State<LoginScreen> {
                                   fit: BoxFit.contain,
                                 ),
                                 const SizedBox(width: 8),
-                                const Text(
+                                Text(
                                   'Google',
                                   style: TextStyle(
-                                    color: textMain,
+                                    color: cs.onSurface,
                                     fontSize: 14,
                                     fontWeight: FontWeight.w500,
                                   ),
@@ -633,7 +631,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     Text(
                       "Don't have an account? ",
                       style: TextStyle(
-                        color: textMain.withOpacity(0.5),
+                        color: cs.onSurfaceVariant,
                         fontSize: 14,
                       ),
                     ),

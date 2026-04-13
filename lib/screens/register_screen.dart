@@ -81,19 +81,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     const Color primary = Color(0xFF5D3891);
-    const Color bgDark = Color(0xFFF5F5F5);
-    const Color cardDark = Color(0xFFE8E2E2);
-    const Color textMain = Color(0xFF2D2D2D);
+    final cs = Theme.of(context).colorScheme;
 
     final authProvider = Provider.of<AuthProvider>(context);
 
     return Scaffold(
-      backgroundColor: bgDark,
+      backgroundColor: cs.surface,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: textMain),
+          icon: Icon(Icons.arrow_back, color: cs.onSurface),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -112,13 +110,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         'Create Account',
                         style: TextStyle(
                           fontFamily: 'Public Sans',
                           fontSize: 28,
                           fontWeight: FontWeight.bold,
-                          color: textMain,
+                          color: cs.onSurface,
                           letterSpacing: -0.5,
                         ),
                       ),
@@ -126,7 +124,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       Text(
                         'Join COSTLY today',
                         style: TextStyle(
-                          color: textMain.withOpacity(0.7),
+                          color: cs.onSurfaceVariant,
                           fontSize: 16,
                         ),
                       ),
@@ -140,7 +138,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   width: double.infinity,
                   padding: const EdgeInsets.all(32),
                   decoration: BoxDecoration(
-                    color: cardDark,
+                    color: cs.surfaceContainerLow,
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(color: Colors.black.withOpacity(0.05)),
                     boxShadow: [
@@ -158,7 +156,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       Text(
                         'Full Name',
                         style: TextStyle(
-                          color: textMain.withOpacity(0.9),
+                          color: cs.onSurfaceVariant,
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
                         ),
@@ -166,15 +164,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       const SizedBox(height: 8),
                       TextField(
                         controller: _nameController,
-                        style: const TextStyle(color: textMain),
+                        style: TextStyle(color: cs.onSurface),
                         decoration: InputDecoration(
                           hintText: 'John Doe',
                           hintStyle:
-                              TextStyle(color: textMain.withOpacity(0.3)),
+                              TextStyle(color: cs.onSurfaceVariant),
                           filled: true,
-                          fillColor: bgDark,
+                          fillColor: cs.surfaceContainerHighest,
                           prefixIcon: Icon(Icons.person_outline,
-                              color: textMain.withOpacity(0.4)),
+                              color: cs.onSurfaceVariant),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: BorderSide(
@@ -200,7 +198,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       Text(
                         'Email Address',
                         style: TextStyle(
-                          color: textMain.withOpacity(0.9),
+                          color: cs.onSurfaceVariant,
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
                         ),
@@ -209,15 +207,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       TextField(
                         controller: _emailController,
                         keyboardType: TextInputType.emailAddress,
-                        style: const TextStyle(color: textMain),
+                        style: TextStyle(color: cs.onSurface),
                         decoration: InputDecoration(
                           hintText: 'name@company.com',
                           hintStyle:
-                              TextStyle(color: textMain.withOpacity(0.3)),
+                              TextStyle(color: cs.onSurfaceVariant),
                           filled: true,
-                          fillColor: bgDark,
+                          fillColor: cs.surfaceContainerHighest,
                           prefixIcon: Icon(Icons.mail_outline,
-                              color: textMain.withOpacity(0.4)),
+                              color: cs.onSurfaceVariant),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: BorderSide(
@@ -243,7 +241,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       Text(
                         'Password',
                         style: TextStyle(
-                          color: textMain.withOpacity(0.9),
+                          color: cs.onSurfaceVariant,
                           fontSize: 14,
                           fontWeight: FontWeight.w500,
                         ),
@@ -252,21 +250,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       TextField(
                         controller: _passwordController,
                         obscureText: _obscureText,
-                        style: const TextStyle(color: textMain),
+                        style: TextStyle(color: cs.onSurface),
                         decoration: InputDecoration(
                           hintText: '••••••••',
                           hintStyle:
-                              TextStyle(color: textMain.withOpacity(0.3)),
+                              TextStyle(color: cs.onSurfaceVariant),
                           filled: true,
-                          fillColor: bgDark,
+                          fillColor: cs.surfaceContainerHighest,
                           prefixIcon: Icon(Icons.lock_outline,
-                              color: textMain.withOpacity(0.4)),
+                              color: cs.onSurfaceVariant),
                           suffixIcon: IconButton(
                             icon: Icon(
                               _obscureText
                                   ? Icons.visibility_outlined
                                   : Icons.visibility_off_outlined,
-                              color: textMain.withOpacity(0.4),
+                              color: cs.onSurfaceVariant,
                             ),
                             onPressed: () {
                               setState(() {
@@ -353,7 +351,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 //         child: Text(
                 //           'OR CONTINUE WITH',
                 //           style: TextStyle(
-                //             color: textMain.withOpacity(0.35),
+                //             color: cs.onSurfaceVariant,
                 //             fontSize: 11,
                 //             fontWeight: FontWeight.w600,
                 //             letterSpacing: 0.5,
@@ -382,7 +380,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 //         shape: RoundedRectangleBorder(
                 //           borderRadius: BorderRadius.circular(14),
                 //         ),
-                //         backgroundColor: Colors.white,
+                //         backgroundColor: cs.surfaceContainerLow,
                 //       ),
                 //       child: Row(
                 //         mainAxisAlignment: MainAxisAlignment.center,
@@ -394,10 +392,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 //             fit: BoxFit.contain,
                 //           ),
                 //           const SizedBox(width: 8),
-                //           const Text(
+                //           Text(
                 //             'Google',
                 //             style: TextStyle(
-                //               color: textMain,
+                //               color: cs.onSurface,
                 //               fontSize: 14,
                 //               fontWeight: FontWeight.w500,
                 //             ),
@@ -418,7 +416,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   children: [
                     Text(
                       "Already have an account? ",
-                      style: TextStyle(color: textMain.withOpacity(0.7)),
+                      style: TextStyle(color: cs.onSurfaceVariant),
                     ),
                     GestureDetector(
                       onTap: () {
