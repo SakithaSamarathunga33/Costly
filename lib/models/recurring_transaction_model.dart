@@ -11,6 +11,7 @@ class RecurringTransactionModel {
   final String frequency; // 'daily', 'weekly', 'monthly'
   final DateTime nextDueDate;
   final bool isActive;
+  final DateTime? endDate; // null = no end
 
   RecurringTransactionModel({
     required this.id,
@@ -23,6 +24,7 @@ class RecurringTransactionModel {
     required this.frequency,
     required this.nextDueDate,
     this.isActive = true,
+    this.endDate,
   });
 
   factory RecurringTransactionModel.fromMap(
@@ -41,20 +43,29 @@ class RecurringTransactionModel {
           : DateTime.tryParse(map['nextDueDate']?.toString() ?? '') ??
               DateTime.now(),
       isActive: map['isActive'] ?? true,
+      endDate: map['endDate'] is Timestamp
+          ? (map['endDate'] as Timestamp).toDate()
+          : map['endDate'] != null
+              ? DateTime.tryParse(map['endDate'].toString())
+              : null,
     );
   }
 
-  Map<String, dynamic> toMap() => {
-        'userId': userId,
-        'title': title,
-        'amount': amount,
-        'type': type,
-        'category': category,
-        'notes': notes,
-        'frequency': frequency,
-        'nextDueDate': Timestamp.fromDate(nextDueDate),
-        'isActive': isActive,
-      };
+  Map<String, dynamic> toMap() {
+    final m = <String, dynamic>{
+      'userId': userId,
+      'title': title,
+      'amount': amount,
+      'type': type,
+      'category': category,
+      'notes': notes,
+      'frequency': frequency,
+      'nextDueDate': Timestamp.fromDate(nextDueDate),
+      'isActive': isActive,
+    };
+    if (endDate != null) m['endDate'] = Timestamp.fromDate(endDate!);
+    return m;
+  }
 
   RecurringTransactionModel copyWith({
     String? title,
@@ -65,6 +76,7 @@ class RecurringTransactionModel {
     String? frequency,
     DateTime? nextDueDate,
     bool? isActive,
+    Object? endDate = _sentinel,
   }) =>
       RecurringTransactionModel(
         id: id,
@@ -77,7 +89,12 @@ class RecurringTransactionModel {
         frequency: frequency ?? this.frequency,
         nextDueDate: nextDueDate ?? this.nextDueDate,
         isActive: isActive ?? this.isActive,
+        endDate: identical(endDate, _sentinel)
+            ? this.endDate
+            : endDate as DateTime?,
       );
+
+  static const Object _sentinel = Object();
 
   /// Calculate the next due date after [from] based on frequency.
   DateTime nextAfter(DateTime from) {
