@@ -72,11 +72,11 @@ class CategoryIconPickerGrid extends StatelessWidget {
               onTap: () => onIconSelected(entry.key),
               child: Container(
                 decoration: BoxDecoration(
-                  color: isActive ? primary : const Color(0xFFF8F6FC),
+                  color: isActive ? primary : Theme.of(context).colorScheme.surfaceContainerHighest,
                   borderRadius: BorderRadius.circular(12),
                   border: isActive
                       ? null
-                      : Border.all(color: Colors.grey.withOpacity(0.15)),
+                      : Border.all(color: Theme.of(context).colorScheme.outlineVariant),
                 ),
                 child: Icon(
                   entry.value,

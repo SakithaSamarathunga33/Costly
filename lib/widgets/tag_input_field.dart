@@ -32,6 +32,7 @@ class _TagInputFieldState extends State<TagInputField> {
   @override
   Widget build(BuildContext context) {
     const primary = Color(0xFF5D3891);
+    final cs = Theme.of(context).colorScheme;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -43,7 +44,7 @@ class _TagInputFieldState extends State<TagInputField> {
                 decoration: InputDecoration(
                   hintText: 'Add tag (e.g. groceries)',
                   filled: true,
-                  fillColor: const Color(0xFFF8F6FC),
+                  fillColor: cs.surfaceContainerHighest,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: BorderSide.none,
