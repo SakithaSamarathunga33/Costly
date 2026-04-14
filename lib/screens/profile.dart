@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart' hide AuthProvider;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
@@ -383,6 +384,11 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
+  bool _isGoogleUser() {
+    final user = FirebaseAuth.instance.currentUser;
+    return user?.providerData.any((p) => p.providerId == 'google.com') ?? false;
+  }
+
   void _showThemePicker(BuildContext context, ThemeProvider themeProvider) {
     final cs = Theme.of(context).colorScheme;
     showModalBottomSheet(
@@ -561,7 +567,6 @@ class ProfileScreen extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     final authProvider = Provider.of<AuthProvider>(context);
     final txProvider = Provider.of<TransactionProvider>(context);
-    final themeProvider = Provider.of<ThemeProvider>(context);
 
     return RootBackHandler(
       child: Scaffold(
@@ -753,20 +758,20 @@ class ProfileScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 14),
 
-                // Appearance item
-                _buildPreferenceItem(context,
-                  icon: Icons.dark_mode_outlined,
-                  iconBg: primary.withValues(alpha: 0.08),
-                  iconColor: primary,
-                  title: 'Appearance',
-                  subtitle: themeProvider.mode == ThemeMode.dark
-                      ? 'Dark mode'
-                      : themeProvider.mode == ThemeMode.light
-                          ? 'Light mode'
-                          : 'System default',
-                  onTap: () => _showThemePicker(context, themeProvider),
-                ),
-                const SizedBox(height: 10),
+                // Appearance item (hidden)
+                // _buildPreferenceItem(context,
+                //   icon: Icons.dark_mode_outlined,
+                //   iconBg: primary.withValues(alpha: 0.08),
+                //   iconColor: primary,
+                //   title: 'Appearance',
+                //   subtitle: themeProvider.mode == ThemeMode.dark
+                //       ? 'Dark mode'
+                //       : themeProvider.mode == ThemeMode.light
+                //           ? 'Light mode'
+                //           : 'System default',
+                //   onTap: () => _showThemePicker(context, themeProvider),
+                // ),
+                // const SizedBox(height: 10),
 
                 // Notification Settings item
                 _buildPreferenceItem(context,
@@ -869,15 +874,18 @@ class ProfileScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 14),
 
-                _buildPreferenceItem(context,
-                  icon: Icons.lock_outline_rounded,
-                  iconBg: primary.withValues(alpha: 0.08),
-                  iconColor: primary,
-                  title: 'Change Password',
-                  subtitle: 'Update your account password',
-                  onTap: () => _showChangePasswordSheet(context, authProvider),
-                ),
-                const SizedBox(height: 10),
+                // Hide Change Password for Google sign-in users
+                if (!_isGoogleUser()) ...[
+                  _buildPreferenceItem(context,
+                    icon: Icons.lock_outline_rounded,
+                    iconBg: primary.withValues(alpha: 0.08),
+                    iconColor: primary,
+                    title: 'Change Password',
+                    subtitle: 'Update your account password',
+                    onTap: () => _showChangePasswordSheet(context, authProvider),
+                  ),
+                  const SizedBox(height: 10),
+                ],
 
                 _buildPreferenceItem(context,
                   icon: Icons.delete_forever_outlined,

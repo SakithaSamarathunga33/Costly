@@ -100,6 +100,13 @@ class RecurringTransactionProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> updateItem(RecurringTransactionModel updated) async {
+    await _service.update(updated);
+    final idx = _items.indexWhere((r) => r.id == updated.id);
+    if (idx != -1) _items[idx] = updated;
+    notifyListeners();
+  }
+
   Future<void> delete(String id) async {
     await _service.delete(id);
     _items.removeWhere((r) => r.id == id);

@@ -38,7 +38,7 @@ class RecurringTransactionsScreen extends StatelessWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.add_rounded, color: primary),
-            onPressed: () => _showAddSheet(context, auth.userId),
+            onPressed: () => _showSheet(context, auth.userId),
           ),
         ],
       ),
@@ -75,6 +75,8 @@ class RecurringTransactionsScreen extends StatelessWidget {
                     return _RecurringTile(
                         item: item,
                         currencySymbol: currencySymbol,
+                        onEdit: () => _showSheet(context, auth.userId,
+                            existing: item),
                         onToggle: () => provider.toggleActive(item),
                         onDelete: () async {
                           await provider.delete(item.id);
@@ -87,12 +89,13 @@ class RecurringTransactionsScreen extends StatelessWidget {
     );
   }
 
-  void _showAddSheet(BuildContext context, String userId) {
+  void _showSheet(BuildContext context, String userId,
+      {RecurringTransactionModel? existing}) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => _AddRecurringSheet(userId: userId),
+      builder: (_) => _RecurringSheet(userId: userId, existing: existing),
     );
   }
 }
@@ -100,12 +103,14 @@ class RecurringTransactionsScreen extends StatelessWidget {
 class _RecurringTile extends StatelessWidget {
   final RecurringTransactionModel item;
   final String currencySymbol;
+  final VoidCallback onEdit;
   final VoidCallback onToggle;
   final VoidCallback onDelete;
 
   const _RecurringTile({
     required this.item,
     required this.currencySymbol,
+    required this.onEdit,
     required this.onToggle,
     required this.onDelete,
   });
@@ -204,6 +209,12 @@ class _RecurringTile extends StatelessWidget {
               Row(
                 children: [
                   GestureDetector(
+                    onTap: onEdit,
+                    child: const Icon(Icons.edit_outlined,
+                        size: 22, color: Color(0xFF5D3891)),
+                  ),
+                  const SizedBox(width: 8),
+                  GestureDetector(
                     onTap: onToggle,
                     child: Icon(
                       item.isActive
@@ -234,28 +245,64 @@ class _RecurringTile extends StatelessWidget {
       s.isEmpty ? s : s[0].toUpperCase() + s.substring(1);
 }
 
-class _AddRecurringSheet extends StatefulWidget {
+class _RecurringSheet extends StatefulWidget {
   final String userId;
-  const _AddRecurringSheet({required this.userId});
+  final RecurringTransactionModel? existing;
+  const _RecurringSheet({required this.userId, this.existing});
 
   @override
-  State<_AddRecurringSheet> createState() => _AddRecurringSheetState();
+  State<_RecurringSheet> createState() => _RecurringSheetState();
 }
 
-class _AddRecurringSheetState extends State<_AddRecurringSheet> {
-  final _titleCtrl = TextEditingController();
-  final _amountCtrl = TextEditingController();
-  String _type = 'expense';
-  String _category = 'Food';
-  String _frequency = 'monthly';
-  String _duration = '3m';
-  DateTime _startDate = DateTime.now();
+class _RecurringSheetState extends State<_RecurringSheet> {
+  late final TextEditingController _titleCtrl;
+  late final TextEditingController _amountCtrl;
+  final TextEditingController _customMonthsCtrl = TextEditingController();
+  late String _type;
+  late String _category;
+  late String _frequency;
+  late String _duration; // '3m','6m','12m','custom','none'
+  late DateTime _startDate;
   bool _saving = false;
+
+  bool get _isEdit => widget.existing != null;
+
+  @override
+  void initState() {
+    super.initState();
+    final e = widget.existing;
+    _type = e?.type ?? 'expense';
+    _category = e?.category ?? 'Food';
+    _frequency = e?.frequency ?? 'monthly';
+    _startDate = e?.nextDueDate ?? DateTime.now();
+    _titleCtrl = TextEditingController(text: e?.title ?? '');
+    _amountCtrl = TextEditingController(
+        text: e != null ? e.amount.toStringAsFixed(2) : '');
+
+    // Determine initial duration from existing endDate
+    if (e == null || e.endDate == null) {
+      _duration = e == null ? '3m' : 'none';
+    } else {
+      final months = (e.endDate!.year - e.nextDueDate.year) * 12 +
+          (e.endDate!.month - e.nextDueDate.month);
+      if (months == 3) {
+        _duration = '3m';
+      } else if (months == 6) {
+        _duration = '6m';
+      } else if (months == 12) {
+        _duration = '12m';
+      } else {
+        _duration = 'custom';
+        _customMonthsCtrl.text = months.toString();
+      }
+    }
+  }
 
   @override
   void dispose() {
     _titleCtrl.dispose();
     _amountCtrl.dispose();
+    _customMonthsCtrl.dispose();
     super.dispose();
   }
 
@@ -264,9 +311,14 @@ class _AddRecurringSheetState extends State<_AddRecurringSheet> {
 
   DateTime? get _computedEndDate {
     if (_duration == 'none') return null;
-    final months = int.parse(_duration.replaceAll('m', ''));
-    return DateTime(
-        _startDate.year, _startDate.month + months, _startDate.day);
+    int months;
+    if (_duration == 'custom') {
+      months = int.tryParse(_customMonthsCtrl.text.trim()) ?? 0;
+      if (months <= 0) return null;
+    } else {
+      months = int.parse(_duration.replaceAll('m', ''));
+    }
+    return DateTime(_startDate.year, _startDate.month + months, _startDate.day);
   }
 
   Future<void> _save() async {
@@ -276,21 +328,45 @@ class _AddRecurringSheetState extends State<_AddRecurringSheet> {
       showTopToast(context, 'Enter a valid title and amount', isError: true);
       return;
     }
+    if (_duration == 'custom') {
+      final m = int.tryParse(_customMonthsCtrl.text.trim()) ?? 0;
+      if (m <= 0) {
+        showTopToast(context, 'Enter a valid number of months', isError: true);
+        return;
+      }
+    }
     setState(() => _saving = true);
     try {
-      await context.read<RecurringTransactionProvider>().add(
-            userId: widget.userId,
-            title: title,
-            amount: amount,
-            type: _type,
-            category: _category,
-            frequency: _frequency,
-            startDate: _startDate,
-            endDate: _computedEndDate,
-          );
-      if (!mounted) return;
-      Navigator.pop(context);
-      showTopToast(context, 'Recurring transaction added!');
+      final provider = context.read<RecurringTransactionProvider>();
+      if (_isEdit) {
+        final updated = widget.existing!.copyWith(
+          title: title,
+          amount: amount,
+          type: _type,
+          category: _category,
+          frequency: _frequency,
+          nextDueDate: _startDate,
+          endDate: _computedEndDate,
+        );
+        await provider.updateItem(updated);
+        if (!mounted) return;
+        Navigator.pop(context);
+        showTopToast(context, 'Recurring transaction updated!');
+      } else {
+        await provider.add(
+          userId: widget.userId,
+          title: title,
+          amount: amount,
+          type: _type,
+          category: _category,
+          frequency: _frequency,
+          startDate: _startDate,
+          endDate: _computedEndDate,
+        );
+        if (!mounted) return;
+        Navigator.pop(context);
+        showTopToast(context, 'Recurring transaction added!');
+      }
     } catch (e) {
       if (!mounted) return;
       showTopToast(context, 'Failed to save', isError: true);
@@ -331,7 +407,10 @@ class _AddRecurringSheetState extends State<_AddRecurringSheet> {
               ),
             ),
             const SizedBox(height: 16),
-            Text('Add Recurring Transaction',
+            Text(
+                _isEdit
+                    ? 'Edit Recurring Transaction'
+                    : 'Add Recurring Transaction',
                 style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
@@ -374,7 +453,8 @@ class _AddRecurringSheetState extends State<_AddRecurringSheet> {
             _field(_titleCtrl, 'Title', cs),
             const SizedBox(height: 12),
             _field(_amountCtrl, 'Amount', cs,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true)),
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true)),
             const SizedBox(height: 12),
             // Category
             DropdownButtonFormField<String>(
@@ -396,12 +476,18 @@ class _AddRecurringSheetState extends State<_AddRecurringSheet> {
               decoration: _inputDeco('Frequency', cs),
               dropdownColor: cs.surfaceContainerHighest,
               items: [
-                DropdownMenuItem(value: 'daily',
-                    child: Text('Daily', style: TextStyle(color: cs.onSurface))),
-                DropdownMenuItem(value: 'weekly',
-                    child: Text('Weekly', style: TextStyle(color: cs.onSurface))),
-                DropdownMenuItem(value: 'monthly',
-                    child: Text('Monthly', style: TextStyle(color: cs.onSurface))),
+                DropdownMenuItem(
+                    value: 'daily',
+                    child: Text('Daily',
+                        style: TextStyle(color: cs.onSurface))),
+                DropdownMenuItem(
+                    value: 'weekly',
+                    child: Text('Weekly',
+                        style: TextStyle(color: cs.onSurface))),
+                DropdownMenuItem(
+                    value: 'monthly',
+                    child: Text('Monthly',
+                        style: TextStyle(color: cs.onSurface))),
               ],
               onChanged: (v) => setState(() => _frequency = v!),
             ),
@@ -412,17 +498,34 @@ class _AddRecurringSheetState extends State<_AddRecurringSheet> {
               decoration: _inputDeco('Duration', cs),
               dropdownColor: cs.surfaceContainerHighest,
               items: [
-                DropdownMenuItem(value: '3m',
-                    child: Text('3 months', style: TextStyle(color: cs.onSurface))),
-                DropdownMenuItem(value: '6m',
-                    child: Text('6 months', style: TextStyle(color: cs.onSurface))),
-                DropdownMenuItem(value: '12m',
-                    child: Text('12 months', style: TextStyle(color: cs.onSurface))),
-                DropdownMenuItem(value: 'none',
-                    child: Text('No end', style: TextStyle(color: cs.onSurface))),
+                DropdownMenuItem(
+                    value: '3m',
+                    child: Text('3 months',
+                        style: TextStyle(color: cs.onSurface))),
+                DropdownMenuItem(
+                    value: '6m',
+                    child: Text('6 months',
+                        style: TextStyle(color: cs.onSurface))),
+                DropdownMenuItem(
+                    value: '12m',
+                    child: Text('12 months',
+                        style: TextStyle(color: cs.onSurface))),
+                DropdownMenuItem(
+                    value: 'custom',
+                    child: Text('Custom months',
+                        style: TextStyle(color: cs.onSurface))),
+                DropdownMenuItem(
+                    value: 'none',
+                    child: Text('No end',
+                        style: TextStyle(color: cs.onSurface))),
               ],
               onChanged: (v) => setState(() => _duration = v!),
             ),
+            if (_duration == 'custom') ...[
+              const SizedBox(height: 12),
+              _field(_customMonthsCtrl, 'Number of months', cs,
+                  keyboardType: TextInputType.number),
+            ],
             const SizedBox(height: 12),
             // Start date
             GestureDetector(
@@ -430,14 +533,15 @@ class _AddRecurringSheetState extends State<_AddRecurringSheet> {
                 final picked = await showDatePicker(
                   context: context,
                   initialDate: _startDate,
-                  firstDate: DateTime.now(),
-                  lastDate: DateTime.now().add(const Duration(days: 365)),
+                  firstDate: DateTime.now()
+                      .subtract(const Duration(days: 365)),
+                  lastDate: DateTime.now().add(const Duration(days: 365 * 5)),
                 );
                 if (picked != null) setState(() => _startDate = picked);
               },
               child: Container(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 16, vertical: 16),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                 decoration: BoxDecoration(
                   color: cs.surfaceContainerHighest,
                   borderRadius: BorderRadius.circular(12),
@@ -446,9 +550,10 @@ class _AddRecurringSheetState extends State<_AddRecurringSheet> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                        'Start: ${DateFormat('MMM d, yyyy').format(_startDate)}',
+                        'Next due: ${DateFormat('MMM d, yyyy').format(_startDate)}',
                         style: TextStyle(
-                            fontSize: 14, fontWeight: FontWeight.w500,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
                             color: cs.onSurface)),
                     const Icon(Icons.calendar_today_outlined,
                         size: 18, color: primary),
@@ -474,8 +579,8 @@ class _AddRecurringSheetState extends State<_AddRecurringSheet> {
                         height: 20,
                         child: CircularProgressIndicator(
                             color: Colors.white, strokeWidth: 2))
-                    : const Text('Save',
-                        style: TextStyle(
+                    : Text(_isEdit ? 'Update' : 'Save',
+                        style: const TextStyle(
                             fontSize: 16, fontWeight: FontWeight.w700)),
               ),
             ),
